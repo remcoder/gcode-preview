@@ -78,9 +78,14 @@ function groupIntoLayers(commands) {
     const layers = [];
     let currentLayer;
     let maxZ = 0;
+    const firstLayerMaxZ = 1;
 
     for(const cmd of commands) {
-        if (cmd.z && cmd.z > maxZ) {
+        // create a new layer when
+        // 1. z movement is detected
+        // 2. the z movement reaches a new height (allows up/down movement within a layer)
+        // 3. the first z movement isn't higher than 1 (keeps initial high z movement from being interpreted as a layer floatin in the air)
+        if (cmd.z && (cmd.z > maxZ && (maxZ != 0 || cmd.z < firstLayerMaxZ))) {
             maxZ = cmd.z;
             currentLayer = {layer: layers.length, commands: [] };
             // console.log(currentLayer.layer);
