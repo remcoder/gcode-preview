@@ -1,0 +1,54 @@
+
+
+<title>GCode preview in javascript</title>
+
+
+<div class="controls">
+    GCode previewer by Remco Veldkamp
+    <i>(tested only on the latest Chrome)</i>
+    <br>
+    <label>Render layers: <input type="range" min="0" value="0" id="layers" />
+    </label>
+</div>
+<canvas id="renderer"></canvas>
+<style>
+body {
+    margin: 0;
+    font-family: Verdana;
+}
+.controls {
+    position: absolute;
+    background: rgba(0,0,0,0.7);
+    top: 0;
+    left: 0;
+    right: 0;
+    color: #ccc;
+    padding: 5px;
+    text-align: center;
+}
+</style>
+<script src="gcode-preview.js"></script>
+<script>
+    const [canvas, ctx] = initCanvas();
+
+    // make y go up
+    ctx.scale(1,-1);
+
+    // center on 0,0
+    ctx.translate(canvas.width/2,-canvas.height/2);
+
+    // draw background
+    ctx.save()
+    ctx.scale(5,5   );
+    grid(columnWidth, rowWidth, '#ddd');
+    ctx.restore();
+    title();
+
+    loading();
+
+</script>
+<script src="gcode.js"></script>
+<script>
+    processGCode(sample);
+    initEvents();
+</script>
