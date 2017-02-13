@@ -9,6 +9,8 @@
     <br>
     <label>Render layers: <input type="range" min="0" value="0" id="layers" />
     </label>
+    <label>Scale: <input type="range" min="1" value="3" max="10" step="0.1" id="scale" />
+    </label>
 </div>
 <canvas id="renderer"></canvas>
 <style>
@@ -30,6 +32,7 @@ body {
 <script src="gcode-preview.js"></script>
 <script>
     const [canvas, ctx] = initCanvas();
+    let scale = 3;
 
     // make y go up
     ctx.scale(1,-1);
@@ -38,8 +41,8 @@ body {
     ctx.translate(canvas.width/2,-canvas.height/2);
 
     // draw background
-    ctx.save()
-    ctx.scale(5,5   );
+    ctx.save();
+    ctx.scale(scale,scale);
     grid(columnWidth, rowWidth, '#ddd');
     ctx.restore();
     title();

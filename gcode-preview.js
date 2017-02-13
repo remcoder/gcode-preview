@@ -273,6 +273,12 @@ function initEvents() {
         renderLayers(layers, slider.value, false);
     });
 
+    const scaleSlider = document.getElementById('scale');
+    scaleSlider.addEventListener('input', function(evt) {
+        scale = +scaleSlider.value;
+        renderLayers(layers, slider.value, false);
+    });
+
     canvas.addEventListener(
     'dragover',
     function handleDragOver(evt) {
