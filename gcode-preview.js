@@ -269,7 +269,7 @@ function loadGCode(file) {
 
 function initEvents() {
     const slider = document.getElementById('layers');
-    slider.addEventListener('change', function(evt) {
+    slider.addEventListener('input', function(evt) {
         renderLayers(layers, slider.value, false);
     });
 
@@ -286,8 +286,8 @@ function initEvents() {
     function(evt) {
         evt.stopPropagation()
         evt.preventDefault()
-        const files = evt.dataTransfer.files  // FileList object.
-        const file = files[0]                 // File     object.
+        const files = evt.dataTransfer.files
+        const file = files[0]
         loadGCode(file);
     });
 }
