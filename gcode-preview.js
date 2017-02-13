@@ -44,45 +44,49 @@ function grid(columnWidth, rowWidth, color) {
     }
 }
 function parseLine(line) {
+    if (line.startsWith(';'))
+        return { comment : line.slice(1) };
+
     const values = line.split(' ');
     const cmd = {};
+
     values.forEach( v => {
         cmd[ v.slice(0,1).toLowerCase() ] = +v.slice(1);
     });
     return cmd;
 }
 
-function groupIntoZones(lines) {
-    const zones = [{lines: []}];
+function groupIntoZones(commands) {
+    const zones = [{commands: []}];
     var currentZone = zones[0];
 
-    for(const l of lines) {
-        if (l.startsWith(';TYPE:') ) {
-            currentZone = {zone: l.slice(6).toLowerCase(), lines: [] };
+    for(const cmd of commands) {
+        if (cmd.comment && cmd.comment.startsWith('TYPE:') ) {
+            currentZone = {zone: cmd.comment.slice(5).toLowerCase(), commands: [] };
             // console.log(currentZone.zone);
             zones.push(currentZone);
             continue;
         }
 
-        currentZone.lines.push(l);
+        currentZone.commands.push(cmd);
     }
 
     return zones;
 }
 
-function groupIntoLayers(lines) {
+function groupIntoLayers(commands) {
     const layers = [];
     var currentLayer;
 
-    for(const l of lines) {
-        if (l.startsWith(';LAYER:') ) {
-            currentLayer = {layer: parseInt(l.slice(7), 10), lines: [] };
+    for(const cmd of commands) {
+        if (cmd.z) {
+            currentLayer = {layer: layers.length, commands: [] };
             // console.log(currentLayer.layer);
             layers.push(currentLayer);
             continue;
         }
         if (currentLayer)
-            currentLayer.lines.push(l);
+            currentLayer.commands.push(cmd);
     }
 
     return layers;
@@ -93,14 +97,13 @@ function parseGcode(input) {
         .split('\n')
         .filter(l => l.length>0); // discard empty lines
 
-    const layers = groupIntoLayers(lines);
+    const commands = lines.map(parseLine);
+    const layers = groupIntoLayers(commands);
+
     for (layer of layers) {
-        layer.zones = groupIntoZones(layer.lines);
+        layer.zones = groupIntoZones(layer.commands);
     }
     // console.log(layers);
-
-    layers.forEach(l => l.zones.forEach(z => z.commands = z.lines.map(parseLine)));
-
     return layers;
 }
 
