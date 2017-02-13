@@ -133,7 +133,7 @@ function renderLayers(layers, limit, animate) {
     const center = getCenter(layers[0]);
     // const size = getSize(layers[0]);
     // const screenSize = Math.max(innerHeight, innerWidth);
-    const scale = 5;
+    const scale = 3;
 
     // reset
     canvas.width = canvas.width;
