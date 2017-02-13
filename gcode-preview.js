@@ -76,10 +76,12 @@ function groupIntoZones(commands) {
 
 function groupIntoLayers(commands) {
     const layers = [];
-    var currentLayer;
+    let currentLayer;
+    let maxZ = 0;
 
     for(const cmd of commands) {
-        if (cmd.z) {
+        if (cmd.z && cmd.z > maxZ) {
+            maxZ = cmd.z;
             currentLayer = {layer: layers.length, commands: [] };
             // console.log(currentLayer.layer);
             layers.push(currentLayer);
