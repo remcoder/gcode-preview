@@ -35,13 +35,22 @@ function loading() {
 }
 
 function grid(columnWidth, rowWidth, color) {
+    ctx.save()
+    ctx.scale(scale, scale);
     ctx.fillStyle = color;
-    for(var column = -canvas.width ; column < canvas.width ; column += columnWidth) {
-        for(var row = -canvas.height ; row < canvas.height ; row += rowWidth) {
+    const columns = Math.round(canvas.width/columnWidth);
+    const rows = Math.round(canvas.height/rowWidth);
+
+    for(var column = -columns ; column < columns ; column++) {
+        for(var row = -rows ; row < rows ; row++) {
             if ((row+column) % 2)
-                ctx.fillRect(column, row, columnWidth, rowWidth);
+                ctx.fillRect(column * columnWidth,
+                    row * rowWidth,
+                    columnWidth,
+                    rowWidth);
         }
     }
+    ctx.restore();
 }
 function parseLine(line) {
     if (line.startsWith(';'))
@@ -133,7 +142,6 @@ function renderLayers(layers, limit, animate) {
     const center = getCenter(layers[0]);
     // const size = getSize(layers[0]);
     // const screenSize = Math.max(innerHeight, innerWidth);
-    const scale = 3;
 
     // reset
     canvas.width = canvas.width;
@@ -145,10 +153,8 @@ function renderLayers(layers, limit, animate) {
     ctx.translate(canvas.width/2,-canvas.height/2);
 
     // draw background
-    ctx.save()
-    ctx.scale(scale, scale);
     grid(columnWidth, rowWidth, '#ddd');
-    ctx.restore();
+
     title();
     info();
 
@@ -276,6 +282,12 @@ function initEvents() {
     const scaleSlider = document.getElementById('scale');
     scaleSlider.addEventListener('input', function(evt) {
         scale = +scaleSlider.value;
+        renderLayers(layers, slider.value, false);
+    });
+
+    window.addEventListener('resize', function() {
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
         renderLayers(layers, slider.value, false);
     });
 
