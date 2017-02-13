@@ -248,7 +248,7 @@ function processGCode(gcode) {
 
 function loadGCode(file) {
     console.log(file.name, file.size + " bytes")
-    var reader = new FileReader();
+    const reader = new FileReader();
 
     reader.onload = function(e) {
         processGCode(reader.result);
@@ -257,7 +257,7 @@ function loadGCode(file) {
 }
 
 function initEvents() {
-    var slider = document.getElementById('layers');
+    const slider = document.getElementById('layers');
     slider.addEventListener('change', function(evt) {
         renderLayers(layers, slider.value, false);
     });
@@ -275,8 +275,8 @@ function initEvents() {
     function(evt) {
         evt.stopPropagation()
         evt.preventDefault()
-        var files = evt.dataTransfer.files  // FileList object.
-        var file = files[0]                 // File     object.
+        const files = evt.dataTransfer.files  // FileList object.
+        const file = files[0]                 // File     object.
         loadGCode(file);
     });
 }
