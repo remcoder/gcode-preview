@@ -107,9 +107,10 @@ function parseGcode(input) {
     return layers;
 }
 
-function renderZone(l) {
+function renderZone(l, layerIndex) {
     // console.log(l.zone)
-    ctx.strokeStyle = colors[l.zone];
+    const brightness = Math.round(layerIndex/layers.length * 100);
+    ctx.strokeStyle = colors[l.zone] || 'hsl(0, 0%, '+brightness+'%)';
     ctx.beginPath();
     for (cmd of l.commands) {
         // console.log(cmd);
@@ -160,7 +161,7 @@ function renderLayers(layers, limit, animate) {
             ctx.save();
             ctx.translate(offset, offset);
             for (zone of layer.zones) {
-                renderZone(zone);
+                renderZone(zone, index);
             }
             ctx.restore();
         }
@@ -175,7 +176,7 @@ function animateLayers(index, limit, layers) {
     ctx.save();
     ctx.translate(offset, offset);
     for (zone of layer.zones) {
-        renderZone(zone);
+        renderZone(zone, index);
     }
     ctx.restore();
 
