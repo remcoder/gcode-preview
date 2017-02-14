@@ -5,13 +5,11 @@
 
 <header class="controls">
     <h1>GCode Previewer</h1>
-    <label>Render layers: <input type="range" min="0" value="0" id="layers" />
-    </label>
-    <label>Scale: <input type="range" min="1" value="3" max="10" step="0.1" id="scale" />
-    </label>
-    <label>Rotate: <input type="range" min="0" value="0" max="360"  id="rotation" />
-    </label>
+    <label>Render layers:&nbsp;<input type="range" min="0" value="0" id="layers" /></label>
+    <label>Scale:&nbsp;<input type="range" min="1" value="3" max="10" step="0.1" id="scale" /></label>
+    <label>Rotate:&nbsp;<input type="range" min="0" value="0" max="360"  id="rotation" /></label>
     <button id="toggle-animation">toggle animation</button>
+    <label>Color zones:&nbsp;<input type="checkbox" id="zone-colors" value="test" /></label>
     <br>
     <tt>
         <span id="file-info">Benchy</span>
@@ -69,7 +67,7 @@ a {
     const [canvas, ctx] = initCanvas();
     let limit = 0, scale = 7, rotation = 0;
     let layers, header;
-    let rotationAnimation = false;
+    let rotationAnimation = false, zoneColors = false;
 
     // make y go up
     ctx.scale(1,-1);
