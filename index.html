@@ -9,10 +9,12 @@
     </label>
     <label>Scale: <input type="range" min="1" value="3" max="10" step="0.1" id="scale" />
     </label>
+    <label>Rotate: <input type="range" min="0" value="0" max="180"  id="rotation" />
+    </label>
     <br>
     <tt>
-    <span id="file-info"></span>
-    <span id="layer-count"></span>
+        <span id="file-info"></span>
+        <span id="layer-count"></span>
     </tt>
 </header>
 <footer>
@@ -70,7 +72,7 @@ footer {
     title();
     loading();
 </script>
-<script src="benchy-cura.js"></script>
+<script src="benchy-slic3r.js"></script>
 <script>
     processGCode(sample);
     initEvents();

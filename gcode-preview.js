@@ -29,6 +29,7 @@ function initCanvas() {
 
 function backgroundText(text, x,y, fontSize) {
     ctx.save();
+    ctx.rotate(rotation * Math.PI / 180);
     ctx.scale(1,-1);
     ctx.fillStyle = '#ddd';
     ctx.font = fontSize + 'px Verdana';
@@ -55,6 +56,7 @@ function grid() {
 
     ctx.save();
     ctx.scale(scale, scale);
+    ctx.rotate(rotation * Math.PI / 180);
     ctx.fillStyle = '#eee';
 
     for(let column = -columns ; column < columns ; column++) {
@@ -229,6 +231,7 @@ function drawLayer(index, limit) {
     ctx.save();
     ctx.scale(scale, scale);
     ctx.translate(0, offset);
+    ctx.rotate(rotation * Math.PI / 180);
 
     // center model
     const center = getCenter(layers[0]);
@@ -325,7 +328,11 @@ function initEvents() {
         scale = +scaleSlider.value;
         render();
     });
-
+    const rotationSlider = document.getElementById('rotation');
+    rotationSlider.addEventListener('input', function(evt) {
+        rotation = +rotationSlider.value;
+        render();
+    })
     window.addEventListener('resize', function() {
         canvas.width = innerWidth;
         canvas.height = innerHeight;
