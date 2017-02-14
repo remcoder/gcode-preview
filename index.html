@@ -9,6 +9,11 @@
     </label>
     <label>Scale: <input type="range" min="1" value="3" max="10" step="0.1" id="scale" />
     </label>
+    <br>
+    <tt>
+    <span id="file-info"></span>
+    <span id="layer-count"></span>
+    </tt>
 </header>
 <footer>
     <div class="note">By Remco Veldkamp. Tested only in the latest Chrome.</div>
@@ -52,6 +57,7 @@ footer {
 <script>
     const [canvas, ctx] = initCanvas();
     let limit = 0, scale = 7, rotation = 0;
+    let layers, header;
 
     // make y go up
     ctx.scale(1,-1);

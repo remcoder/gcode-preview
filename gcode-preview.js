@@ -1,6 +1,26 @@
+
+const Colors = {
+    Cura_SteamEngine : {
+        skirt : 'lime',
+        'wall-inner' : 'purple',
+        'wall-outer' : 'blue',
+        skin : 'red',
+        fill : 'orange',
+        support: 'rgba(255,255,255,0.5)'
+    },
+    Simplify3D : {
+        skirt : 'lime',
+        'inner perimeter' : 'purple',
+        'outer perimeter' : 'blue',
+        skin : 'solid layer',
+        fill : 'infill',
+        support: 'rgba(255,255,255,0.5)'
+    }
+};
+
 function initCanvas() {
-    var canvas = document.getElementById('renderer');
-    var ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('renderer');
+    const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -37,8 +57,8 @@ function grid() {
     ctx.scale(scale, scale);
     ctx.fillStyle = '#eee';
 
-    for(var column = -columns ; column < columns ; column++) {
-        for(var row = -rows ; row < rows ; row++) {
+    for(let column = -columns ; column < columns ; column++) {
+        for(let row = -rows ; row < rows ; row++) {
             if ((row+column) % 2)
                 ctx.fillRect(column * columnWidth,
                     row * rowWidth,
@@ -48,6 +68,7 @@ function grid() {
     }
     ctx.restore();
 }
+
 function parseLine(line, index) {
     const cmd = {};
     if (line.startsWith(';'))
@@ -68,7 +89,7 @@ function getZone(cmd, header) {
             return cmd.comment.slice(5).toLowerCase();
 
     if (header.slicer == 'Simplify3D')
-        for (var zoneType of Object.keys(Colors.Simplify3D)) {
+        for (let zoneType of Object.keys(Colors.Simplify3D)) {
             if (cmd.comment.includes(zoneType))
                 return zoneType;
         }
@@ -80,14 +101,13 @@ function getZone(cmd, header) {
 
 function groupIntoZones(commands, header) {
     const zones = [{commands: []}];
-    var currentZone = zones[0];
+    let currentZone = zones[0];
 
     for(const cmd of commands) {
         if (cmd.comment) {
             const zone  = getZone(cmd, header);
             if (zone) {
                 currentZone = {zone: zone, commands: [] };
-                // console.log(currentZone.zone);
                 zones.push(currentZone);
                 continue;
             }
@@ -113,7 +133,6 @@ function groupIntoLayers(commands, header) {
         if (cmd.z && (cmd.z > maxZ && (maxZ != 0 || cmd.z < firstLayerMaxZ))) {
             maxZ = cmd.z;
             currentLayer = {layer: layers.length, commands: [] };
-            // console.log(currentLayer.layer);
             layers.push(currentLayer);
             continue;
         }
@@ -137,7 +156,6 @@ function parseGcode(input) {
     for (let layer of layers) {
         layer.zones = groupIntoZones(layer.commands, header);
     }
-    // console.log(layers);
     return { header, layers, limit };
 }
 
@@ -154,7 +172,7 @@ function parseHeader(commands) {
             if (com.includes('Cura_SteamEngine'))
                 return 'Cura_SteamEngine';
         })[0];
-    // console.log('slicer', slicer);
+
     return {
         slicer
     };
@@ -171,8 +189,6 @@ function getZoneColor(zone, layerIndex) {
 }
 
 function renderZone(l, layerIndex) {
-    // console.log(l.zone)
-
     ctx.strokeStyle = getZoneColor(l.zone, layerIndex);
     ctx.beginPath();
     for (cmd of l.commands) {
@@ -233,7 +249,6 @@ function getOuterBounds(layer) {
         minY = Infinity,
         maxY = -Infinity;
 
-
     outer:
     for(let zone of layer.zones) {
         inner:
@@ -246,7 +261,6 @@ function getOuterBounds(layer) {
             if (cmd.y > maxY) maxY = cmd.y;
         }
     }
-
 
     return {
         minX,
@@ -280,19 +294,21 @@ function processGCode(gcode) {
     ({ header, layers, limit } = parseGcode(gcode));
     console.timeEnd('parsing');
 
-    console.log('layers', layers.length)
+    const layerCount = document.getElementById('layer-count');
+    layerCount.innerText = layers.length + ' layers';
 
     console.time('rendering');
     render();
     console.timeEnd('rendering');
 
-    var slider = document.getElementById('layers');
+    const slider = document.getElementById('layers');
     slider.setAttribute('max', limit);
     slider.value = limit;
 }
 
 function loadGCode(file) {
-    console.log(file.name, file.size + " bytes")
+    const fileInfo = document.getElementById('file-info');
+    fileInfo.innerText = file.name + ': ' + file.size + " bytes";
     const reader = new FileReader();
 
     reader.onload = function(e) {
@@ -320,17 +336,13 @@ function initEvents() {
         render();
     });
 
-    canvas.addEventListener(
-    'dragover',
-    function handleDragOver(evt) {
+    canvas.addEventListener('dragover', function(evt) {
         evt.stopPropagation()
         evt.preventDefault()
         evt.dataTransfer.dropEffect = 'copy'
     });
 
-    canvas.addEventListener(
-    'drop',
-    function(evt) {
+    canvas.addEventListener('drop', function(evt) {
         evt.stopPropagation()
         evt.preventDefault()
         const files = evt.dataTransfer.files
@@ -338,25 +350,3 @@ function initEvents() {
         loadGCode(file);
     });
 }
-
-const Colors = {
-    Cura_SteamEngine : {
-        skirt : 'lime',
-        'wall-inner' : 'purple',
-        'wall-outer' : 'blue',
-        skin : 'red',
-        fill : 'orange',
-        support: 'rgba(255,255,255,0.5)'
-    },
-    Simplify3D : {
-        skirt : 'lime',
-        'inner perimeter' : 'purple',
-        'outer perimeter' : 'blue',
-        skin : 'solid layer',
-        fill : 'infill',
-        support: 'rgba(255,255,255,0.5)'
-    }
-};
-
-
-let layers, header;
