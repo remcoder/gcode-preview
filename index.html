@@ -19,10 +19,11 @@
     </tt>
 </header>
 <footer>
-    <div class="note">By Remco Veldkamp. Tested only in the latest Chrome.</div>
+    <div class="note">By <a href="http://twitter.com/remcoder">Remco Veldkamp</a>. Tested only in the latest Chrome.</div>
 
     <a href="https://twitter.com/share" class="twitter-share-button" data-via="remcoder" data-hashtags="3dprinting" data-show-count="false">Tweet</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
     <script type="text/javascript" src="//www.redditstatic.com/button/button1.js"></script>
+    <a class="github-button" href="https://github.com/remcoder/gcode-previewer" data-icon="octicon-star" data-count-href="/remcoder/gcode-previewer/stargazers" data-count-api="/repos/remcoder/gcode-previewer#stargazers_count" data-count-aria-label="# stargazers on GitHub" aria-label="Star remcoder/gcode-previewer on GitHub">Star</a>
 </footer>
 <canvas id="renderer"></canvas>
 <style>
@@ -59,6 +60,9 @@ footer {
 :disabled {
     opacity: 0.5;
 }
+a {
+    color: black;
+}
 </style>
 <script src="gcode-preview.js"></script>
 <script>
@@ -84,3 +88,4 @@ footer {
     initEvents();
     startAnimation();
 </script>
+<script async defer src="https://buttons.github.io/buttons.js"></script>
