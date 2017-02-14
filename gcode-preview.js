@@ -29,9 +29,9 @@ function initCanvas() {
 
 function backgroundText(text, x,y, fontSize) {
     ctx.save();
-    ctx.rotate(rotation * Math.PI / 180);
+    // ctx.rotate(rotation * Math.PI / 180);
     ctx.scale(1,-1);
-    ctx.fillStyle = '#ddd';
+    ctx.fillStyle = '#ccc';
     ctx.font = fontSize + 'px Verdana';
     ctx.fillText(text, x, y);
     ctx.restore();
@@ -46,7 +46,7 @@ function info() {
 }
 
 function loading() {
-    backgroundText('Loading..', -70, 0, 42);
+    backgroundText('Loading..', -90, 165, 42);
 }
 
 function grid() {
@@ -213,8 +213,8 @@ function render() {
     ctx.translate(canvas.width/2,-canvas.height/2);
 
     // draw background
-    grid();
-    title();
+    // grid();
+    // title();
     info();
 
     for (let index=0 ; index < layers.length ; index++ ) {
@@ -351,10 +351,12 @@ function initEvents() {
         scale = +scaleSlider.value;
         render();
     });
+
     rotationSlider.addEventListener('input', function(evt) {
         rotation = +rotationSlider.value;
         render();
     })
+
     window.addEventListener('resize', function() {
         canvas.width = innerWidth;
         canvas.height = innerHeight;
