@@ -66,16 +66,35 @@ function parseLine(line, index) {
     return cmd;
 }
 
-function groupIntoZones(commands) {
+function getZone(cmd, header) {
+    if (header.slicer == 'Cura_SteamEngine')
+        if (cmd.comment.startsWith('TYPE:'))
+            return cmd.comment.slice(5).toLowerCase();
+
+    if (header.slicer == 'Simplify3D')
+        for (var zoneType of Object.keys(Colors.Simplify3D)) {
+            if (cmd.comment.includes(zoneType))
+                return zoneType;
+        }
+
+    // Slic3r gcode doesn't seem to carry info about zones
+
+    return null;
+}
+
+function groupIntoZones(commands, header) {
     const zones = [{commands: []}];
     var currentZone = zones[0];
 
     for(const cmd of commands) {
-        if (cmd.comment && cmd.comment.startsWith('TYPE:') ) {
-            currentZone = {zone: cmd.comment.slice(5).toLowerCase(), commands: [] };
-            // console.log(currentZone.zone);
-            zones.push(currentZone);
-            continue;
+        if (cmd.comment) {
+            const zone  = getZone(cmd, header);
+            if (zone) {
+                currentZone = {zone: zone, commands: [] };
+                // console.log(currentZone.zone);
+                zones.push(currentZone);
+                continue;
+            }
         }
 
         currentZone.commands.push(cmd);
@@ -84,7 +103,7 @@ function groupIntoZones(commands) {
     return zones;
 }
 
-function groupIntoLayers(commands) {
+function groupIntoLayers(commands, header) {
     const layers = [];
     let currentLayer;
     let maxZ = 0;
@@ -116,10 +135,10 @@ function parseGcode(input) {
 
     const commands = lines.map(parseLine);
     const header = parseHeader(commands);
-    const layers = groupIntoLayers(commands);
+    const layers = groupIntoLayers(commands, header);
 
     for (let layer of layers) {
-        layer.zones = groupIntoZones(layer.commands);
+        layer.zones = groupIntoZones(layer.commands, header);
     }
     // console.log(layers);
     return { header, layers };
@@ -144,10 +163,20 @@ function parseHeader(commands) {
     };
 }
 
+function getZoneColor(zone, layerIndex) {
+
+    const brightness = Math.round(layerIndex/layers.length * 100);
+    const colors = Colors[header.slicer];
+    if (!colors)
+        return 'hsl(0, 0%, '+brightness+'%)';
+
+    return colors[zone];
+}
+
 function renderZone(l, layerIndex) {
     // console.log(l.zone)
-    const brightness = Math.round(layerIndex/layers.length * 100);
-    ctx.strokeStyle = colors[l.zone] || 'hsl(0, 0%, '+brightness+'%)';
+
+    ctx.strokeStyle = getZoneColor(l.zone, layerIndex);
     ctx.beginPath();
     for (cmd of l.commands) {
         // console.log(cmd);
@@ -334,13 +363,25 @@ function initEvents() {
 const G0 = 'G0';
 const G1 = 'G1';
 
-const colors = {
-    skirt : 'lime',
-    'wall-inner' : 'purple',
-    'wall-outer' : 'blue',
-    skin : 'red',
-    fill : 'orange',
-    support: 'rgba(255,255,255,0.5)'
+const Colors = {
+    Cura_SteamEngine : {
+        skirt : 'lime',
+        'wall-inner' : 'purple',
+        'wall-outer' : 'blue',
+        skin : 'red',
+        fill : 'orange',
+        support: 'rgba(255,255,255,0.5)'
+    },
+    Simplify3D : {
+        skirt : 'lime',
+        'inner perimeter' : 'purple',
+        'outer perimeter' : 'blue',
+        skin : 'solid layer',
+        fill : 'infill',
+        support: 'rgba(255,255,255,0.5)'
+    }
 };
+
+
 const columnWidth = 25, rowWidth = 25;
 let layers, header;
