@@ -316,19 +316,41 @@ function loadGCode(file) {
     reader.readAsText(file);
 }
 
+function animationLoop() {
+    if (!rotationAnimation) return;
+    requestAnimationFrame(animationLoop);
+
+    rotation += 2;
+    rotation %= 360;
+    rotationSlider.value = rotation;
+    render();
+}
+
+function startAnimation() {
+    rotationAnimation = true;
+    rotationSlider.setAttribute('disabled', 'disabled');
+    animationLoop();
+}
+function stopAnimation() {
+    rotationAnimation = false;
+    rotationSlider.removeAttribute('disabled');
+}
+
+const slider = document.getElementById('layers');
+const scaleSlider = document.getElementById('scale');
+const rotationSlider = document.getElementById('rotation');
+const toggleAnimation = document.getElementById('toggle-animation');
+
 function initEvents() {
-    const slider = document.getElementById('layers');
     slider.addEventListener('input', function(evt) {
         limit = +slider.value;
         render();
     });
 
-    const scaleSlider = document.getElementById('scale');
     scaleSlider.addEventListener('input', function(evt) {
         scale = +scaleSlider.value;
         render();
     });
-    const rotationSlider = document.getElementById('rotation');
     rotationSlider.addEventListener('input', function(evt) {
         rotation = +rotationSlider.value;
         render();
@@ -351,5 +373,9 @@ function initEvents() {
         const files = evt.dataTransfer.files
         const file = files[0]
         loadGCode(file);
+    });
+
+    toggleAnimation.addEventListener('click', function() {
+        rotationAnimation ? stopAnimation() : startAnimation();
     });
 }
