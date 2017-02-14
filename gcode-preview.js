@@ -53,7 +53,7 @@ function grid() {
     const columns = Math.round(canvas.width/columnWidth);
     const rows = Math.round(canvas.height/rowWidth);
 
-    ctx.save()
+    ctx.save();
     ctx.scale(scale, scale);
     ctx.fillStyle = '#eee';
 
@@ -164,7 +164,6 @@ function parseHeader(commands) {
     const slicer = comments
         .filter(com => /(G|g)enerated/.test(com) )
         .map(com => {
-            console.log(com)
             if(com.includes('Slic3r'))
                 return 'Slic3r';
             if (com.includes('Simplify3D'))
@@ -191,8 +190,7 @@ function getZoneColor(zone, layerIndex) {
 function renderZone(l, layerIndex) {
     ctx.strokeStyle = getZoneColor(l.zone, layerIndex);
     ctx.beginPath();
-    for (cmd of l.commands) {
-        // console.log(cmd);
+    for (let cmd of l.commands) {
         if (cmd.g == 0)
             ctx.moveTo(cmd.x, cmd.y)
         else if (cmd.g == 1)
@@ -272,7 +270,6 @@ function getOuterBounds(layer) {
 
 function getCenter(layer) {
     const bounds = getOuterBounds(layer);
-    // console.log(bounds);
 
     return {
         x : bounds.minX + (bounds.maxX - bounds.minX) / 2,
@@ -285,7 +282,6 @@ function getSize(layer) {
 
     const sizeX = bounds.maxX - bounds.minX;
     const sizeY = bounds.maxY - bounds.minY;
-    // console.log(sizeX,sizeY);
     return Math.min(sizeX, sizeY);
 }
 
@@ -307,9 +303,9 @@ function processGCode(gcode) {
 }
 
 function loadGCode(file) {
+    const reader = new FileReader();
     const fileInfo = document.getElementById('file-info');
     fileInfo.innerText = file.name + ': ' + file.size + " bytes";
-    const reader = new FileReader();
 
     reader.onload = function(e) {
         processGCode(reader.result);
