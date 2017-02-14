@@ -17,7 +17,7 @@ function backgroundText(text, x,y, fontSize) {
 }
 
 function title() {
-    backgroundText('GCode previewer', -300, -120, 72);
+    backgroundText('GCode previewer', -300, -150, 72);
 }
 
 function info() {
