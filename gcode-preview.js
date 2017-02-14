@@ -52,16 +52,17 @@ function grid(columnWidth, rowWidth, color) {
     }
     ctx.restore();
 }
-function parseLine(line) {
-    if (line.startsWith(';'))
-        return { comment : line.slice(1) };
-
-    const values = line.split(' ');
+function parseLine(line, index) {
     const cmd = {};
+    if (line.startsWith(';'))
+        cmd.comment = line.slice(1);
+    else {
+        const values = line.split(' ');
 
-    values.forEach( v => {
-        cmd[ v.slice(0,1).toLowerCase() ] = +v.slice(1);
-    });
+        values.forEach( v => {
+            cmd[ v.slice(0,1).toLowerCase() ] = +v.slice(1);
+        });
+    }
     return cmd;
 }
 
@@ -114,13 +115,33 @@ function parseGcode(input) {
         .filter(l => l.length>0); // discard empty lines
 
     const commands = lines.map(parseLine);
+    const header = parseHeader(commands);
     const layers = groupIntoLayers(commands);
 
-    for (layer of layers) {
+    for (let layer of layers) {
         layer.zones = groupIntoZones(layer.commands);
     }
     // console.log(layers);
-    return layers;
+    return { header, layers };
+}
+
+function parseHeader(commands) {
+    const comments = commands.filter(cmd => cmd.comment).map(cmd => cmd.comment);
+    const slicer = comments
+        .filter(com => /(G|g)enerated/.test(com) )
+        .map(com => {
+            console.log(com)
+            if(com.includes('Slic3r'))
+                return 'Slic3r';
+            if (com.includes('Simplify3D'))
+                return 'Simplify3D';
+            if (com.includes('Cura_SteamEngine'))
+                return 'Cura_SteamEngine';
+        })[0];
+    // console.log('slicer', slicer);
+    return {
+        slicer
+    };
 }
 
 function renderZone(l, layerIndex) {
@@ -198,7 +219,7 @@ function animateLayers(index, limit, layers) {
     },16.6)
 }
 
-function getOuterBounds() {
+function getOuterBounds(layer) {
     let minX = Infinity,
         maxX = -Infinity,
         minY = Infinity,
@@ -248,7 +269,7 @@ function getSize(layer) {
 
 function processGCode(gcode) {
     console.time('parsing');
-    layers = parseGcode(gcode);
+    ({ header, layers } = parseGcode(gcode));
     console.timeEnd('parsing');
 
     console.log('layers', layers.length)
@@ -322,3 +343,4 @@ const colors = {
     support: 'rgba(255,255,255,0.5)'
 };
 const columnWidth = 25, rowWidth = 25;
+let layers, header;
