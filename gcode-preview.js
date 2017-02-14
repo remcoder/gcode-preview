@@ -182,10 +182,10 @@ function parseHeader(commands) {
 function getZoneColor(zone, layerIndex) {
 
     const brightness = Math.round(layerIndex/layers.length * 100);
-    const colors = Colors[header.slicer];
-    if (!colors)
+    if (!zoneColors)
         return 'hsl(0, 0%, '+brightness+'%)';
 
+    const colors = Colors[header.slicer];
     return colors[zone];
 }
 
@@ -296,13 +296,22 @@ function processGCode(gcode) {
     const layerCount = document.getElementById('layer-count');
     layerCount.innerText = layers.length + ' layers';
 
+    // const slider = document.getElementById('layers');
+    slider.setAttribute('max', limit);
+    slider.value = limit;
+
+    if (!!Colors[header.slicer]) {
+        toggleZoneColors.removeAttribute('disabled');
+    }
+    else {
+        toggleZoneColors.checked = false;
+        toggleZoneColors.setAttribute('disabled', 'disabled');
+        zoneColors = false;
+    }
+
     console.time('rendering');
     render();
     console.timeEnd('rendering');
-
-    const slider = document.getElementById('layers');
-    slider.setAttribute('max', limit);
-    slider.value = limit;
 }
 
 function loadGCode(file) {
@@ -340,6 +349,7 @@ const slider = document.getElementById('layers');
 const scaleSlider = document.getElementById('scale');
 const rotationSlider = document.getElementById('rotation');
 const toggleAnimation = document.getElementById('toggle-animation');
+const toggleZoneColors = document.getElementById('zone-colors');
 
 function initEvents() {
     slider.addEventListener('input', function(evt) {
@@ -379,5 +389,11 @@ function initEvents() {
 
     toggleAnimation.addEventListener('click', function() {
         rotationAnimation ? stopAnimation() : startAnimation();
+    });
+
+    toggleZoneColors.addEventListener('click', function() {
+        console.log(toggleZoneColors.checked);
+        zoneColors = toggleZoneColors.checked;
+        render();
     });
 }
