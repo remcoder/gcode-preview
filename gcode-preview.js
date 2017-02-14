@@ -7,39 +7,35 @@ function initCanvas() {
     return [canvas, ctx];
 }
 
-function title() {
-    ctx.save()
-    ctx.scale(1,-1)
-    ctx.fillStyle = 'rgba(255,128,128,0.5)';
-    ctx.font = '72px Verdana'
-    ctx.fillText("GCode preview", -275,-120)
+function backgroundText(text, x,y, fontSize) {
+    ctx.save();
+    ctx.scale(1,-1);
+    ctx.fillStyle = '#ddd';
+    ctx.font = fontSize + 'px Verdana';
+    ctx.fillText(text, x, y);
     ctx.restore();
+}
+
+function title() {
+    backgroundText('GCode previewer', -300, -120, 72);
 }
 
 function info() {
-    ctx.save()
-    ctx.scale(1,-1)
-    ctx.fillStyle = 'rgba(255,128,128,0.5)';
-    ctx.font = '36px Verdana'
-    ctx.fillText("Drop a .gcode file here", -210,165)
-    ctx.restore();
+    backgroundText('Drop a .gcode file here', -210, 165, 36);
 }
 
 function loading() {
-    ctx.save()
-    ctx.scale(1,-1)
-    ctx.fillStyle = 'rgba(255,128,128,0.5)';
-    ctx.font = '42px Verdana'
-    ctx.fillText("Loading..", -70,0)
-    ctx.restore();
+    backgroundText('Loading..', -70, 0, 42);
 }
 
-function grid(columnWidth, rowWidth, color) {
-    ctx.save()
-    ctx.scale(scale, scale);
-    ctx.fillStyle = color;
+function grid() {
+    const columnWidth = 25, rowWidth = 25;
     const columns = Math.round(canvas.width/columnWidth);
     const rows = Math.round(canvas.height/rowWidth);
+
+    ctx.save()
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#eee';
 
     for(var column = -columns ; column < columns ; column++) {
         for(var row = -rows ; row < rows ; row++) {
@@ -136,12 +132,13 @@ function parseGcode(input) {
     const commands = lines.map(parseLine);
     const header = parseHeader(commands);
     const layers = groupIntoLayers(commands, header);
+    const limit = layers.length - 1;
 
     for (let layer of layers) {
         layer.zones = groupIntoZones(layer.commands, header);
     }
     // console.log(layers);
-    return { header, layers };
+    return { header, layers, limit };
 }
 
 function parseHeader(commands) {
@@ -188,13 +185,10 @@ function renderZone(l, layerIndex) {
     ctx.stroke();
 }
 
-function renderLayers(layers, limit, animate) {
-    const center = getCenter(layers[0]);
-    // const size = getSize(layers[0]);
-    // const screenSize = Math.max(innerHeight, innerWidth);
-
+function render() {
     // reset
     canvas.width = canvas.width;
+    ctx.lineWidth = 0.1;
 
     // make y go up
     ctx.scale(1,-1);
@@ -203,49 +197,34 @@ function renderLayers(layers, limit, animate) {
     ctx.translate(canvas.width/2,-canvas.height/2);
 
     // draw background
-    grid(columnWidth, rowWidth, '#ddd');
-
+    grid();
     title();
     info();
 
-    ctx.scale(scale, scale);
-    ctx.lineWidth = 0.1;
-
-    // center model (doesn't work that goe)
-    ctx.translate(-center.x, -center.y);
-
-
-    if (animate)
-        animateLayers(0, limit, layers);
-    else
-        for (let [index, layer] of layers.entries()) {
-            if (index > limit) return;
-            const offset = 0.1 * index;
-            ctx.save();
-            ctx.translate(offset, offset);
-            for (zone of layer.zones) {
-                renderZone(zone, index);
-            }
-            ctx.restore();
-        }
-
+    for (let index=0 ; index < layers.length ; index++ ) {
+        drawLayer(index, limit);
+    }
 }
 
-function animateLayers(index, limit, layers) {
+function drawLayer(index, limit) {
     if (index > limit) return;
+
     const layer = layers[index];
-    if (!layer) return;
     const offset = 0.1 * index;
+
     ctx.save();
-    ctx.translate(offset, offset);
+    ctx.scale(scale, scale);
+    ctx.translate(0, offset);
+
+    // center model
+    const center = getCenter(layers[0]);
+    ctx.translate(-center.x, -center.y);
+
+    // draw zones
     for (zone of layer.zones) {
         renderZone(zone, index);
     }
     ctx.restore();
-
-    setTimeout(function() {
-        animateLayers(index+1, limit, layers);
-    },16.6)
 }
 
 function getOuterBounds(layer) {
@@ -298,19 +277,18 @@ function getSize(layer) {
 
 function processGCode(gcode) {
     console.time('parsing');
-    ({ header, layers } = parseGcode(gcode));
+    ({ header, layers, limit } = parseGcode(gcode));
     console.timeEnd('parsing');
 
     console.log('layers', layers.length)
 
     console.time('rendering');
-    renderLayers(layers, layers.length, true);
-    // ctx.fillRect(center.x,center.y,10,10)
+    render();
     console.timeEnd('rendering');
+
     var slider = document.getElementById('layers');
-    slider.setAttribute('max', layers.length);
-    // slider.setAttribute('value', layers.length);
-    slider.value = layers.length;
+    slider.setAttribute('max', limit);
+    slider.value = limit;
 }
 
 function loadGCode(file) {
@@ -326,19 +304,20 @@ function loadGCode(file) {
 function initEvents() {
     const slider = document.getElementById('layers');
     slider.addEventListener('input', function(evt) {
-        renderLayers(layers, slider.value, false);
+        limit = +slider.value;
+        render();
     });
 
     const scaleSlider = document.getElementById('scale');
     scaleSlider.addEventListener('input', function(evt) {
         scale = +scaleSlider.value;
-        renderLayers(layers, slider.value, false);
+        render();
     });
 
     window.addEventListener('resize', function() {
         canvas.width = innerWidth;
         canvas.height = innerHeight;
-        renderLayers(layers, slider.value, false);
+        render();
     });
 
     canvas.addEventListener(
@@ -360,9 +339,6 @@ function initEvents() {
     });
 }
 
-const G0 = 'G0';
-const G1 = 'G1';
-
 const Colors = {
     Cura_SteamEngine : {
         skirt : 'lime',
@@ -383,5 +359,4 @@ const Colors = {
 };
 
 
-const columnWidth = 25, rowWidth = 25;
 let layers, header;

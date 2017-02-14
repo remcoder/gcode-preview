@@ -23,15 +23,18 @@ body {
     font-family: Verdana;
     color: #eee;
 }
-header {
+header, footer {
     position: absolute;
     background: rgba(0,0,0,0.5);
-    top: 0;
     left: 0;
     right: 0;
     padding: 10px;
     text-align: center;
     line-height: 25px;
+    transform: translateZ(0);
+}
+header {
+    top: 0;
 }
 .note {
     font-size: 60%;
@@ -41,22 +44,14 @@ h1 {
     margin: 0;
     font-weight: normal;
 }
-
 footer {
-    position: absolute;
-    background: rgba(0,0,0,0.7);
     bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 10px;
-    text-align: center;
-    line-height: 25px;
 }
 </style>
 <script src="gcode-preview.js"></script>
 <script>
     const [canvas, ctx] = initCanvas();
-    let scale = 3;
+    let limit = 0, scale = 7, rotation = 0;
 
     // make y go up
     ctx.scale(1,-1);
@@ -65,14 +60,9 @@ footer {
     ctx.translate(canvas.width/2,-canvas.height/2);
 
     // draw background
-    ctx.save();
-    ctx.scale(scale,scale);
-    grid(columnWidth, rowWidth, '#ddd');
-    ctx.restore();
+    grid();
     title();
-
     loading();
-
 </script>
 <script src="benchy-cura.js"></script>
 <script>
