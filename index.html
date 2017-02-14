@@ -1,32 +1,56 @@
 
 
-<title>GCode preview in javascript</title>
+<title>GCode Previewer in javascript</title>
 
 
-<div class="controls">
-    GCode previewer by Remco Veldkamp
-    <i>(tested only on the latest Chrome)</i>
-    <br>
+<header class="controls">
+    <h1>GCode Previewer</h1>
     <label>Render layers: <input type="range" min="0" value="0" id="layers" />
     </label>
     <label>Scale: <input type="range" min="1" value="3" max="10" step="0.1" id="scale" />
     </label>
-</div>
+</header>
+<footer>
+    <div class="note">By Remco Veldkamp. Tested only in the latest Chrome.</div>
+
+    <a href="https://twitter.com/share" class="twitter-share-button" data-via="remcoder" data-hashtags="3dprinting" data-show-count="false">Tweet</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <script type="text/javascript" src="//www.redditstatic.com/button/button1.js"></script>
+</footer>
 <canvas id="renderer"></canvas>
 <style>
 body {
     margin: 0;
     font-family: Verdana;
+    color: #eee;
 }
-.controls {
+header {
     position: absolute;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.5);
     top: 0;
     left: 0;
     right: 0;
-    color: #ccc;
-    padding: 5px;
+    padding: 10px;
     text-align: center;
+    line-height: 25px;
+}
+.note {
+    font-size: 60%;
+}
+h1 {
+    font-size: 110%;
+    margin: 0;
+    font-weight: normal;
+}
+
+footer {
+    position: absolute;
+    background: rgba(0,0,0,0.7);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    text-align: center;
+    line-height: 25px;
 }
 </style>
 <script src="gcode-preview.js"></script>
@@ -50,7 +74,7 @@ body {
     loading();
 
 </script>
-<script src="benchy-slic3r.js"></script>
+<script src="benchy-cura.js"></script>
 <script>
     processGCode(sample);
     initEvents();
