@@ -65,6 +65,20 @@ function initDemo() {
     return gcodePreview;
 }
 
+function updateUI() {
+    slider.setAttribute('max', gcodePreview.limit);
+    slider.value = gcodePreview.limit;
+
+        if (!!Colors[gcodePreview.header.slicer]) {
+            toggleZoneColors.removeAttribute('disabled');
+        }
+        else {
+            toggleZoneColors.checked = false;
+            toggleZoneColors.setAttribute('disabled', 'disabled');
+            gcodePreview.zoneColors = false;
+        }
+}
+
 function loadGCode(file) {
     const reader = new FileReader();
     const fileInfo = document.getElementById('file-info');
