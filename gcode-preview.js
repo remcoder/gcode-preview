@@ -40,13 +40,13 @@ class GCodePreview {
         this.canvas.height = this.canvas.offsetHeight;
     }
 
-     getZoneColor(zone, layerIndex) {
+    getZoneColor(zone, layerIndex) {
 
         const brightness = Math.round(layerIndex/this.layers.length * 80);
         if (!this.zoneColors)
             return 'hsl(0, 0%, '+brightness+'%)';
 
-        const colors = Colors[header.slicer];
+        const colors = Colors[this.header.slicer];
         return colors[zone];
     }
 
