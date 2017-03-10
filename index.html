@@ -23,7 +23,7 @@
     <script type="text/javascript" src="//www.redditstatic.com/button/button1.js"></script>
     <a class="github-button" href="https://github.com/remcoder/gcode-previewer" data-icon="octicon-star" data-count-href="/remcoder/gcode-previewer/stargazers" data-count-api="/repos/remcoder/gcode-previewer#stargazers_count" data-count-aria-label="# stargazers on GitHub" aria-label="Star remcoder/gcode-previewer on GitHub">Star</a>
 </footer>
-<canvas id="renderer"></canvas>
+<div id="renderer" class="gcode-previewer"></div>
 <style>
 body {
     margin: 0;
@@ -61,29 +61,23 @@ footer {
 a {
     color: black;
 }
+
+.gcode-previewer canvas {
+    width: 100%;
+    height: 100%;
+}
 </style>
+<script src="gcode-parser.js"></script>
 <script src="gcode-preview.js"></script>
+<script src="demo.js"></script>
 <script>
-    const [canvas, ctx] = initCanvas();
-    let limit = 0, scale = 7, rotation = 0;
-    let layers, header;
-    let rotationAnimation = false, zoneColors = false;
-
-    // make y go up
-    ctx.scale(1,-1);
-
-    // center on 0,0
-    ctx.translate(canvas.width/2,-canvas.height/2);
-
-    // draw background
-    // grid();
-    // title();
-    loading();
+    const gcodeDemo = initDemo();
 </script>
 <script src="benchy-slic3r.js"></script>
 <script>
-    processGCode(sample);
-    initEvents();
-    startAnimation();
+    gcodeDemo.processGCode(sample);
+
+    // const layerCount = document.getElementById('layer-count');
+    //     layerCount.innerText = layers.length + ' layers';
 </script>
 <script async defer src="https://buttons.github.io/buttons.js"></script>
