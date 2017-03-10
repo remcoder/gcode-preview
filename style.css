@@ -1,0 +1,41 @@
+body {
+    margin: 0;
+    font-family: Verdana;
+    color: #eee;
+    background: #eee;
+}
+header, footer {
+    position: absolute;
+    background: rgba(32, 83, 119, 0.5);
+    left: 0;
+    right: 0;
+    padding: 10px;
+    text-align: center;
+    line-height: 25px;
+    transform: translateZ(0);
+}
+header {
+    top: 0;
+}
+.note {
+    font-size: 60%;
+}
+h1 {
+    font-size: 110%;
+    margin: 0;
+    font-weight: normal;
+}
+footer {
+    bottom: 0;
+}
+:disabled {
+    opacity: 0.5;
+}
+a {
+    color: black;
+}
+
+.gcode-previewer canvas {
+    width: 100%;
+    height: 100%;
+}

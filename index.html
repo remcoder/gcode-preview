@@ -1,7 +1,7 @@
 
 
 <title>GCode Previewer in javascript</title>
-
+<link rel="stylesheet" href="style.css" />
 
 <header class="controls">
     <h1>GCode Previewer</h1>
@@ -24,56 +24,14 @@
     <a class="github-button" href="https://github.com/remcoder/gcode-previewer" data-icon="octicon-star" data-count-href="/remcoder/gcode-previewer/stargazers" data-count-api="/repos/remcoder/gcode-previewer#stargazers_count" data-count-aria-label="# stargazers on GitHub" aria-label="Star remcoder/gcode-previewer on GitHub">Star</a>
 </footer>
 <div id="renderer" class="gcode-previewer"></div>
-<style>
-body {
-    margin: 0;
-    font-family: Verdana;
-    color: #eee;
-    background: #eee;
-}
-header, footer {
-    position: absolute;
-    background: rgba(32, 83, 119, 0.5);
-    left: 0;
-    right: 0;
-    padding: 10px;
-    text-align: center;
-    line-height: 25px;
-    transform: translateZ(0);
-}
-header {
-    top: 0;
-}
-.note {
-    font-size: 60%;
-}
-h1 {
-    font-size: 110%;
-    margin: 0;
-    font-weight: normal;
-}
-footer {
-    bottom: 0;
-}
-:disabled {
-    opacity: 0.5;
-}
-a {
-    color: black;
-}
 
-.gcode-previewer canvas {
-    width: 100%;
-    height: 100%;
-}
-</style>
 <script src="gcode-parser.js"></script>
 <script src="gcode-preview.js"></script>
 <script src="demo.js"></script>
 <script>
     const gcodeDemo = initDemo();
 </script>
-<script src="benchy-slic3r.js"></script>
+<script src="benchy-cura.js"></script>
 <script>
     gcodeDemo.processGCode(sample);
     updateUI();
