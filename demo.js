@@ -69,14 +69,17 @@ function updateUI() {
     slider.setAttribute('max', gcodePreview.limit);
     slider.value = gcodePreview.limit;
 
-        if (!!Colors[gcodePreview.header.slicer]) {
-            toggleZoneColors.removeAttribute('disabled');
-        }
-        else {
-            toggleZoneColors.checked = false;
-            toggleZoneColors.setAttribute('disabled', 'disabled');
-            gcodePreview.zoneColors = false;
-        }
+    if (!!Colors[gcodePreview.header.slicer]) {
+        toggleZoneColors.removeAttribute('disabled');
+    }
+    else {
+        toggleZoneColors.checked = false;
+        toggleZoneColors.setAttribute('disabled', 'disabled');
+        gcodePreview.zoneColors = false;
+    }
+
+    const layerCount = document.getElementById('layer-count');
+    layerCount.innerText = gcodeDemo.layers.length + ' layers';
 }
 
 function loadGCode(file) {
