@@ -42,7 +42,7 @@ class GCodePreview {
 
      getZoneColor(zone, layerIndex) {
 
-        const brightness = Math.round(layerIndex/this.layers.length * 100);
+        const brightness = Math.round(layerIndex/this.layers.length * 80);
         if (!this.zoneColors)
             return 'hsl(0, 0%, '+brightness+'%)';
 
