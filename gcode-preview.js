@@ -73,7 +73,7 @@ class GCodePreview {
 
         this.ctx.scale(this.scale, this.scale);
         this.ctx.translate(0, offset);
-        this.ctx.rotate(rotation * Math.PI / 180);
+        this.ctx.rotate(this.rotation * Math.PI / 180);
 
         // center model
         const center = getCenter(this.layers[0]);
