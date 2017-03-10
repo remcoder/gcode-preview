@@ -10,11 +10,7 @@ function initDemo() {
     let layers, header;
     gcodePreview = new GCodePreview({
         targetId : 'renderer',
-        limit : 0,
         scale: 7,
-        rotation : 0,
-        rotationAnimation : false,
-        zoneColors : false
     });
 
     loading(gcodePreview.canvas);

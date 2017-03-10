@@ -22,7 +22,7 @@ class GCodePreview {
         this.targetId = opts.targetId;
         this.limit = opts.limit;
         this.scale = opts.scale;
-        this.rotation = opts.rotation;
+        this.rotation = opts.rotation === undefined ? 0 : opts.rotation;
         this.rotationAnimation = opts.rotationAnimation;
         this.zoneColors = opts.zoneColors;
 
