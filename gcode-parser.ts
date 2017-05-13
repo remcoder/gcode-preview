@@ -1,3 +1,7 @@
+/// <reference path="gcode-colors.ts" />
+
+namespace GCodeThumbs {
+
 function parseLine(line, index) {
     const cmd = {};
     if (line.startsWith(';'))
@@ -18,7 +22,7 @@ function getZone(cmd, header) {
             return cmd.comment.slice(5).toLowerCase();
 
     if (header.slicer == 'Simplify3D')
-        for (let zoneType of Object.keys(Colors.Simplify3D)) {
+        for (let zoneType of Object.keys(GCodeThumbs.Colors.Simplify3D)) {
             if (cmd.comment.includes(zoneType))
                 return zoneType;
         }
@@ -72,7 +76,7 @@ function groupIntoLayers(commands, header) {
     return layers;
 }
 
-function parseGcode(input) {
+export function parseGcode(input) {
     const lines = input
         .split('\n')
         .filter(l => l.length>0); // discard empty lines
@@ -106,3 +110,4 @@ function parseHeader(commands) {
     };
 }
 
+}

@@ -1,14 +1,16 @@
+/// <reference path="gcode-colors.ts" />
+
 let gcodePreview;
 
-const slider = document.getElementById('layers');
-const scaleSlider = document.getElementById('scale');
-const rotationSlider = document.getElementById('rotation');
+const slider = <HTMLInputElement> document.getElementById('layers');
+const scaleSlider = <HTMLInputElement> document.getElementById('scale');
+const rotationSlider = <HTMLInputElement> document.getElementById('rotation');
 const toggleAnimation = document.getElementById('toggle-animation');
-const toggleZoneColors = document.getElementById('zone-colors');
+const toggleZoneColors = <HTMLInputElement> document.getElementById('zone-colors');
 
 function initDemo() {
     let layers, header;
-    gcodePreview = new GCodePreview({
+    gcodePreview = new GCodeThumbs.GCodePreview({
         targetId : 'renderer',
         scale: 7,
     });
@@ -65,7 +67,7 @@ function updateUI() {
     slider.setAttribute('max', gcodePreview.limit);
     slider.value = gcodePreview.limit;
 
-    if (!!Colors[gcodePreview.header.slicer]) {
+    if (!!GCodeThumbs.Colors[gcodePreview.header.slicer]) {
         toggleZoneColors.removeAttribute('disabled');
     }
     else {
@@ -75,7 +77,7 @@ function updateUI() {
     }
 
     const layerCount = document.getElementById('layer-count');
-    layerCount.innerText = gcodeDemo.layers.length + ' layers';
+    layerCount.innerText = gcodePreview.layers.length + ' layers';
 }
 
 function loadGCode(file) {
@@ -89,7 +91,7 @@ function loadGCode(file) {
         slider.setAttribute('max', gcodePreview.limit);
         slider.value = gcodePreview.limit;
 
-        if (!!Colors[gcodePreview.header.slicer]) {
+        if (!!GCodeThumbs.Colors[gcodePreview.header.slicer]) {
             toggleZoneColors.removeAttribute('disabled');
         }
         else {

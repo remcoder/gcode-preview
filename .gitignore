@@ -1,0 +1,5 @@
+*.map
+demo.js
+gcode-colors.js
+gcode-parser.js
+gcode-preview.js
