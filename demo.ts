@@ -15,7 +15,7 @@ function initDemo() {
         scale: 7,
     });
 
-    loading(gcodePreview.canvas);
+    info(gcodePreview.canvas);
 
     slider.addEventListener('input', function(evt) {
         gcodePreview.limit = +slider.value;
@@ -60,6 +60,8 @@ function initDemo() {
         gcodePreview.render();
     });
 
+    updateUI();
+
     return gcodePreview;
 }
 
@@ -81,6 +83,10 @@ function updateUI() {
 }
 
 function loadGCode(file) {
+    gcodePreview.clear();
+
+    loading(gcodePreview.canvas);
+
     const reader = new FileReader();
     const fileInfo = document.getElementById('file-info');
     fileInfo.innerText = file.name + ': ' + file.size + " bytes";

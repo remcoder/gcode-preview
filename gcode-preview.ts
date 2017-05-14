@@ -27,6 +27,14 @@ export class GCodePreview {
         }
     }
 
+    clear() {
+        this.ctx.clearRect(
+            -this.canvas.width/2,
+            -this.canvas.height/2,
+            this.canvas.width,
+            this.canvas.height);
+    }
+
     resize () {
       console.log('offsetWidth', this.canvas.parentNode.offsetWidth)
 

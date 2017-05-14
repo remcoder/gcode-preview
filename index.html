@@ -29,12 +29,10 @@
 <script src="gcode-parser.js"></script>
 <script src="gcode-preview.js"></script>
 <script src="demo.js"></script>
-<script>
-    var gcodeDemo = initDemo();
-</script>
 <script src="benchy-cura.js"></script>
 <script>
+    const gcodeDemo = initDemo();
     gcodeDemo.processGCode(sample);
-    updateUI();
+
 </script>
 <script async defer src="https://buttons.github.io/buttons.js"></script>
