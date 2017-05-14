@@ -64,19 +64,18 @@ export class GCodePreview {
         if (index > limit) return;
 
         const layer = this.layers[index];
-        const offset = 0.1 * index;
+        const offset = this.projectIso({x:0, y:0}, index);
 
         this.ctx.save();
 
 
         this.ctx.scale(this.scale, this.scale);
 
-        this.ctx.translate(0, offset);
+        this.ctx.translate(offset.x, offset.y);
         this.ctx.rotate(this.rotation * Math.PI / 180);
 
         // center model
-        this.getSize();
-        this.centerModel();
+        this.ctx.translate(-this.center.x, -this.center.y);
 
         // draw zones
         for (const zone of layer.zones) {
@@ -89,11 +88,6 @@ export class GCodePreview {
         this.ctx.restore();
     }
 
-    centerModel() {
-      this.center = this.center || this.getCenter(this.layers[0]);
-      this.ctx.translate(-this.center.x, -this.center.y);
-    }
-
     render() {
         // reset
         this.canvas.width = this.canvas.width;
@@ -104,8 +98,11 @@ export class GCodePreview {
 
         this.ctx.scale(1,-1);
 
-        // center on 0,0
+        // put the origin 0,0 in the center
         this.ctx.translate(this.canvas.width/2,-this.canvas.height/2);
+
+        // center model and adjusr for perspective projection
+        this.center = this.getAdjustedCenter();
 
         for (let index=0 ; index < this.layers.length ; index++ ) {
             this.drawLayer(index, this.limit);
@@ -184,6 +181,16 @@ export class GCodePreview {
       };
   }
 
+  getAdjustedCenter() {
+    const center = this.getCenter(this.layers[0]);
+    this.maxProjectionOffset = this.projectIso({x:0,y:0}, this.layers.length-1);
+    console.log(this.maxProjectionOffset)
+    center.x += this.maxProjectionOffset.x/2;
+    center.y += this.maxProjectionOffset.y/2;
+
+    return center;
+  }
+
   getSize(layer) {
       const l = layer || this.layers[0];
       const bounds = this.getOuterBounds(l);
@@ -227,6 +234,13 @@ export class GCodePreview {
     this.scale *= 0.8;
 
     return scale;
+  }
+
+  projectIso(point : { x : number, y: number}, layerIndex : number  ) {
+    return {
+        x : point.x,
+        y : point.y + 0.1 * layerIndex
+     }
   }
 }
 }
