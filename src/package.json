@@ -2,14 +2,22 @@
   "name": "Gcode-preview",
   "version": "1.0.0",
   "description": "Render a 3d print model from a gcode file",
-  "main": "gcode-preview.js",
   "author": "remcoder@gmail.com",
   "license": "MIT",
+  "browser": "dist/gcode-preview.js",
+  "module": "dist/gcode-preview.es.js",
   "devDependencies": {
+    "del-cli": "^1.1.0",
+    "install": "^0.12.2",
+    "rollup": "^1.12.3",
+    "rollup-plugin-terser": "^4.0.4",
+    "rollup-plugin-typescript2": "^0.21.1",
     "typescript": "^3.4.5"
   },
   "scripts": {
-    "build" : "tsc gcode-preview.ts --outFile dist/gcode-preview.js --module amd",
-    "demo" : "tsc demo/index.ts --outFile dist/demo.js --module amd"
+    "prebuild": "del-cli dist/**/*",
+    "build": "rollup -c && tsc gcode-preview.ts",
+    "demo": "tsc demo/index.ts --outFile dist/demo.js --module amd",
+    "postdemo": "cd dist && http-server"
   }
 }
