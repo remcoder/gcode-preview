@@ -1,4 +1,4 @@
-/// <reference path="gcode-colors.ts" />
+import Colors from "./gcode-colors"
 
 let gcodePreview;
 
@@ -69,7 +69,7 @@ function updateUI() {
     slider.setAttribute('max', gcodePreview.limit);
     slider.value = gcodePreview.limit;
 
-    if (!!GCodeThumbs.Colors[gcodePreview.header.slicer]) {
+    if (!!Colors[gcodePreview.header.slicer]) {
         toggleZoneColors.removeAttribute('disabled');
     }
     else {
@@ -97,7 +97,7 @@ function loadGCode(file) {
         slider.setAttribute('max', gcodePreview.limit);
         slider.value = gcodePreview.limit;
 
-        if (!!GCodeThumbs.Colors[gcodePreview.header.slicer]) {
+        if (!!Colors[gcodePreview.header.slicer]) {
             toggleZoneColors.removeAttribute('disabled');
         }
         else {

@@ -1,9 +1,23 @@
-/// <reference path="gcode-colors.ts" />
-/// <reference path="gcode-parser.ts" />
+import Colors  from "./gcode-colors"
+import Parser  from "./gcode-parser"
 
-namespace GCodeThumbs {
 
-export class GCodePreview {
+
+export class Preview {
+    limit : number
+    rotation : number
+    rotationAnimation : Boolean
+    scale : number
+    zoneColors : Boolean
+    canvas : HTMLCanvasElement
+    ctx : CanvasRenderingContext2D
+    targetId: string
+    layers : []
+    header : {}
+    center : {
+      x: number,
+      y: number,
+    }
     constructor(opts) {
         this.limit = opts.limit;
         this.scale = opts.scale;
@@ -19,7 +33,7 @@ export class GCodePreview {
         {
           this.targetId = opts.targetId;
           const target = document.getElementById(this.targetId);
-          if (!target) throw new Error('Unable to find element ' + targetId);
+          if (!target) throw new Error('Unable to find element ' + this.targetId);
           this.canvas = document.createElement('canvas');
           this.ctx = this.canvas.getContext('2d');
           target.appendChild(this.canvas);
