@@ -1,4 +1,5 @@
-import Colors from "./gcode-colors"
+import Colors from "../gcode-colors"
+import { Preview }  from "../gcode-preview"
 
 let gcodePreview;
 
@@ -10,7 +11,7 @@ const toggleZoneColors = <HTMLInputElement> document.getElementById('zone-colors
 
 function initDemo() {
     let layers, header;
-    gcodePreview = new GCodeThumbs.GCodePreview({
+    gcodePreview = new Preview({
         targetId : 'renderer',
         scale: 7,
     });

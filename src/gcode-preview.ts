@@ -1,7 +1,5 @@
 import Colors  from "./gcode-colors"
-import Parser  from "./gcode-parser"
-
-
+import { Parser, Layer }  from "./gcode-parser"
 
 export class Preview {
     limit : number
@@ -12,12 +10,15 @@ export class Preview {
     canvas : HTMLCanvasElement
     ctx : CanvasRenderingContext2D
     targetId: string
-    layers : []
-    header : {}
+    layers : Layer[]
+    header : { slicer: string }
     center : {
       x: number,
       y: number,
     }
+    parser = new Parser()
+    maxProjectionOffset : {x:number, y:number}
+
     constructor(opts) {
         this.limit = opts.limit;
         this.scale = opts.scale;
@@ -42,17 +43,15 @@ export class Preview {
     }
 
     clear() {
-        this.ctx.clearRect(
-            -this.canvas.width/2,
-            -this.canvas.height/2,
-            this.canvas.width,
-            this.canvas.height);
+      this.ctx.clearRect(
+          -this.canvas.width/2,
+          -this.canvas.height/2,
+          this.canvas.width,
+          this.canvas.height);
     }
 
     resize () {
-      console.log('offsetWidth', this.canvas.parentNode.offsetWidth)
-
-      this.canvas.width = this.canvas.parentNode.offsetWidth;
+      this.canvas.width = (this.canvas.parentNode as HTMLElement).offsetWidth;
       this.canvas.height = this.canvas.offsetHeight;
     }
 
@@ -133,7 +132,7 @@ export class Preview {
 
     processGCode(gcode) {
         console.time('parsing');
-        const { header, layers, limit } = GCodeThumbs.parseGcode(gcode);
+        const { header, layers, limit } = this.parser.parseGcode(gcode);
         console.timeEnd('parsing');
 
         this.header = header;
@@ -213,7 +212,7 @@ export class Preview {
     return center;
   }
 
-  getSize(layer) {
+  getSize(layer? : Layer) {
       const l = layer || this.layers[0];
       const bounds = this.getOuterBounds(l);
 
@@ -265,4 +264,4 @@ export class Preview {
      }
   }
 }
-}
+

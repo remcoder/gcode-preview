@@ -1,10 +1,15 @@
 import Colors  from "./gcode-colors"
 
+export interface Layer {
+  layer: number,
+  commands: any[],
+  zones: any[]
+}
 
-export default class Parser {
+export class Parser {
 
   parseLine(line, index) {
-      const cmd = {};
+      const cmd : any = {};
       if (line.startsWith(';'))
           cmd.comment = line.slice(1);
       else {
@@ -17,7 +22,7 @@ export default class Parser {
       return cmd;
   }
 
-  getZone(cmd, header) {
+  getZone(cmd, header) : string | null {
       if (header.slicer == 'Cura_SteamEngine')
           if (cmd.comment.startsWith('TYPE:'))
               return cmd.comment.slice(5).toLowerCase();
@@ -34,7 +39,7 @@ export default class Parser {
   }
 
   groupIntoZones(commands, header) {
-      const zones = [{commands: []}];
+      const zones = [{zone: null, commands: []}];
       let currentZone = zones[0];
 
       for(const cmd of commands) {
@@ -53,9 +58,9 @@ export default class Parser {
       return zones;
   }
 
-  groupIntoLayers(commands, header) {
+  groupIntoLayers(commands : any[], header) : Layer[] {
       const layers = [];
-      let currentLayer;
+      let currentLayer : Layer;
       let maxZ = 0;
       const firstLayerMaxZ = 1;
 
@@ -66,12 +71,18 @@ export default class Parser {
           // 3. the first z movement isn't higher than 1 (keeps initial high z movement from being interpreted as a layer floatin in the air)
           if (cmd.z && (cmd.z > maxZ && (maxZ != 0 || cmd.z < firstLayerMaxZ))) {
               maxZ = cmd.z;
-              currentLayer = {layer: layers.length, commands: [] };
+              currentLayer = {layer: layers.length, zones: [], commands: [] };
               layers.push(currentLayer);
               continue;
           }
           if (currentLayer)
               currentLayer.commands.push(cmd);
+      }
+
+      // FIXME: only do this for Cura and Simplify3D
+      // TODO: optionally skip
+      for (let layer of layers) {
+        layer.zones = this.groupIntoZones(layer.commands, header);
       }
 
       return layers;
@@ -82,14 +93,11 @@ export default class Parser {
           .split('\n')
           .filter(l => l.length>0); // discard empty lines
 
-      const commands = lines.map(parseLine);
+      const commands = lines.map(this.parseLine);
       const header = this.parseHeader(commands);
       const layers = this.groupIntoLayers(commands, header);
       const limit = layers.length - 1;
 
-      for (let layer of layers) {
-          layer.zones = this.groupIntoZones(layer.commands, header);
-      }
       return { header, layers, limit };
   }
 
