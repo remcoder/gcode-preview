@@ -17,7 +17,7 @@
   "scripts": {
     "prebuild": "del-cli dist/**/*",
     "build": "rollup -c && tsc gcode-preview.ts",
-    "demo": "tsc demo/index.ts --outFile dist/demo.js --module amd",
-    "postdemo": "cd dist && http-server"
+    "predemo": "yarn run build && cp dist/gcode-preview.js demo",
+    "demo": "cd demo && http-server"
   }
 }

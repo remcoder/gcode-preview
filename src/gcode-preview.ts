@@ -1,6 +1,8 @@
 import Colors  from "./gcode-colors"
 import { Parser, Layer }  from "./gcode-parser"
 
+export { Colors };
+
 export class Preview {
     limit : number
     rotation : number
