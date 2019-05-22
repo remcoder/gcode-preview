@@ -6,6 +6,8 @@
   "license": "MIT",
   "browser": "dist/gcode-preview.js",
   "module": "dist/gcode-preview.es.js",
+  "files": ["dist"],
+  "types": "dist/index.d.ts",
   "devDependencies": {
     "del-cli": "^1.1.0",
     "install": "^0.12.2",
@@ -16,7 +18,8 @@
   },
   "scripts": {
     "prebuild": "del-cli dist/**/*",
-    "build": "rollup -c && tsc gcode-preview.ts",
+    "build": "rollup -c",
+    "watch": "rollup -cw",
     "predemo": "yarn run build && cp dist/gcode-preview.js demo",
     "demo": "cd demo && http-server"
   }
