@@ -14,7 +14,7 @@ export default {
   },
   {
    file: pkg.browser,
-   format: 'iife',
+   format: 'umd',
    name: 'GCodePreview' // the global which can be used in a browser
   }
  ],
