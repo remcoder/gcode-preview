@@ -7,21 +7,20 @@ export declare class MoveCommand extends GCodeCommand {
     params: MoveCommandParams;
     constructor(gcode: string, params: MoveCommandParams, comment?: string);
 }
+declare type MoveCommandParamName = "x" | "y" | "z" | "e";
 declare type MoveCommandParams = {
-    x?: number;
-    y?: number;
-    z?: number;
-    e?: number;
+    [key in MoveCommandParamName]?: number;
 };
-export interface Layer {
+export declare class Layer {
     layer: number;
     commands: GCodeCommand[];
+    constructor(layer: number, commands: GCodeCommand[]);
 }
 export declare class Parser {
     parseCommand(line: string, keepComments?: boolean): GCodeCommand | null;
     parseMove(params: string[]): MoveCommandParams;
-    groupIntoLayers(commands: GCodeCommand[], header: any): Layer[];
-    parseGcode(input: any): {
+    groupIntoLayers(commands: GCodeCommand[]): Layer[];
+    parseGcode(input: string): {
         header: {
             slicer: string;
         };

@@ -6,18 +6,20 @@ export { Colors };
 type PreviewOptions = Partial<{
   limit: number,
   scale: number,
+  lineWidth: number,
   rotation: number,
   rotationAnimation: boolean,
   zoneColors: boolean,
   canvas: HTMLCanvasElement | string,
   targetId: string
 }>
-export class Preview {
+export class Preview implements PreviewOptions {
     limit : number
     rotation : number
-    rotationAnimation : Boolean
+    lineWidth : number
+    rotationAnimation : boolean
     scale : number
-    zoneColors : Boolean
+    zoneColors : boolean
     canvas : HTMLCanvasElement
     ctx : CanvasRenderingContext2D
     targetId: string
@@ -31,26 +33,27 @@ export class Preview {
     maxProjectionOffset : {x:number, y:number}
 
     constructor(opts: PreviewOptions) {
-        this.limit = opts.limit;
-        this.scale = opts.scale;
-        this.rotation = opts.rotation === undefined ? 0 : opts.rotation;
-        this.rotationAnimation = opts.rotationAnimation;
-        this.zoneColors = opts.zoneColors;
+      this.limit = opts.limit;
+      this.scale = opts.scale;
+      this.lineWidth = opts.lineWidth || 0.6;
+      this.rotation = opts.rotation === undefined ? 0 : opts.rotation;
+      this.rotationAnimation = opts.rotationAnimation;
+      this.zoneColors = opts.zoneColors;
 
-        if (opts.canvas instanceof HTMLCanvasElement) {
-          this.canvas = opts.canvas;
-          this.ctx = this.canvas.getContext('2d');
-        }
-        else
-        {
-          this.targetId = opts.targetId;
-          const target = document.getElementById(this.targetId);
-          if (!target) throw new Error('Unable to find element ' + this.targetId);
-          this.canvas = document.createElement('canvas');
-          this.ctx = this.canvas.getContext('2d');
-          target.appendChild(this.canvas);
-          this.resize();
-        }
+      if (opts.canvas instanceof HTMLCanvasElement) {
+        this.canvas = opts.canvas;
+        this.ctx = this.canvas.getContext('2d');
+      }
+      else
+      {
+        this.targetId = opts.targetId;
+        const target = document.getElementById(this.targetId);
+        if (!target) throw new Error('Unable to find element ' + this.targetId);
+        this.canvas = document.createElement('canvas');
+        this.ctx = this.canvas.getContext('2d');
+        target.appendChild(this.canvas);
+        this.resize();
+      }
     }
 
     clear() {
@@ -128,7 +131,7 @@ export class Preview {
     render() {
         // reset
         this.canvas.width = this.canvas.width;
-        this.ctx.lineWidth = 0.6;
+        this.ctx.lineWidth = this.lineWidth;
 
         // if (!this.scale)
         //   this.scale = this.autoscale();

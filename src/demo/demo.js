@@ -1,5 +1,3 @@
-
-
 let gcodePreview;
 
 const slider = document.getElementById('layers');
@@ -7,11 +5,13 @@ const scaleSlider = document.getElementById('scale');
 const rotationSlider = document.getElementById('rotation');
 const toggleAnimation = document.getElementById('toggle-animation');
 const toggleZoneColors = document.getElementById('zone-colors');
+const lineWidth = document.getElementById('line-width');
 
 function initDemo() {
     const preview = new GCodePreview.Preview({
         targetId : 'renderer',
         scale: 7,
+        lineWidth: 0.6
     });
 
     info(preview.canvas);
@@ -30,6 +30,11 @@ function initDemo() {
         preview.rotation = +rotationSlider.value;
         preview.render();
     })
+
+    lineWidth.addEventListener('input', function(evt) {
+      preview.lineWidth = +lineWidth.value;
+      preview.render();
+  })
 
     window.addEventListener('resize', function() {
         preview.resize();

@@ -1,12 +1,23 @@
 import Colors from "./gcode-colors";
 import { Parser, Layer } from "./gcode-parser";
 export { Colors };
-export declare class Preview {
+declare type PreviewOptions = Partial<{
+    limit: number;
+    scale: number;
+    lineWidth: number;
+    rotation: number;
+    rotationAnimation: boolean;
+    zoneColors: boolean;
+    canvas: HTMLCanvasElement | string;
+    targetId: string;
+}>;
+export declare class Preview implements PreviewOptions {
     limit: number;
     rotation: number;
-    rotationAnimation: Boolean;
+    lineWidth: number;
+    rotationAnimation: boolean;
     scale: number;
-    zoneColors: Boolean;
+    zoneColors: boolean;
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     targetId: string;
@@ -23,14 +34,13 @@ export declare class Preview {
         x: number;
         y: number;
     };
-    constructor(opts: any);
+    constructor(opts: PreviewOptions);
     clear(): void;
     resize(): void;
-    getZoneColor(zone: any, layerIndex: any): any;
-    renderWithColor(l: Layer, layerIndex: number, color?: any): void;
-    drawLayer(index: any, limit: any): void;
+    renderWithColor(l: Layer, layerIndex: number, color?: string): void;
+    drawLayer(index: number, limit: number): void;
     render(): void;
-    processGCode(gcode: any): void;
+    processGCode(gcode: string): void;
     animationLoop(): void;
     startAnimation(): void;
     stopAnimation(): void;
@@ -40,7 +50,7 @@ export declare class Preview {
         minY: number;
         maxY: number;
     };
-    getCenter(layer: any): {
+    getCenter(layer: Layer): {
         x: number;
         y: number;
     };
@@ -52,8 +62,8 @@ export declare class Preview {
         sizeX: number;
         sizeY: number;
     };
-    drawBounds(layer: any, color: any): void;
-    autoscale(): any;
+    drawBounds(layer: Layer, color: string): void;
+    autoscale(): number;
     projectIso(point: {
         x: number;
         y: number;
