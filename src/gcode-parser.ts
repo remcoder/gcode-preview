@@ -1,121 +1,113 @@
-import Colors  from "./gcode-colors"
+export abstract class GCodeCommand{
+  constructor(public gcode?: string, public comment?: string) {}
+};
 
-export interface Layer {
-  layer: number,
-  commands: any[],
-  zones: any[]
+export class MoveCommand extends GCodeCommand {
+  constructor(gcode: string, public params: MoveCommandParams, comment?: string) {
+    super(gcode, comment);
+  }
+}
+type MoveCommandParamName = "x" | "y" | "z" | "e";
+type MoveCommandParams = {
+  [key in MoveCommandParamName]? : number  
+}
+
+export class Layer {
+  constructor(public layer: number, public commands: GCodeCommand[],) {
+  }
 }
 
 export class Parser {
 
-  parseLine(line, index) {
-      const cmd : any = {};
-      if (line.startsWith(';'))
-          cmd.comment = line.slice(1);
-      else {
-          const values = line.split(' ');
+  parseCommand(line: string, keepComments = true) : GCodeCommand | null {
+    const input = line.trim();
+    const splitted = input.split(';');
+    const cmd = splitted[0];
+    const comment = (keepComments && splitted[1]) || null;
 
-          values.forEach( v => {
-              cmd[ v.slice(0,1).toLowerCase() ] = +v.slice(1);
-          });
-      }
-      return cmd;
+    const parts = cmd.split(/ +/g);
+    const gcode = parts[0].toLowerCase();
+    switch(gcode) {
+      case 'g0':
+      case 'g1':
+        const params = this.parseMove(parts.slice(1));
+        return new MoveCommand(gcode, params, comment);
+      default:
+        //console.warn(`Unrecognized gcode: ${gcode}`);
+        return null;
+    }
+  }
+ 
+  // G0 & G1
+  parseMove(params: string[]) : MoveCommandParams {
+    return params.reduce((acc: MoveCommandParams ,cur: string) => {
+      
+      const key = cur.slice(0,1).toLowerCase();
+      if (key == 'x' || key == 'y' || key == 'z' || key == 'e')
+        acc[ key ] = +cur.slice(1);
+      return acc
+    }, {}); 
   }
 
-  getZone(cmd, header) : string | null {
-      if (header.slicer == 'Cura_SteamEngine')
-          if (cmd.comment.startsWith('TYPE:'))
-              return cmd.comment.slice(5).toLowerCase();
+  groupIntoLayers(commands : GCodeCommand[]) : Layer[] {
+    const layers = [];
+    let currentLayer : Layer;
+    let maxZ = 0;
+    const firstLayerMaxZ = 2;
 
-      if (header.slicer == 'Simplify3D')
-          for (let zoneType of Object.keys(Colors.Simplify3D)) {
-              if (cmd.comment.includes(zoneType))
-                  return zoneType;
-          }
+    for(const cmd of commands.filter(cmd => cmd instanceof MoveCommand) as MoveCommand[]) {
+      const params = cmd.params;
+        // create a new layer when
+        // 1. z movement is detected
+        // 2. the z movement reaches a new height (allows up/down movement within a layer)
+        // 3. the first z movement isn't higher than 1 (keeps initial high z movement from being interpreted as a layer floatin in the air)
+        if (params.z && params.z > maxZ && (maxZ != 0 || params.z < firstLayerMaxZ)) {
+          maxZ = params.z;
+          currentLayer = new Layer(layers.length, [cmd]);
+          layers.push(currentLayer);
+          continue;
+        }
+        if (currentLayer)
+            currentLayer.commands.push(cmd);
+    }
 
-      // Slic3r gcode doesn't seem to carry info about zones
-
-      return null;
+    return layers;
   }
 
-  groupIntoZones(commands, header) {
-      const zones = [{zone: null, commands: []}];
-      let currentZone = zones[0];
+  parseGcode(input: string) {
+    const lines = input
+        .split('\n')
+        .filter(l => l.length>0); // discard empty lines
 
-      for(const cmd of commands) {
-          if (cmd.comment) {
-              const zone  = this.getZone(cmd, header);
-              if (zone) {
-                  currentZone = {zone: zone, commands: [] };
-                  zones.push(currentZone);
-                  continue;
-              }
-          }
+    const commands : GCodeCommand[] = lines
+      .map(l => this.parseCommand(l))
+      .filter(cmd => cmd !== null);
 
-          currentZone.commands.push(cmd);
-      }
-
-      return zones;
+    const header = { slicer: "MySlicer" }; //this.parseHeader(commands);
+    const layers = this.groupIntoLayers(commands);
+    const limit = layers.length - 1;
+    return { header, layers, limit };
   }
 
-  groupIntoLayers(commands : any[], header) : Layer[] {
-      const layers = [];
-      let currentLayer : Layer;
-      let maxZ = 0;
-      const firstLayerMaxZ = 1;
+  // TODO: prevent scanning the whole gcode file
+  parseHeader(commands: GCodeCommand[]) {
+    const comments = commands
+      .filter(cmd => cmd.comment !== null)
+      .map(cmd => cmd.comment);
 
-      for(const cmd of commands) {
-          // create a new layer when
-          // 1. z movement is detected
-          // 2. the z movement reaches a new height (allows up/down movement within a layer)
-          // 3. the first z movement isn't higher than 1 (keeps initial high z movement from being interpreted as a layer floatin in the air)
-          if (cmd.z && (cmd.z > maxZ && (maxZ != 0 || cmd.z < firstLayerMaxZ))) {
-              maxZ = cmd.z;
-              currentLayer = {layer: layers.length, zones: [], commands: [] };
-              layers.push(currentLayer);
-              continue;
-          }
-          if (currentLayer)
-              currentLayer.commands.push(cmd);
-      }
+    const slicer = comments
+        .filter(com => /(G|g)enerated/.test(com) )
+        .map(com => {
+            if(com.includes('Slic3r'))
+                return 'Slic3r';
+            if (com.includes('Simplify3D'))
+                return 'Simplify3D';
+            if (com.includes('Cura_SteamEngine'))
+                return 'Cura_SteamEngine';
+        })[0];
 
-      // FIXME: only do this for Cura and Simplify3D
-      // TODO: optionally skip
-      for (let layer of layers) {
-        layer.zones = this.groupIntoZones(layer.commands, header);
-      }
-
-      return layers;
-  }
-
-  parseGcode(input) {
-      const lines = input
-          .split('\n')
-          .filter(l => l.length>0); // discard empty lines
-
-      const commands = lines.map(this.parseLine);
-      const header = this.parseHeader(commands);
-      const layers = this.groupIntoLayers(commands, header);
-      const limit = layers.length - 1;
-
-      return { header, layers, limit };
-  }
-
-  parseHeader(commands) {
-      const comments = commands.filter(cmd => cmd.comment).map(cmd => cmd.comment);
-      const slicer = comments
-          .filter(com => /(G|g)enerated/.test(com) )
-          .map(com => {
-              if(com.includes('Slic3r'))
-                  return 'Slic3r';
-              if (com.includes('Simplify3D'))
-                  return 'Simplify3D';
-              if (com.includes('Cura_SteamEngine'))
-                  return 'Cura_SteamEngine';
-          })[0];
-
-      return {
-          slicer
-      };
+    return {
+        slicer
+    };
   }
 }

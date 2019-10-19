@@ -1,8 +1,17 @@
 import Colors  from "./gcode-colors"
-import { Parser, Layer }  from "./gcode-parser"
+import { Parser, Layer, MoveCommand, GCodeCommand }  from "./gcode-parser"
 
 export { Colors };
 
+type PreviewOptions = Partial<{
+  limit: number,
+  scale: number,
+  rotation: number,
+  rotationAnimation: boolean,
+  zoneColors: boolean,
+  canvas: HTMLCanvasElement | string,
+  targetId: string
+}>
 export class Preview {
     limit : number
     rotation : number
@@ -21,7 +30,7 @@ export class Preview {
     parser = new Parser()
     maxProjectionOffset : {x:number, y:number}
 
-    constructor(opts) {
+    constructor(opts: PreviewOptions) {
         this.limit = opts.limit;
         this.scale = opts.scale;
         this.rotation = opts.rotation === undefined ? 0 : opts.rotation;
@@ -52,45 +61,53 @@ export class Preview {
           this.canvas.height);
     }
 
-    resize () {
+    resize() {
       this.canvas.width = (this.canvas.parentNode as HTMLElement).offsetWidth;
       this.canvas.height = this.canvas.offsetHeight;
     }
 
-    getZoneColor(zone, layerIndex) {
+    // getZoneColor(zone, layerIndex) {
 
+    //     const brightness = Math.round(layerIndex/this.layers.length * 80);
+    //     if (!this.zoneColors)
+    //         return 'hsl(0, 0%, '+brightness+'%)';
+
+    //     const colors = Colors[this.header.slicer];
+    //     return colors[zone];
+    // }
+
+    renderWithColor(l: Layer, layerIndex: number, color?: string) {
+      if (color)
+        this.ctx.strokeStyle = color; 
+      else {
         const brightness = Math.round(layerIndex/this.layers.length * 80);
-        if (!this.zoneColors)
-            return 'hsl(0, 0%, '+brightness+'%)';
+        this.ctx.strokeStyle = 'hsl(0, 0%, '+brightness+'%)';
+      }
 
-        const colors = Colors[this.header.slicer];
-        return colors[zone];
-    }
-
-    renderZone(l, layerIndex) {
-        this.ctx.strokeStyle = this.getZoneColor(l.zone, layerIndex);
-        this.ctx.beginPath();
-        for (const cmd of l.commands) {
-            if (cmd.g == 0)
-              this.ctx.moveTo(cmd.x, cmd.y);
-            else if (cmd.g == 1) {
-              if (cmd.e > 0)
-                this.ctx.lineTo(cmd.x, cmd.y);
-              else
-                this.ctx.moveTo(cmd.x, cmd.y);
-            }
+      this.ctx.beginPath();
+      for (const cmd of l.commands) {
+        if (cmd.gcode == 'g0') {
+          const g0 = (cmd as MoveCommand);
+          this.ctx.moveTo(g0.params.x, g0.params.y);
         }
-        this.ctx.stroke();
+        else if (cmd.gcode == 'g1') {
+          const g1 = (cmd as MoveCommand);
+          if (g1.params.e > 0)
+            this.ctx.lineTo(g1.params.x, g1.params.y);
+          else
+            this.ctx.moveTo(g1.params.x, g1.params.y);
+        }
+      }
+      this.ctx.stroke();
     }
 
-    drawLayer(index, limit) {
+    drawLayer(index: number, limit: number) {
         if (index > limit) return;
 
         const layer = this.layers[index];
         const offset = this.projectIso({x:0, y:0}, index);
 
         this.ctx.save();
-
 
         this.ctx.scale(this.scale, this.scale);
 
@@ -100,13 +117,10 @@ export class Preview {
         // center model
         this.ctx.translate(-this.center.x, -this.center.y);
 
-        // draw zones
-        for (const zone of layer.zones) {
-            this.renderZone(zone, index);
-        }
+        this.renderWithColor(layer, index);
 
         // if (index === 0)
-        //   this.drawBounds();
+        //   this.drawBounds(layer, 'red');
 
         this.ctx.restore();
     }
@@ -114,17 +128,17 @@ export class Preview {
     render() {
         // reset
         this.canvas.width = this.canvas.width;
-        this.ctx.lineWidth = 0.1;
+        this.ctx.lineWidth = 0.6;
 
-        if (!this.scale)
-          this.scale = this.autoscale();
+        // if (!this.scale)
+        //   this.scale = this.autoscale();
 
         this.ctx.scale(1,-1);
 
         // put the origin 0,0 in the center
         this.ctx.translate(this.canvas.width/2,-this.canvas.height/2);
 
-        // center model and adjusr for perspective projection
+        // center model
         this.center = this.getAdjustedCenter();
 
         for (let index=0 ; index < this.layers.length ; index++ ) {
@@ -132,7 +146,7 @@ export class Preview {
         }
     }
 
-    processGCode(gcode) {
+    processGCode(gcode: string) {
         console.time('parsing');
         const { header, layers, limit } = this.parser.parseGcode(gcode);
         console.timeEnd('parsing');
@@ -166,24 +180,20 @@ export class Preview {
         // rotationSlider.removeAttribute('disabled');
     }
 
-    getOuterBounds(layer) {
+    getOuterBounds(layer:Layer) {
       const l = layer || this.layers[0];
       let minX = Infinity,
           maxX = -Infinity,
           minY = Infinity,
           maxY = -Infinity;
 
-      outer:
-      for(let zone of l.zones) {
-          inner:
-          for(let cmd of zone.commands) {
-              if (cmd.g == 91) break outer; // quick hack to detect we're at the end
-              if (cmd.g != 0 && cmd.g != 1) continue inner;
-              if (cmd.x < minX) minX = cmd.x;
-              if (cmd.x > maxX) maxX = cmd.x;
-              if (cmd.y < minY) minY = cmd.y;
-              if (cmd.y > maxY) maxY = cmd.y;
-          }
+      for(let cmd of l.commands as MoveCommand[]) {
+        if (cmd.gcode == 'g91') break;
+        if (cmd.gcode != 'g0' && cmd.gcode != 'g1') continue;
+        if (cmd.params.x < minX) minX = cmd.params.x;
+        if (cmd.params.x > maxX) maxX = cmd.params.x;
+        if (cmd.params.y < minY) minY = cmd.params.y;
+        if (cmd.params.y > maxY) maxY = cmd.params.y;
       }
 
       return {
@@ -194,7 +204,7 @@ export class Preview {
       };
   }
 
-  getCenter(layer) {
+  getCenter(layer: Layer) {
       const l = layer || this.layers[0];
       const bounds = this.getOuterBounds(l);
 
@@ -207,7 +217,6 @@ export class Preview {
   getAdjustedCenter() {
     const center = this.getCenter(this.layers[0]);
     this.maxProjectionOffset = this.projectIso({x:0,y:0}, this.layers.length-1);
-    console.log(this.maxProjectionOffset)
     center.x += this.maxProjectionOffset.x/2;
     center.y += this.maxProjectionOffset.y/2;
 
@@ -223,24 +232,12 @@ export class Preview {
       return {sizeX, sizeY};
   }
 
-  drawBounds(layer) {
-    const l = layer || this.layers[0];
-    const {minX, maxX, minY, maxY} = this.getOuterBounds(l);
-    this.ctx.moveTo(minX, 0);
-		this.ctx.lineTo(minX, this.canvas.height);
-    this.ctx.stroke();
+  drawBounds(layer: Layer, color: string) {
+    this.ctx.strokeStyle = color;
 
-    this.ctx.moveTo(maxX, 0);
-		this.ctx.lineTo(maxX, this.canvas.height);
-    this.ctx.stroke();
-
-    this.ctx.moveTo(0, minY);
-		this.ctx.lineTo(this.canvas.width, minY);
-    this.ctx.stroke();
-
-    this.ctx.moveTo(0, maxY);
-		this.ctx.lineTo(this.canvas.width, maxY);
-    this.ctx.stroke();
+    const {minX, maxX, minY, maxY} = this.getOuterBounds(layer);
+    console.log(minX, minY, maxX-minX, maxY-minY)
+    this.ctx.strokeRect(minX, minY, maxX-minX, maxY-minY);
   }
 
   autoscale() {
@@ -254,7 +251,7 @@ export class Preview {
     else
       scale = height / sizeY
 
-    this.scale *= 0.8;
+    scale *= 0.2;
 
     return scale;
   }

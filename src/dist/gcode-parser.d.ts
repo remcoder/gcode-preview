@@ -1,24 +1,35 @@
+export declare abstract class GCodeCommand {
+    gcode?: string;
+    comment?: string;
+    constructor(gcode?: string, comment?: string);
+}
+export declare class MoveCommand extends GCodeCommand {
+    params: MoveCommandParams;
+    constructor(gcode: string, params: MoveCommandParams, comment?: string);
+}
+declare type MoveCommandParams = {
+    x?: number;
+    y?: number;
+    z?: number;
+    e?: number;
+};
 export interface Layer {
     layer: number;
-    commands: any[];
-    zones: any[];
+    commands: GCodeCommand[];
 }
 export declare class Parser {
-    parseLine(line: any, index: any): any;
-    getZone(cmd: any, header: any): string | null;
-    groupIntoZones(commands: any, header: any): {
-        zone: any;
-        commands: any[];
-    }[];
-    groupIntoLayers(commands: any[], header: any): Layer[];
+    parseCommand(line: string, keepComments?: boolean): GCodeCommand | null;
+    parseMove(params: string[]): MoveCommandParams;
+    groupIntoLayers(commands: GCodeCommand[], header: any): Layer[];
     parseGcode(input: any): {
         header: {
-            slicer: any;
+            slicer: string;
         };
         layers: Layer[];
         limit: number;
     };
-    parseHeader(commands: any): {
-        slicer: any;
+    parseHeader(commands: GCodeCommand[]): {
+        slicer: string;
     };
 }
+export {};

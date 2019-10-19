@@ -2,3 +2,4 @@
 src/demo/gcode-preview.js
 src/.rpt2_cache
 node_modules
+src/dist/__tests__

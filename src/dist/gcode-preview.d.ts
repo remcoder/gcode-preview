@@ -27,14 +27,14 @@ export declare class Preview {
     clear(): void;
     resize(): void;
     getZoneColor(zone: any, layerIndex: any): any;
-    renderZone(l: any, layerIndex: any): void;
+    renderWithColor(l: Layer, layerIndex: number, color?: any): void;
     drawLayer(index: any, limit: any): void;
     render(): void;
     processGCode(gcode: any): void;
     animationLoop(): void;
     startAnimation(): void;
     stopAnimation(): void;
-    getOuterBounds(layer: any): {
+    getOuterBounds(layer: Layer): {
         minX: number;
         maxX: number;
         minY: number;
@@ -52,7 +52,7 @@ export declare class Preview {
         sizeX: number;
         sizeY: number;
     };
-    drawBounds(layer: any): void;
+    drawBounds(layer: any, color: any): void;
     autoscale(): any;
     projectIso(point: {
         x: number;

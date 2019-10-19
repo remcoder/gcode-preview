@@ -2,7 +2,7 @@
     "compilerOptions": {
       "declaration": true,
       "declarationDir": "./dist",
-      "noImplicitAny": false,
+      "noImplicitAny": true,
       "outDir": "./dist",
       "target": "es2015",
       "module": "es2015",
