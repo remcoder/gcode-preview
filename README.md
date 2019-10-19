@@ -1,5 +1,5 @@
 # gcode-previewer
-A simple GCode previewer written in plain javascript. Tested in Chrome only.
+A simple GCode parser & previewer with 3D printing in mind. Written in Typescript. 
 
 See a [demo](http://realstuffforabstractpeople.com/experiments/gcode-previewer/) here
 
