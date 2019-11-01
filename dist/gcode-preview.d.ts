@@ -2,6 +2,16 @@ import Colors from "./gcode-colors";
 import { Parser, Layer } from "./gcode-parser";
 import * as THREE from 'three';
 export { Colors };
+declare type RenderLayer = {
+    extrusion: number[];
+    travel: number[];
+    z: number;
+};
+declare type Point = {
+    x: number;
+    y: number;
+    z: number;
+};
 declare type PreviewOptions = Partial<{
     limit: number;
     scale: number;
@@ -97,6 +107,14 @@ export declare class WebGlPreview implements PreviewOptions {
         y: number;
     };
     scene: THREE.Scene;
+    camera: THREE.Camera;
+    renderer: THREE.Renderer;
+    group: THREE.Group;
+    travelColor: number;
+    extrusionColor: number;
     constructor(opts: PreviewOptions);
-    processGCode(): void;
+    processGCode(gcode: string): void;
+    render(): void;
+    addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
+    addLine(vertices: number[], color: number): void;
 }

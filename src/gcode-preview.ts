@@ -4,6 +4,10 @@ import * as THREE from 'three';
 
 export { Colors };
 
+type RenderLayer = { extrusion: number[], travel: number[], z: number };
+type Point = {x:number, y:number, z:number};
+type State = {x:number, y:number, z:number, e:number}; // feedrate?
+
 type PreviewOptions = Partial<{
   limit: number,
   scale: number,
@@ -151,9 +155,7 @@ export class Preview implements PreviewOptions {
     }
 
     processGCode(gcode: string) {
-        console.time('parsing');
         const { header, layers, limit } = this.parser.parseGcode(gcode);
-        console.timeEnd('parsing');
 
         this.header = header;
         this.layers = layers;
@@ -287,6 +289,11 @@ export class WebGlPreview implements PreviewOptions {
   parser = new Parser()
   maxProjectionOffset : {x:number, y:number}
   scene: THREE.Scene
+  camera: THREE.Camera
+  renderer: THREE.Renderer
+  group: THREE.Group
+  travelColor = 0xFF0000
+  extrusionColor = 0x0000FF
 
   constructor(opts: PreviewOptions) {
     this.limit = opts.limit;
@@ -297,7 +304,7 @@ export class WebGlPreview implements PreviewOptions {
     this.zoneColors = opts.zoneColors;
 
     this.scene =  new THREE.Scene();
-    
+
     if (opts.canvas instanceof HTMLCanvasElement) {
       this.canvas = opts.canvas;
       this.ctx = this.canvas.getContext('2d');
@@ -308,36 +315,85 @@ export class WebGlPreview implements PreviewOptions {
       const target = document.getElementById(this.targetId);
       if (!target) throw new Error('Unable to find element ' + this.targetId);
       
-      var scene = new THREE.Scene();
-      var camera = new THREE.PerspectiveCamera( 75, target.offsetWidth/target.offsetHeight, 0.1, 1000 );
-      var renderer = new THREE.WebGLRenderer();
+      this.camera = new THREE.PerspectiveCamera( 75, target.offsetWidth/target.offsetHeight, 0.1, 1000 );
+      this.camera.position.set( 0, 0, 50 );
+      this.renderer = new THREE.WebGLRenderer();
 
-      renderer.setSize( target.offsetWidth, target.offsetHeight );
-      target.appendChild( renderer.domElement );
-
-
-
-      var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-      var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-      var cube = new THREE.Mesh( geometry, material );
-      scene.add( cube );
-
-      camera.position.z = 5;
-
-      var animate = function () {
-        requestAnimationFrame( animate );
-
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-
-        renderer.render( scene, camera );
-      };
-
-      animate();
+      this.renderer.setSize( target.offsetWidth, target.offsetHeight );
+      target.appendChild( this.renderer.domElement );
     }
-
-
   }
 
-  processGCode() {}
+  processGCode(gcode: string) {
+    const { header, layers, limit } = this.parser.parseGcode(gcode);
+
+    this.header = header;
+    this.layers = layers;
+    this.limit = limit;
+
+    console.time('rendering webgl');
+    this.render();
+    console.timeEnd('rendering webgl');  
+  }
+
+  render() {
+    this.group = new THREE.Group();
+    this.group.name = 'gcode';
+    const state = {x:0, y:0, z:0, e:0};
+    const extrusion : number[] = [];
+    const travel : number[] = [];
+
+    for (let index=0 ; index < this.layers.length ; index++ ) {
+      if (index > this.limit) break;
+    
+      const currentLayer : RenderLayer = { extrusion: [], travel: [], z: state.z };
+      const l = this.layers[index];
+      for (const cmd of l.commands) {
+        if (cmd.gcode == 'g0' || cmd.gcode == 'g1') {
+          const g = (cmd as MoveCommand);
+
+          const next : State = {
+            x: g.params.x !== undefined ? g.params.x : state.x,
+            y: g.params.y !== undefined ? g.params.y : state.y,
+            z: g.params.z !== undefined ? g.params.z : state.z,
+            e: g.params.e !== undefined ? g.params.e : state.e
+          };
+          const extrude = g.params.e > 0;
+          this.addLineSegment(currentLayer, state, next, extrude);
+          
+          // update state 
+          if (g.params.x) state.x = g.params.x;
+          if (g.params.y) state.y = g.params.y;
+          if (g.params.z) state.z = g.params.z;
+          if (g.params.e) state.e = g.params.e;
+        }
+      }
+
+      extrusion.push( ...currentLayer.extrusion );
+      travel.push( ...currentLayer.travel );
+    }
+    
+    this.addLine( extrusion, this.extrusionColor );
+    this.addLine( travel, this.travelColor );
+
+    this.group.quaternion.setFromEuler( new THREE.Euler( -Math.PI/2, 0, 0 ) );
+    this.group.position.set( - 100, - 20, 100 );
+    this.scene.add( this.group );
+    this.renderer.render( this.scene, this.camera );
+  }
+
+  addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) {
+    const line = extrude ? layer.extrusion : layer.travel;
+    line.push( p1.x, p1.y, p1.z );
+    line.push( p2.x, p2.y, p2.z );
+  }
+
+  addLine(vertices: number[], color: number ) {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+    
+    const material = new THREE.LineBasicMaterial( { color: color } );
+    const lineSegments = new THREE.LineSegments( geometry, material );
+    this.group.add( lineSegments );
+  }
 }

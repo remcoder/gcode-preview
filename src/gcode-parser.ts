@@ -75,6 +75,7 @@ export class Parser {
   }
 
   parseGcode(input: string) {
+    console.time('parsing');
     const lines = input
         .split('\n')
         .filter(l => l.length>0); // discard empty lines
@@ -86,6 +87,7 @@ export class Parser {
     const header = { slicer: "MySlicer" }; //this.parseHeader(commands);
     const layers = this.groupIntoLayers(commands);
     const limit = layers.length - 1;
+    console.timeEnd('parsing');
     return { header, layers, limit };
   }
 

@@ -37,7 +37,7 @@ function initDemo() {
   })
 
     window.addEventListener('resize', function() {
-        preview.resize();
+        // preview.resize();
         preview.render();
     });
 
