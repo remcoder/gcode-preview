@@ -1,6 +1,7 @@
 import Colors  from "./gcode-colors"
 import { Parser, Layer, MoveCommand, GCodeCommand }  from "./gcode-parser"
 import * as THREE from 'three';
+import { WebGLRenderer } from "three";
 
 export { Colors };
 
@@ -290,7 +291,7 @@ export class WebGlPreview implements PreviewOptions {
   maxProjectionOffset : {x:number, y:number}
   scene: THREE.Scene
   camera: THREE.Camera
-  renderer: THREE.Renderer
+  renderer: THREE.WebGLRenderer
   group: THREE.Group
   travelColor = 0xFF0000
   extrusionColor = 0x0000FF
@@ -320,6 +321,7 @@ export class WebGlPreview implements PreviewOptions {
       this.renderer = new THREE.WebGLRenderer();
 
       this.renderer.setSize( target.offsetWidth, target.offsetHeight );
+      this.renderer.setPixelRatio(window.devicePixelRatio);
       target.appendChild( this.renderer.domElement );
     }
   }
@@ -372,7 +374,7 @@ export class WebGlPreview implements PreviewOptions {
       extrusion.push( ...currentLayer.extrusion );
       travel.push( ...currentLayer.travel );
     }
-    
+
     this.addLine( extrusion, this.extrusionColor );
     this.addLine( travel, this.travelColor );
 

@@ -108,7 +108,7 @@ export declare class WebGlPreview implements PreviewOptions {
     };
     scene: THREE.Scene;
     camera: THREE.Camera;
-    renderer: THREE.Renderer;
+    renderer: THREE.WebGLRenderer;
     group: THREE.Group;
     travelColor: number;
     extrusionColor: number;
