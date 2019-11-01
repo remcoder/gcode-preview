@@ -10,7 +10,7 @@ type PreviewOptions = Partial<{
   rotation: number,
   rotationAnimation: boolean,
   zoneColors: boolean,
-  canvas: HTMLCanvasElement | string,
+  canvas: HTMLCanvasElement,
   targetId: string
 }>
 export class Preview implements PreviewOptions {
@@ -266,4 +266,3 @@ export class Preview implements PreviewOptions {
      }
   }
 }
-
