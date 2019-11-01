@@ -1,5 +1,6 @@
 import Colors  from "./gcode-colors"
 import { Parser, Layer, MoveCommand, GCodeCommand }  from "./gcode-parser"
+import * as THREE from 'three';
 
 export { Colors };
 
@@ -265,4 +266,78 @@ export class Preview implements PreviewOptions {
         y : point.y + 0.1 * layerIndex
      }
   }
+}
+
+export class WebGlPreview implements PreviewOptions {
+  limit : number
+  rotation : number
+  lineWidth : number
+  rotationAnimation : boolean
+  scale : number
+  zoneColors : boolean
+  canvas : HTMLCanvasElement
+  ctx : CanvasRenderingContext2D
+  targetId: string
+  layers : Layer[]
+  header : { slicer: string }
+  center : {
+    x: number,
+    y: number,
+  }
+  parser = new Parser()
+  maxProjectionOffset : {x:number, y:number}
+  scene: THREE.Scene
+
+  constructor(opts: PreviewOptions) {
+    this.limit = opts.limit;
+    this.scale = opts.scale;
+    this.lineWidth = opts.lineWidth || 0.6;
+    this.rotation = opts.rotation === undefined ? 0 : opts.rotation;
+    this.rotationAnimation = opts.rotationAnimation;
+    this.zoneColors = opts.zoneColors;
+
+    this.scene =  new THREE.Scene();
+    
+    if (opts.canvas instanceof HTMLCanvasElement) {
+      this.canvas = opts.canvas;
+      this.ctx = this.canvas.getContext('2d');
+    }
+    else
+    {
+      this.targetId = opts.targetId;
+      const target = document.getElementById(this.targetId);
+      if (!target) throw new Error('Unable to find element ' + this.targetId);
+      
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera( 75, target.offsetWidth/target.offsetHeight, 0.1, 1000 );
+      var renderer = new THREE.WebGLRenderer();
+
+      renderer.setSize( target.offsetWidth, target.offsetHeight );
+      target.appendChild( renderer.domElement );
+
+
+
+      var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+      var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+      var cube = new THREE.Mesh( geometry, material );
+      scene.add( cube );
+
+      camera.position.z = 5;
+
+      var animate = function () {
+        requestAnimationFrame( animate );
+
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+
+        renderer.render( scene, camera );
+      };
+
+      animate();
+    }
+
+
+  }
+
+  processGCode() {}
 }

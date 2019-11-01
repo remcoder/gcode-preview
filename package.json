@@ -29,5 +29,9 @@
     "demo": "cd demo && http-server",
     "test": "jest",
     "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "three": "^0.110.0"
   }
 }

@@ -1,6 +1,8 @@
 import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
 import {terser} from 'rollup-plugin-terser';
+import resolve from 'rollup-plugin-node-resolve';
+
 export default {
  input: 'src/gcode-preview.ts', // our source file
  output: [
@@ -22,6 +24,7 @@ export default {
   ...Object.keys(pkg.dependencies || {})
  ],
  plugins: [
+  resolve(),
   typescript({
    typescript: require('typescript'),
   }),
