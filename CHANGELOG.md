@@ -1,6 +1,7 @@
 ## next
+- webgl rendering
 - fully typed
-- added `lineWidth` option
+- added `lineWidth` option (canvas only)
 
 ## 1.0.0
 - ported to typescript

@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "rollup-plugin-node-resolve": "^5.2.0",
-    "three": "^0.110.0"
+    "three": "^0.110.0",
+    "three-orbitcontrols": "^2.108.1"
   }
 }

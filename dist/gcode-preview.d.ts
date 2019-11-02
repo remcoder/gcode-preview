@@ -113,6 +113,7 @@ export declare class WebGlPreview implements PreviewOptions {
     travelColor: number;
     extrusionColor: number;
     constructor(opts: PreviewOptions);
+    animate(): void;
     processGCode(gcode: string): void;
     render(): void;
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;

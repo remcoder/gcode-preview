@@ -1,8 +1,7 @@
 import Colors  from "./gcode-colors"
-import { Parser, Layer, MoveCommand, GCodeCommand }  from "./gcode-parser"
+import { Parser, Layer, MoveCommand }  from "./gcode-parser"
 import * as THREE from 'three';
-import { WebGLRenderer } from "three";
-
+import * as OrbitControls from "three-orbitcontrols"; 
 export { Colors };
 
 type RenderLayer = { extrusion: number[], travel: number[], z: number };
@@ -293,8 +292,8 @@ export class WebGlPreview implements PreviewOptions {
   camera: THREE.Camera
   renderer: THREE.WebGLRenderer
   group: THREE.Group
-  travelColor = 0xFF0000
-  extrusionColor = 0x0000FF
+  travelColor = 0x990000
+  extrusionColor = 0x00FF00
 
   constructor(opts: PreviewOptions) {
     this.limit = opts.limit;
@@ -323,7 +322,14 @@ export class WebGlPreview implements PreviewOptions {
       this.renderer.setSize( target.offsetWidth, target.offsetHeight );
       this.renderer.setPixelRatio(window.devicePixelRatio);
       target.appendChild( this.renderer.domElement );
+      const controls = new OrbitControls(this.camera, this.renderer.domElement);
+      this.animate();
     }
+  }
+
+  animate() {
+    this.renderer.render( this.scene, this.camera );
+    requestAnimationFrame(() => this.animate() );
   }
 
   processGCode(gcode: string) {
@@ -342,8 +348,6 @@ export class WebGlPreview implements PreviewOptions {
     this.group = new THREE.Group();
     this.group.name = 'gcode';
     const state = {x:0, y:0, z:0, e:0};
-    const extrusion : number[] = [];
-    const travel : number[] = [];
 
     for (let index=0 ; index < this.layers.length ; index++ ) {
       if (index > this.limit) break;
@@ -353,7 +357,7 @@ export class WebGlPreview implements PreviewOptions {
       for (const cmd of l.commands) {
         if (cmd.gcode == 'g0' || cmd.gcode == 'g1') {
           const g = (cmd as MoveCommand);
-
+          
           const next : State = {
             x: g.params.x !== undefined ? g.params.x : state.x,
             y: g.params.y !== undefined ? g.params.y : state.y,
@@ -370,13 +374,11 @@ export class WebGlPreview implements PreviewOptions {
           if (g.params.e) state.e = g.params.e;
         }
       }
-
-      extrusion.push( ...currentLayer.extrusion );
-      travel.push( ...currentLayer.travel );
+      
+      const color = Math.round(0xff * index/this.layers.length) * 0xff;
+      this.addLine( currentLayer.extrusion, color);
+      // this.addLine( currentLayer.travel, this.travelColor);
     }
-
-    this.addLine( extrusion, this.extrusionColor );
-    this.addLine( travel, this.travelColor );
 
     this.group.quaternion.setFromEuler( new THREE.Euler( -Math.PI/2, 0, 0 ) );
     this.group.position.set( - 100, - 20, 100 );
@@ -390,7 +392,7 @@ export class WebGlPreview implements PreviewOptions {
     line.push( p2.x, p2.y, p2.z );
   }
 
-  addLine(vertices: number[], color: number ) {
+  addLine(vertices: number[], color: number) {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
     

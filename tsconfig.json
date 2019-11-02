@@ -9,7 +9,8 @@
       "sourceMap": true,
       "baseUrl": ".",
       "paths": {
-        "three": ["node_modules/three/src/Three"]
+        "three": ["node_modules/three/src/Three"],
+        "three-orbitcontrols": ["node_modules/three-orbitcontrols/OrbitControls.js"]
       }
     }
 }
