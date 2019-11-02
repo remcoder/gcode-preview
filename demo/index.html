@@ -1,8 +1,9 @@
 
-
+<head>
 <title>GCode Previewer in javascript</title>
 <link rel="stylesheet" href="style.css" />
-
+</head>
+<body>
 <header class="controls">
     <h1>GCode Previewer</h1>
     <label>Render layers:&nbsp;<input type="range" min="0" value="0" id="layers" /></label>
@@ -27,7 +28,7 @@
 <div id="renderer" class="gcode-previewer"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.js"></script>
 <script src="OrbitControls.js"></script>
-<script src="gcode-preview.js"></script>
+<script src="../dist/gcode-preview.js"></script>
 <script src="gcode/benchy-slic3r.js"></script>
 <script src="demo.js"></script>
 <script>
@@ -36,3 +37,4 @@
     updateUI();
 </script>
 <script async defer src="https://buttons.github.io/buttons.js"></script>
+</body>

@@ -377,7 +377,7 @@ export class WebGlPreview implements PreviewOptions {
       
       const color = Math.round(0xff * index/this.layers.length) * 0xff;
       this.addLine( currentLayer.extrusion, color);
-      // this.addLine( currentLayer.travel, this.travelColor);
+      this.addLine( currentLayer.travel, this.travelColor);
     }
 
     this.group.quaternion.setFromEuler( new THREE.Euler( -Math.PI/2, 0, 0 ) );

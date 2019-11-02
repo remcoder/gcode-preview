@@ -15,7 +15,9 @@
     "del-cli": "^1.1.0",
     "install": "^0.12.2",
     "jest": "^24.8.0",
+    "live-server": "^1.2.1",
     "rollup": "^1.12.3",
+    "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-terser": "^4.0.4",
     "rollup-plugin-typescript2": "^0.21.1",
     "ts-jest": "^24.0.2",
@@ -25,13 +27,12 @@
     "prebuild": "del-cli dist/**/*",
     "build": "rollup -c",
     "watch": "rollup -cw",
-    "predemo": "yarn run build && cp dist/gcode-preview.js demo",
-    "demo": "cd demo && http-server",
+    "predemo": "yarn run build",
+    "demo": "live-server demo --watch=../dist,. --mount=/dist:./dist",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "rollup-plugin-node-resolve": "^5.2.0",
     "three": "^0.110.0",
     "three-orbitcontrols": "^2.108.1"
   }
