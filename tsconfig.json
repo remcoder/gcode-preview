@@ -10,7 +10,7 @@
       "baseUrl": ".",
       "paths": {
         "three": ["node_modules/three/src/Three"],
-        "three-orbitcontrols": ["node_modules/three-orbitcontrols/OrbitControls.js"]
+        "three/examples/jsm/controls/OrbitControls": ["node_modules/three/examples/jsm/controls/OrbitControls"]
       }
     }
 }

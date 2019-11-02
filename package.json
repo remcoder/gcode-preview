@@ -33,7 +33,6 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "three": "^0.110.0",
-    "three-orbitcontrols": "^2.108.1"
+    "three": "^0.110.0"
   }
 }

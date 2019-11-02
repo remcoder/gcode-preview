@@ -6,10 +6,6 @@ import resolve from 'rollup-plugin-node-resolve';
 export default {
  input: 'src/gcode-preview.ts', // our source file
  output: [
-  // {
-  //  file: pkg.main,
-  //  format: 'cjs'
-  // },
   {
    file: pkg.module,
    format: 'es' // the preferred format
@@ -17,7 +13,10 @@ export default {
   {
    file: pkg.browser,
    format: 'umd',
-   name: 'GCodePreview' // the global which can be used in a browser
+   name: 'GCodePreview', // the global which can be used in a browser
+   globals: {
+    'three': 'THREE',
+   }
   }
  ],
  external: [
