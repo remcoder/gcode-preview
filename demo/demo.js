@@ -26,15 +26,6 @@ function initDemo() {
         preview.render();
     });
 
-    rotationSlider.addEventListener('input', function(evt) {
-        preview.rotation = +rotationSlider.value;
-        preview.render();
-    })
-
-    lineWidth.addEventListener('input', function(evt) {
-      preview.lineWidth = +lineWidth.value;
-      preview.render();
-  })
 
     window.addEventListener('resize', function() {
         // preview.resize();
@@ -55,14 +46,10 @@ function initDemo() {
     //     loadGCode(file);
     // });
 
-    toggleAnimation.addEventListener('click', function() {
-        preview.rotationAnimation ? preview.stopAnimation() : preview.startAnimation();
-    });
-
-    toggleZoneColors.addEventListener('click', function() {
-        preview.zoneColors = toggleZoneColors.checked;
-        preview.render();
-    });
+    // toggleZoneColors.addEventListener('click', function() {
+    //     preview.zoneColors = toggleZoneColors.checked;
+    //     preview.render();
+    // });
 
     gcodePreview = preview;
     
@@ -75,14 +62,14 @@ function updateUI() {
     slider.setAttribute('max', gcodePreview.limit);
     slider.value = gcodePreview.limit;
 
-    if (gcodePreview.header && !!GCodePreview.Colors[gcodePreview.header.slicer]) {
-        toggleZoneColors.removeAttribute('disabled');
-    }
-    else {
-        toggleZoneColors.checked = false;
-        toggleZoneColors.setAttribute('disabled', 'disabled');
-        gcodePreview.zoneColors = false;
-    }
+    // if (gcodePreview.header && !!GCodePreview.Colors[gcodePreview.header.slicer]) {
+    //     toggleZoneColors.removeAttribute('disabled');
+    // }
+    // else {
+    //     toggleZoneColors.checked = false;
+    //     toggleZoneColors.setAttribute('disabled', 'disabled');
+    //     gcodePreview.zoneColors = false;
+    // }
 
     const layerCount = document.getElementById('layer-count');
     layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
