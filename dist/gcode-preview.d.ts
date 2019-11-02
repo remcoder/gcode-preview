@@ -84,10 +84,9 @@ export declare class Preview implements PreviewOptions {
     };
 }
 export declare class WebGlPreview implements PreviewOptions {
+    parser: Parser;
     limit: number;
-    rotation: number;
     lineWidth: number;
-    rotationAnimation: boolean;
     scale: number;
     zoneColors: boolean;
     canvas: HTMLCanvasElement;
@@ -101,21 +100,22 @@ export declare class WebGlPreview implements PreviewOptions {
         x: number;
         y: number;
     };
-    parser: Parser;
     maxProjectionOffset: {
         x: number;
         y: number;
     };
     scene: THREE.Scene;
-    camera: THREE.Camera;
+    camera: THREE.PerspectiveCamera;
     renderer: THREE.WebGLRenderer;
     group: THREE.Group;
     travelColor: number;
     extrusionColor: number;
+    container: HTMLElement;
     constructor(opts: PreviewOptions);
     animate(): void;
     processGCode(gcode: string): void;
     render(): void;
+    resize(): void;
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
     addLine(vertices: number[], color: number): void;
 }

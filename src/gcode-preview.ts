@@ -271,10 +271,9 @@ export class Preview implements PreviewOptions {
 }
 
 export class WebGlPreview implements PreviewOptions {
+  parser = new Parser()
   limit : number
-  rotation : number
   lineWidth : number
-  rotationAnimation : boolean
   scale : number
   zoneColors : boolean
   canvas : HTMLCanvasElement
@@ -286,45 +285,35 @@ export class WebGlPreview implements PreviewOptions {
     x: number,
     y: number,
   }
-  parser = new Parser()
   maxProjectionOffset : {x:number, y:number}
   scene: THREE.Scene
-  camera: THREE.Camera
+  camera: THREE.PerspectiveCamera
   renderer: THREE.WebGLRenderer
   group: THREE.Group
   travelColor = 0x990000
   extrusionColor = 0x00FF00
+  container : HTMLElement
 
   constructor(opts: PreviewOptions) {
     this.limit = opts.limit;
     this.scale = opts.scale;
     this.lineWidth = opts.lineWidth || 0.6;
-    this.rotation = opts.rotation === undefined ? 0 : opts.rotation;
-    this.rotationAnimation = opts.rotationAnimation;
     this.zoneColors = opts.zoneColors;
 
     this.scene =  new THREE.Scene();
 
-    if (opts.canvas instanceof HTMLCanvasElement) {
-      this.canvas = opts.canvas;
-      this.ctx = this.canvas.getContext('2d');
-    }
-    else
-    {
-      this.targetId = opts.targetId;
-      const target = document.getElementById(this.targetId);
-      if (!target) throw new Error('Unable to find element ' + this.targetId);
-      
-      this.camera = new THREE.PerspectiveCamera( 75, target.offsetWidth/target.offsetHeight, 0.1, 1000 );
-      this.camera.position.set( 0, 0, 50 );
-      this.renderer = new THREE.WebGLRenderer();
-
-      this.renderer.setSize( target.offsetWidth, target.offsetHeight );
-      this.renderer.setPixelRatio(window.devicePixelRatio);
-      target.appendChild( this.renderer.domElement );
-      const controls = new OrbitControls(this.camera, this.renderer.domElement);
-      this.animate();
-    }
+    this.targetId = opts.targetId;
+    this.container = document.getElementById(this.targetId);
+    if (!this.container) throw new Error('Unable to find element ' + this.targetId);
+    
+    this.camera = new THREE.PerspectiveCamera( 75, this.container.offsetWidth/this.container.offsetHeight, 0.1, 1000 );
+    this.camera.position.set( 0, 0, 50 );
+    this.renderer = new THREE.WebGLRenderer();
+    this.renderer.setSize( this.container.offsetWidth, this.container.offsetHeight );
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.container.appendChild( this.renderer.domElement );
+    const controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.animate();
   }
 
   animate() {
@@ -384,6 +373,13 @@ export class WebGlPreview implements PreviewOptions {
     this.group.position.set( - 100, - 20, 100 );
     this.scene.add( this.group );
     this.renderer.render( this.scene, this.camera );
+  }
+
+  resize() {
+    this.renderer.setSize( this.container.offsetWidth, this.container.offsetHeight );
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight;
+    this.camera.updateProjectionMatrix();
   }
 
   addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) {

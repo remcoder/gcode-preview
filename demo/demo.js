@@ -28,8 +28,7 @@ function initDemo() {
 
 
     window.addEventListener('resize', function() {
-        // preview.resize();
-        preview.render();
+        preview.resize();
     });
 
     // preview.canvas.addEventListener('dragover', function(evt) {
