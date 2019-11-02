@@ -2,10 +2,9 @@ let gcodePreview;
 
 const slider = document.getElementById('layers');
 const scaleSlider = document.getElementById('scale');
-const rotationSlider = document.getElementById('rotation');
-const toggleAnimation = document.getElementById('toggle-animation');
+const toggleExtrusion = document.getElementById('extrusion');
+const toggleTravel = document.getElementById('travel');
 const toggleZoneColors = document.getElementById('zone-colors');
-const lineWidth = document.getElementById('line-width');
 
 function initDemo() {
     const preview = new GCodePreview.WebGlPreview({
@@ -21,11 +20,20 @@ function initDemo() {
         preview.render();
     });
 
-    scaleSlider.addEventListener('input', function(evt) {
-        preview.scale = +scaleSlider.value;
+    // scaleSlider.addEventListener('input', function(evt) {
+    //     preview.scale = +scaleSlider.value;
+    //     preview.render();
+    // });
+
+    toggleExtrusion.addEventListener('click', function() {
+        preview.renderExtrusion = toggleExtrusion.checked;
         preview.render();
     });
 
+    toggleTravel.addEventListener('click', function() {
+      preview.renderTravel = toggleTravel.checked;
+      preview.render();
+    });
 
     window.addEventListener('resize', function() {
         preview.resize();
@@ -60,7 +68,16 @@ function initDemo() {
 function updateUI() {
     slider.setAttribute('max', gcodePreview.limit);
     slider.value = gcodePreview.limit;
-
+    
+    if (gcodePreview.renderExtrusion)
+      toggleExtrusion.setAttribute("checked", "checked");
+    else
+      toggleExtrusion.removeAttribute("checked");
+    
+    if (gcodePreview.renderTravel)
+      toggleTravel.setAttribute("checked", "checked");
+    else
+      toggleTravel.removeAttribute("checked");
     // if (gcodePreview.header && !!GCodePreview.Colors[gcodePreview.header.slicer]) {
     //     toggleZoneColors.removeAttribute('disabled');
     // }

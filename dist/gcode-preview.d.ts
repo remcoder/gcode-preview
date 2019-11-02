@@ -89,7 +89,6 @@ export declare class WebGlPreview implements PreviewOptions {
     lineWidth: number;
     scale: number;
     zoneColors: boolean;
-    canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     targetId: string;
     layers: Layer[];
@@ -111,6 +110,8 @@ export declare class WebGlPreview implements PreviewOptions {
     travelColor: number;
     extrusionColor: number;
     container: HTMLElement;
+    renderExtrusion: boolean;
+    renderTravel: boolean;
     constructor(opts: PreviewOptions);
     animate(): void;
     processGCode(gcode: string): void;

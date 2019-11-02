@@ -276,7 +276,6 @@ export class WebGlPreview implements PreviewOptions {
   lineWidth : number
   scale : number
   zoneColors : boolean
-  canvas : HTMLCanvasElement
   ctx : CanvasRenderingContext2D
   targetId: string
   layers : Layer[]
@@ -293,6 +292,8 @@ export class WebGlPreview implements PreviewOptions {
   travelColor = 0x990000
   extrusionColor = 0x00FF00
   container : HTMLElement
+  renderExtrusion = true
+  renderTravel = false
 
   constructor(opts: PreviewOptions) {
     this.limit = opts.limit;
@@ -334,6 +335,9 @@ export class WebGlPreview implements PreviewOptions {
   }
 
   render() {
+    while(this.scene.children.length > 0){ 
+      this.scene.remove(this.scene.children[0]); 
+    }
     this.group = new THREE.Group();
     this.group.name = 'gcode';
     const state = {x:0, y:0, z:0, e:0};
@@ -365,8 +369,11 @@ export class WebGlPreview implements PreviewOptions {
       }
       
       const color = Math.round(0xff * index/this.layers.length) * 0xff;
-      this.addLine( currentLayer.extrusion, color);
-      this.addLine( currentLayer.travel, this.travelColor);
+      if (this.renderExtrusion)
+        this.addLine( currentLayer.extrusion, color);
+      
+      if (this.renderTravel)
+        this.addLine( currentLayer.travel, this.travelColor);
     }
 
     this.group.quaternion.setFromEuler( new THREE.Euler( -Math.PI/2, 0, 0 ) );
