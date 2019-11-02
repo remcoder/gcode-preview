@@ -5,6 +5,8 @@ const scaleSlider = document.getElementById('scale');
 const toggleExtrusion = document.getElementById('extrusion');
 const toggleTravel = document.getElementById('travel');
 const toggleZoneColors = document.getElementById('zone-colors');
+const layerCount = document.getElementById('layer-count');
+
 
 function initDemo() {
     const preview = new GCodePreview.WebGlPreview({
@@ -39,19 +41,19 @@ function initDemo() {
         preview.resize();
     });
 
-    // preview.canvas.addEventListener('dragover', function(evt) {
-    //     evt.stopPropagation()
-    //     evt.preventDefault()
-    //     evt.dataTransfer.dropEffect = 'copy'
-    // });
+    preview.container.addEventListener('dragover', function(evt) {
+        evt.stopPropagation()
+        evt.preventDefault()
+        evt.dataTransfer.dropEffect = 'copy'
+    });
 
-    // preview.canvas.addEventListener('drop', function(evt) {
-    //     evt.stopPropagation()
-    //     evt.preventDefault()
-    //     const files = evt.dataTransfer.files
-    //     const file = files[0]
-    //     loadGCode(file);
-    // });
+    preview.container.addEventListener('drop', function(evt) {
+        evt.stopPropagation()
+        evt.preventDefault()
+        const files = evt.dataTransfer.files
+        const file = files[0]
+        loadGCode(file);
+    });
 
     // toggleZoneColors.addEventListener('click', function() {
     //     preview.zoneColors = toggleZoneColors.checked;
@@ -87,13 +89,14 @@ function updateUI() {
     //     gcodePreview.zoneColors = false;
     // }
 
-    const layerCount = document.getElementById('layer-count');
-    layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
+    displayLayerCount();
+}
+
+function displayLayerCount() {
+  layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
 }
 
 function loadGCode(file) {
-    gcodePreview.clear();
-
     loading(gcodePreview.canvas);
 
     const reader = new FileReader();
@@ -102,18 +105,17 @@ function loadGCode(file) {
 
     reader.onload = function(e) {
         gcodePreview.processGCode(reader.result);
-        // const slider = document.getElementById('layers');
         slider.setAttribute('max', gcodePreview.limit);
         slider.value = gcodePreview.limit;
-
-        if (!!GCodePreview.Colors[gcodePreview.header.slicer]) {
-            toggleZoneColors.removeAttribute('disabled');
-        }
-        else {
-            toggleZoneColors.checked = false;
-            toggleZoneColors.setAttribute('disabled', 'disabled');
-            gcodePreview.zoneColors = false;
-        }
+        displayLayerCount();
+        // if (!!GCodePreview.Colors[gcodePreview.header.slicer]) {
+        //     toggleZoneColors.removeAttribute('disabled');
+        // }
+        // else {
+        //     toggleZoneColors.checked = false;
+        //     toggleZoneColors.setAttribute('disabled', 'disabled');
+        //     gcodePreview.zoneColors = false;
+        // }
     }
     reader.readAsText(file);
 }
