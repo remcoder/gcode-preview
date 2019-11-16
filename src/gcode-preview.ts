@@ -302,7 +302,7 @@ export class WebGlPreview implements PreviewOptions {
     this.zoneColors = opts.zoneColors;
 
     this.scene =  new THREE.Scene();
-
+    this.scene.background = new THREE.Color( 0xe0e0e0 );
     this.targetId = opts.targetId;
     this.container = document.getElementById(this.targetId);
     if (!this.container) throw new Error('Unable to find element ' + this.targetId);
@@ -368,7 +368,10 @@ export class WebGlPreview implements PreviewOptions {
         }
       }
       
-      const color = Math.round(0xff * index/this.layers.length) * 0xff;
+      // const color = Math.round(0xff * index/this.layers.length) * 0xff;
+      const brightness = Math.round(80 * index/this.layers.length);
+      const color = new THREE.Color(`hsl(0, 0%, ${brightness}%)`).getHex();
+
       if (this.renderExtrusion)
         this.addLine( currentLayer.extrusion, color);
       
