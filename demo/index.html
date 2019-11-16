@@ -1,42 +1,66 @@
-
 <head>
-<title>GCode Previewer in javascript</title>
-<link rel="stylesheet" href="style.css" />
+  <title>GCode Previewer in javascript</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-<div class="controls">
-  <h1>GCode Previewer 2.0</h1>
-    <section>
-      <div id="file-info">Filename: Benchy</div>
-      <div id="layer-count"></div>
-    </section>
+  <div class="sidebar">
+    <div>
+      <h1>GCode Previewer 2.0</h1>
       <section>
-      <div><label>Layers:&nbsp;<input type="range" min="0" value="0" id="layers" /></label></div>
-      <div><label>Extrusion<input type="checkbox" id="extrusion"></label></div>
-      <div><label>Travel<input type="checkbox" id="travel"></label></div>
-    </section>
-    
-    <section>
-      <div><a href="https://github.com/remcoder/gcode-previewer" >Github</a></div>
-      <div><a href="https://github.com/remcoder/gcode-previewer/archive/master.zip">Download</a></div>
-    </section>
-    <section>
-      <div>By <a href="http://twitter.com/remcoder">Remco Veldkamp</a></div>
-    </section>
+        <a id="file-name"></a>
+        <div id="layer-count"></div>
+        <div id="file-size"></div>
+      </section>
+      <section>
+        <div class="controls">
+          <label>Layers:</label>&nbsp;<input
+            type="range"
+            min="0"
+            value="0"
+            id="layers"
+          />
+        </div>
+        <div class="controls">
+          <label for="extrusion">Extrusion</label
+          ><input type="checkbox" id="extrusion" />
+        </div>
+        <div class="controls">
+          <label for="travel">Travel</label
+          ><input type="checkbox" id="travel" />
+        </div>
+      </section>
+    </div>
+    <div>
+      <section>
+        <div>
+          <a href="https://github.com/remcoder/gcode-previewer">Github</a>
+        </div>
+        <div>
+          <a
+            href="https://github.com/remcoder/gcode-previewer/archive/master.zip"
+            >Download</a
+          >
+        </div>
+      </section>
+      <section>
+        <div>MIT License</div>
+        <div>Copyright 2019</div>
+        <div><a href="http://twitter.com/remcoder">Remco Veldkamp</a></div>
+      </section>
+    </div>
   </div>
 
-<div id="renderer" class="gcode-previewer"></div>
-<script src="three.min.js"></script>
-<script src="OrbitControls.js"></script>
-<script>
-var OrbitControls = THREE.OrbitControls;
-</script>
-<script src="../dist/gcode-preview.js"></script>
-<script src="gcode/benchy-slic3r.js"></script>
-<script src="demo.js"></script>
-<script>
+  <div id="renderer" class="gcode-previewer"></div>
+  <script src="three.min.js"></script>
+  <script src="OrbitControls.js"></script>
+  <script>
+    const OrbitControls = THREE.OrbitControls;
+  </script>
+  <script src="../dist/gcode-preview.js"></script>
+  <script src="demo.js"></script>
+  <script>
     const gcodeDemo = initDemo();
-    gcodeDemo.processGCode(sample);
-    updateUI();
-</script>
+    loadGCodeFromServer('benchy.gcode');
+  </script>
 </body>

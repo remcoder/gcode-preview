@@ -6,7 +6,8 @@ const toggleExtrusion = document.getElementById('extrusion');
 const toggleTravel = document.getElementById('travel');
 const toggleZoneColors = document.getElementById('zone-colors');
 const layerCount = document.getElementById('layer-count');
-
+const fileName = document.getElementById('file-name');
+const fileSize = document.getElementById('file-size');
 
 function initDemo() {
     const preview = new GCodePreview.WebGlPreview({
@@ -15,17 +16,10 @@ function initDemo() {
         lineWidth: 0.6
     });
 
-    info(preview.canvas);
-
     slider.addEventListener('input', function(evt) {
         preview.limit = +slider.value;
         preview.render();
     });
-
-    // scaleSlider.addEventListener('input', function(evt) {
-    //     preview.scale = +scaleSlider.value;
-    //     preview.render();
-    // });
 
     toggleExtrusion.addEventListener('click', function() {
         preview.renderExtrusion = toggleExtrusion.checked;
@@ -55,14 +49,7 @@ function initDemo() {
         loadGCode(file);
     });
 
-    // toggleZoneColors.addEventListener('click', function() {
-    //     preview.zoneColors = toggleZoneColors.checked;
-    //     preview.render();
-    // });
-
     gcodePreview = preview;
-    
-    // updateUI();
     
     return preview;
 }
@@ -70,6 +57,7 @@ function initDemo() {
 function updateUI() {
     slider.setAttribute('max', gcodePreview.limit);
     slider.value = gcodePreview.limit;
+    layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
     
     if (gcodePreview.renderExtrusion)
       toggleExtrusion.setAttribute("checked", "checked");
@@ -80,44 +68,38 @@ function updateUI() {
       toggleTravel.setAttribute("checked", "checked");
     else
       toggleTravel.removeAttribute("checked");
-    // if (gcodePreview.header && !!GCodePreview.Colors[gcodePreview.header.slicer]) {
-    //     toggleZoneColors.removeAttribute('disabled');
-    // }
-    // else {
-    //     toggleZoneColors.checked = false;
-    //     toggleZoneColors.setAttribute('disabled', 'disabled');
-    //     gcodePreview.zoneColors = false;
-    // }
 
-    displayLayerCount();
-}
-
-function displayLayerCount() {
-  layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
 }
 
 function loadGCode(file) {
-    loading(gcodePreview.canvas);
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    _handleGCode(file.name, reader.result);
+  }
+  reader.readAsText(file);
+  fileName.setAttribute('href', '#');
+}
 
-    const reader = new FileReader();
-    const fileInfo = document.getElementById('file-info');
-    fileInfo.innerText = file.name + ': ' + file.size + " bytes";
+async function loadGCodeFromServer(file) {
+  const response = await fetch(file);
+    
+  if (response.status !== 200) {
+    console.log('ERROR. Status Code: ' +
+      response.status);
+    return;
+  }
 
-    reader.onload = function(e) {
-        gcodePreview.processGCode(reader.result);
-        slider.setAttribute('max', gcodePreview.limit);
-        slider.value = gcodePreview.limit;
-        displayLayerCount();
-        // if (!!GCodePreview.Colors[gcodePreview.header.slicer]) {
-        //     toggleZoneColors.removeAttribute('disabled');
-        // }
-        // else {
-        //     toggleZoneColors.checked = false;
-        //     toggleZoneColors.setAttribute('disabled', 'disabled');
-        //     gcodePreview.zoneColors = false;
-        // }
-    }
-    reader.readAsText(file);
+  const gcode = await response.text()
+  _handleGCode(file, gcode); 
+  fileName.setAttribute('href', file);
+}
+
+function _handleGCode(filename, gcode) {
+  fileName.innerText = filename
+  fileSize.innerText = humanFileSize(gcode.length);
+  gcodePreview.processGCode(gcode);
+
+  updateUI();
 }
 
 function backgroundText(canvas, text, x,y, fontSize) {
@@ -131,14 +113,7 @@ function backgroundText(canvas, text, x,y, fontSize) {
     ctx.restore();
 }
 
-function title(canvas) {
-    //backgroundText(canvas, 'GCode previewer', -300, -150, 72);
-}
-
-function info(canvas) {
-    //backgroundText(canvas, 'Drop a .gcode file here', -210, 165, 36);
-}
-
-function loading(canvas) {
-    //backgroundText(canvas, 'Loading..', -90, 165, 42);
-}
+function humanFileSize(size) {
+  var i = Math.floor( Math.log(size) / Math.log(1024) );
+  return ( size / Math.pow(1024, i) ).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+};

@@ -12,7 +12,7 @@ export default {
   },
   {
    file: pkg.browser,
-   format: 'umd',
+   format: 'iife',
    name: 'GCodePreview', // the global which can be used in a browser
    globals: {
     'three': 'THREE',
