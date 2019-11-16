@@ -1,7 +1,7 @@
 import Colors  from "./gcode-colors"
 import { Parser, Layer, MoveCommand }  from "./gcode-parser"
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as OrbitControls  from 'three-orbitcontrols';
 export { Colors };
 
 type RenderLayer = { extrusion: number[], travel: number[], z: number };

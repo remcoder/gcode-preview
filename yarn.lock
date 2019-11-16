@@ -4300,6 +4300,11 @@ test-exclude@^5.2.3:
     read-pkg-up "^4.0.0"
     require-main-filename "^2.0.0"
 
+three-orbitcontrols@^2.110.1:
+  version "2.110.1"
+  resolved "https://registry.yarnpkg.com/three-orbitcontrols/-/three-orbitcontrols-2.110.1.tgz#105fdad47c1de122e465950d61bae5f327674a29"
+  integrity sha512-z7Mg6dvg3a1IEdfeNuHRr29a+NMFnPzZ8jJ6VRMOKqgB3FUUj0Xzt+uiAWylgVpmoH33mJcFxzMTjqb3AJ5L/A==
+
 three@^0.110.0:
   version "0.110.0"
   resolved "https://registry.yarnpkg.com/three/-/three-0.110.0.tgz#8719591de1336269113ee79f4268ba247b2324f8"
