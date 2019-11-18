@@ -4,3 +4,4 @@ src/.rpt2_cache
 node_modules
 dist/__tests__
 .rpt2_cache
+.firebase/hosting.*
