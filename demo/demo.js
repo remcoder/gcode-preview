@@ -10,65 +10,62 @@ const fileName = document.getElementById('file-name');
 const fileSize = document.getElementById('file-size');
 
 function initDemo() {
-    const preview = new GCodePreview.WebGlPreview({
-        targetId : 'renderer',
-        scale: 7,
-        lineWidth: 0.6
-    });
+  const preview = new GCodePreview.WebGLPreview({
+      targetId : 'renderer' 
+  });
 
-    slider.addEventListener('input', function(evt) {
-        preview.limit = +slider.value;
-        preview.render();
-    });
-
-    toggleExtrusion.addEventListener('click', function() {
-        preview.renderExtrusion = toggleExtrusion.checked;
-        preview.render();
-    });
-
-    toggleTravel.addEventListener('click', function() {
-      preview.renderTravel = toggleTravel.checked;
+  slider.addEventListener('input', function(evt) {
+      preview.limit = +slider.value;
       preview.render();
-    });
+  });
 
-    window.addEventListener('resize', function() {
-        preview.resize();
-    });
+  toggleExtrusion.addEventListener('click', function() {
+      preview.renderExtrusion = toggleExtrusion.checked;
+      preview.render();
+  });
 
-    preview.container.addEventListener('dragover', function(evt) {
-        evt.stopPropagation()
-        evt.preventDefault()
-        evt.dataTransfer.dropEffect = 'copy'
-    });
+  toggleTravel.addEventListener('click', function() {
+    preview.renderTravel = toggleTravel.checked;
+    preview.render();
+  });
 
-    preview.container.addEventListener('drop', function(evt) {
-        evt.stopPropagation()
-        evt.preventDefault()
-        const files = evt.dataTransfer.files
-        const file = files[0]
-        loadGCode(file);
-    });
+  window.addEventListener('resize', function() {
+      preview.resize();
+  });
 
-    gcodePreview = preview;
-    
-    return preview;
+  preview.canvas.addEventListener('dragover', function(evt) {
+      evt.stopPropagation()
+      evt.preventDefault()
+      evt.dataTransfer.dropEffect = 'copy'
+  });
+
+  preview.canvas.addEventListener('drop', function(evt) {
+      evt.stopPropagation()
+      evt.preventDefault()
+      const files = evt.dataTransfer.files
+      const file = files[0]
+      loadGCode(file);
+  });
+
+  gcodePreview = preview;
+  
+  return preview;
 }
 
 function updateUI() {
-    slider.setAttribute('max', gcodePreview.limit);
-    slider.value = gcodePreview.limit;
-    layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
-    
-    if (gcodePreview.renderExtrusion)
-      toggleExtrusion.setAttribute("checked", "checked");
-    else
-      toggleExtrusion.removeAttribute("checked");
-    
-    if (gcodePreview.renderTravel)
-      toggleTravel.setAttribute("checked", "checked");
-    else
-      toggleTravel.removeAttribute("checked");
-
+  slider.setAttribute('max', gcodePreview.limit);
+  slider.value = gcodePreview.limit;
+  layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
+  
+  if (gcodePreview.renderExtrusion)
+    toggleExtrusion.setAttribute("checked", "checked");
+  else
+    toggleExtrusion.removeAttribute("checked");
+  
+  if (gcodePreview.renderTravel)
+    toggleTravel.setAttribute("checked", "checked");
+  else
+    toggleTravel.removeAttribute("checked");
 }
 
 function loadGCode(file) {
