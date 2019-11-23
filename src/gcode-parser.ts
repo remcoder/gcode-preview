@@ -40,11 +40,11 @@ export class Parser {
  
   // G0 & G1
   parseMove(params: string[]) : MoveCommandParams {
-    return params.reduce((acc: MoveCommandParams ,cur: string) => {
+    return params.reduce((acc: MoveCommandParams, cur: string) => {
       
-      const key = cur.slice(0,1).toLowerCase();
+      const key = cur.charAt(0).toLowerCase();
       if (key == 'x' || key == 'y' || key == 'z' || key == 'e')
-        acc[ key ] = +cur.slice(1);
+        acc[ key ] = parseFloat(cur.slice(1));
       return acc
     }, {}); 
   }

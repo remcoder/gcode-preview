@@ -84,7 +84,7 @@ async function loadGCodeFromServer(file) {
   const response = await fetch(file);
     
   if (response.status !== 200) {
-    console.log('ERROR. Status Code: ' +
+    console.error('ERROR. Status Code: ' +
       response.status);
     return;
   }
@@ -100,17 +100,6 @@ function _handleGCode(filename, gcode) {
   gcodePreview.processGCode(gcode);
 
   updateUI();
-}
-
-function backgroundText(canvas, text, x,y, fontSize) {
-    const ctx = canvas.getContext('2d');
-    ctx.save();
-    ctx.translate(canvas.width/2,canvas.height/2);
-    // ctx.rotate(rotation * Math.PI / 180);
-    ctx.fillStyle = '#ccc';
-    ctx.font = fontSize + 'px Verdana';
-    ctx.fillText(text, x, y);
-    ctx.restore();
 }
 
 function humanFileSize(size) {
