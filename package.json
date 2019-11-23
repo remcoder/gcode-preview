@@ -25,15 +25,17 @@
   },
   "scripts": {
     "prebuild": "del-cli dist/**/*",
-    "build": "rollup -c",
-    "watch": "rollup -cw",
+    "build": "rollup -c && copyfiles dist/gcode-preview.js demo",
+    "watch": "watch 'yarn run build' src",
     "predemo": "yarn run build",
-    "demo": "live-server demo --watch=../dist,. --mount=/dist:./dist",
+    "demo": "live-server demo --watch=.",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "copyfiles": "^2.1.1",
     "three": "^0.110.0",
-    "three-orbitcontrols": "^2.110.1"
+    "three-orbitcontrols": "^2.110.1",
+    "watch": "^1.0.2"
   }
 }
