@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "declaration": true,
+      "declarationDir": "./dist",
+      "noImplicitAny": true,
+      "outDir": "./dist",
+      "target": "es2015",
+      "module": "es2015",
+      "sourceMap": true,
+      "baseUrl": ".",
+      "paths": {
+        "three": ["node_modules/three/src/Three"]
+      },
+      "typeRoots" : ["types"]
+    },
+    "files": ["src/gcode-preview.ts"]
+}

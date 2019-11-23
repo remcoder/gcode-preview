@@ -1,4 +1,3 @@
-
 export default {
     Cura_SteamEngine : {
         skirt : 'lime',
@@ -17,5 +16,3 @@ export default {
         support: 'rgba(255,255,255,0.5)'
     }
 };
-
-
