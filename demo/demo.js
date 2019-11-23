@@ -2,138 +2,104 @@ let gcodePreview;
 
 const slider = document.getElementById('layers');
 const scaleSlider = document.getElementById('scale');
-const rotationSlider = document.getElementById('rotation');
-const toggleAnimation = document.getElementById('toggle-animation');
+const toggleExtrusion = document.getElementById('extrusion');
+const toggleTravel = document.getElementById('travel');
 const toggleZoneColors = document.getElementById('zone-colors');
-const lineWidth = document.getElementById('line-width');
+const layerCount = document.getElementById('layer-count');
+const fileName = document.getElementById('file-name');
+const fileSize = document.getElementById('file-size');
 
 function initDemo() {
-    const preview = new GCodePreview.Preview({
-        targetId : 'renderer',
-        scale: 7,
-        lineWidth: 0.6
-    });
+  const preview = new GCodePreview.WebGLPreview({
+      targetId : 'renderer' 
+  });
 
-    info(preview.canvas);
-
-    slider.addEventListener('input', function(evt) {
-        preview.limit = +slider.value;
-        preview.render();
-    });
-
-    scaleSlider.addEventListener('input', function(evt) {
-        preview.scale = +scaleSlider.value;
-        preview.render();
-    });
-
-    rotationSlider.addEventListener('input', function(evt) {
-        preview.rotation = +rotationSlider.value;
-        preview.render();
-    })
-
-    lineWidth.addEventListener('input', function(evt) {
-      preview.lineWidth = +lineWidth.value;
+  slider.addEventListener('input', function(evt) {
+      preview.limit = +slider.value;
       preview.render();
-  })
+  });
 
-    window.addEventListener('resize', function() {
-        preview.resize();
-        preview.render();
-    });
+  toggleExtrusion.addEventListener('click', function() {
+      preview.renderExtrusion = toggleExtrusion.checked;
+      preview.render();
+  });
 
-    preview.canvas.addEventListener('dragover', function(evt) {
-        evt.stopPropagation()
-        evt.preventDefault()
-        evt.dataTransfer.dropEffect = 'copy'
-    });
+  toggleTravel.addEventListener('click', function() {
+    preview.renderTravel = toggleTravel.checked;
+    preview.render();
+  });
 
-    preview.canvas.addEventListener('drop', function(evt) {
-        evt.stopPropagation()
-        evt.preventDefault()
-        const files = evt.dataTransfer.files
-        const file = files[0]
-        loadGCode(file);
-    });
+  window.addEventListener('resize', function() {
+      preview.resize();
+  });
 
-    toggleAnimation.addEventListener('click', function() {
-        preview.rotationAnimation ? preview.stopAnimation() : preview.startAnimation();
-    });
+  preview.canvas.addEventListener('dragover', function(evt) {
+      evt.stopPropagation()
+      evt.preventDefault()
+      evt.dataTransfer.dropEffect = 'copy'
+  });
 
-    toggleZoneColors.addEventListener('click', function() {
-        preview.zoneColors = toggleZoneColors.checked;
-        preview.render();
-    });
+  preview.canvas.addEventListener('drop', function(evt) {
+      evt.stopPropagation()
+      evt.preventDefault()
+      const files = evt.dataTransfer.files
+      const file = files[0]
+      loadGCode(file);
+  });
 
-    gcodePreview = preview;
-    
-    // updateUI();
-    
-    return preview;
+  gcodePreview = preview;
+  
+  return preview;
 }
 
 function updateUI() {
-    slider.setAttribute('max', gcodePreview.limit);
-    slider.value = gcodePreview.limit;
-
-    if (!!GCodePreview.Colors[gcodePreview.header.slicer]) {
-        toggleZoneColors.removeAttribute('disabled');
-    }
-    else {
-        toggleZoneColors.checked = false;
-        toggleZoneColors.setAttribute('disabled', 'disabled');
-        gcodePreview.zoneColors = false;
-    }
-
-    const layerCount = document.getElementById('layer-count');
-    layerCount.innerText = gcodePreview.layers.length + ' layers';
+  slider.setAttribute('max', gcodePreview.limit);
+  slider.value = gcodePreview.limit;
+  layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
+  
+  if (gcodePreview.renderExtrusion)
+    toggleExtrusion.setAttribute("checked", "checked");
+  else
+    toggleExtrusion.removeAttribute("checked");
+  
+  if (gcodePreview.renderTravel)
+    toggleTravel.setAttribute("checked", "checked");
+  else
+    toggleTravel.removeAttribute("checked");
 }
 
 function loadGCode(file) {
-    gcodePreview.clear();
-
-    loading(gcodePreview.canvas);
-
-    const reader = new FileReader();
-    const fileInfo = document.getElementById('file-info');
-    fileInfo.innerText = file.name + ': ' + file.size + " bytes";
-
-    reader.onload = function(e) {
-        gcodePreview.processGCode(reader.result);
-        // const slider = document.getElementById('layers');
-        slider.setAttribute('max', gcodePreview.limit);
-        slider.value = gcodePreview.limit;
-
-        if (!!GCodePreview.Colors[gcodePreview.header.slicer]) {
-            toggleZoneColors.removeAttribute('disabled');
-        }
-        else {
-            toggleZoneColors.checked = false;
-            toggleZoneColors.setAttribute('disabled', 'disabled');
-            gcodePreview.zoneColors = false;
-        }
-    }
-    reader.readAsText(file);
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    _handleGCode(file.name, reader.result);
+  }
+  reader.readAsText(file);
+  fileName.setAttribute('href', '#');
 }
 
-function backgroundText(canvas, text, x,y, fontSize) {
-    const ctx = canvas.getContext('2d');
-    ctx.save();
-    ctx.translate(canvas.width/2,canvas.height/2);
-    // ctx.rotate(rotation * Math.PI / 180);
-    ctx.fillStyle = '#ccc';
-    ctx.font = fontSize + 'px Verdana';
-    ctx.fillText(text, x, y);
-    ctx.restore();
+async function loadGCodeFromServer(file) {
+  const response = await fetch(file);
+    
+  if (response.status !== 200) {
+    console.error('ERROR. Status Code: ' +
+      response.status);
+    return;
+  }
+
+  const gcode = await response.text()
+  _handleGCode(file, gcode); 
+  fileName.setAttribute('href', file);
 }
 
-function title(canvas) {
-    backgroundText(canvas, 'GCode previewer', -300, -150, 72);
+function _handleGCode(filename, gcode) {
+  fileName.innerText = filename
+  fileSize.innerText = humanFileSize(gcode.length);
+  gcodePreview.processGCode(gcode);
+
+  updateUI();
 }
 
-function info(canvas) {
-    backgroundText(canvas, 'Drop a .gcode file here', -210, 165, 36);
-}
-
-function loading(canvas) {
-    backgroundText(canvas, 'Loading..', -90, 165, 42);
-}
+function humanFileSize(size) {
+  var i = Math.floor( Math.log(size) / Math.log(1024) );
+  return ( size / Math.pow(1024, i) ).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+};
