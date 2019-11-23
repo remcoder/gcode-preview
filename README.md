@@ -1,4 +1,4 @@
-# GCode Previewer
+# GCode Preview
 A simple GCode parser & viewer with 3D printing in mind. Written in Typescript. 
 
 See a [demo](https://gcode-preview.web.app/) here
