@@ -19,6 +19,5 @@ https://github.com/mrdoob/three.js/issues/16904
 
 This project is sponsored by:
 
-* Q42
-  <img width=42 src="http://logo.q42.com/q42-logo.svg" />
+<img width=42 src="http://logo.q42.com/q42-logo.svg" />
 
