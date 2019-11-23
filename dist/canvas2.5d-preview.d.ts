@@ -1,14 +1,12 @@
-import Colors from "./gcode-colors";
-import { Parser, Layer } from "./gcode-parser";
-export { Colors };
-declare type PreviewOptions = Partial<{
+import { Parser, Layer } from './gcode-parser';
+export declare type PreviewOptions = Partial<{
     limit: number;
     scale: number;
     lineWidth: number;
     rotation: number;
     rotationAnimation: boolean;
     zoneColors: boolean;
-    canvas: HTMLCanvasElement | string;
+    canvas: HTMLCanvasElement;
     targetId: string;
 }>;
 export declare class Preview implements PreviewOptions {
@@ -18,9 +16,10 @@ export declare class Preview implements PreviewOptions {
     rotationAnimation: boolean;
     scale: number;
     zoneColors: boolean;
+    targetId: string;
+    container: HTMLElement;
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
-    targetId: string;
     layers: Layer[];
     header: {
         slicer: string;
