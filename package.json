@@ -12,6 +12,7 @@
   "types": "dist/gcode-preview.d.ts",
   "devDependencies": {
     "@types/jest": "^24.0.16",
+    "copyfiles": "^2.1.1",
     "del-cli": "^1.1.0",
     "install": "^0.12.2",
     "jest": "^24.8.0",
@@ -21,7 +22,8 @@
     "rollup-plugin-terser": "^4.0.4",
     "rollup-plugin-typescript2": "^0.21.1",
     "ts-jest": "^24.0.2",
-    "typescript": "^3.4.5"
+    "typescript": "^3.4.5",
+    "watch": "^1.0.2"
   },
   "scripts": {
     "prebuild": "del-cli dist/**/*",
@@ -34,9 +36,7 @@
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
-    "copyfiles": "^2.1.1",
     "three": "^0.110.0",
-    "three-orbitcontrols": "^2.110.1",
-    "watch": "^1.0.2"
+    "three-orbitcontrols": "^2.110.1"
   }
 }
