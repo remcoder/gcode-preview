@@ -9,6 +9,16 @@ See a [demo](https://gcode-preview.web.app/) here
 ## Canvas 2.5D (static perspective)
 <img src="https://user-images.githubusercontent.com/461650/67150833-f9c93f80-f2bc-11e9-9887-3c721cf7bfa5.png" width=400 />
 
+## Installation
+
+ `npm install gcode-preview`
+
+or
+
+`yarn add gcode-preview`
+
+### Vue.js example
+See [here](https://github.com/remcoder/gcode-preview-vue-demo) for an example with Vue.js
 
 ## Known issues
 ### Preview doesn't render in Brave
