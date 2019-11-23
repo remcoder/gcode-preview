@@ -30,7 +30,8 @@
     "predemo": "yarn run build",
     "demo": "live-server demo --watch=.",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
     "copyfiles": "^2.1.1",
