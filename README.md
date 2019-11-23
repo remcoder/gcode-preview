@@ -20,6 +20,23 @@ or
 ### Vue.js example
 See [here](https://github.com/remcoder/gcode-preview-vue-demo) for an example with Vue.js
 
+### Quick start
+
+html:
+```
+  <div id="gcode-preview">
+```
+
+javascript:
+```  
+  const preview = new WebGLPreview({
+      targetId: 'gcode-preview',
+  });
+  
+  preview.processGCode(this.gcode);
+  preview.render();
+```
+
 ## Known issues
 ### Preview doesn't render in Brave
 This is caused by the device recognition shield in Brave. By changing the setting for "Device Recognition" in Shield settings to "Allow all device recognition attemps" or "Only block cross-site device recognition attemps" you should not get this error.
