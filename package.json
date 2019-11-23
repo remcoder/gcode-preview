@@ -1,6 +1,6 @@
 {
   "name": "gcode-preview",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Render a 3d print model from a gcode file",
   "author": "remcoder@gmail.com",
   "license": "MIT",
