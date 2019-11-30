@@ -5,13 +5,14 @@
       "noImplicitAny": true,
       "outDir": "./dist",
       "target": "es2015",
+      "esModuleInterop": true,
       "module": "es2015",
       "sourceMap": true,
       "baseUrl": ".",
       "paths": {
         "three": ["node_modules/three/src/Three"]
       },
-      "typeRoots" : ["types"]
+      "typeRoots" : ["types","node_modules/@types"]
     },
     "files": ["src/gcode-preview.ts"]
 }
