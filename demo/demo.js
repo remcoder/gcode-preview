@@ -53,8 +53,8 @@ function initDemo() {
 }
 
 function updateUI() {
-  slider.setAttribute('max', gcodePreview.limit);
-  slider.value = gcodePreview.limit;
+  slider.setAttribute('max', gcodePreview.layers.length-1);
+  slider.value = gcodePreview.layers.length-1;
   layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
   
   if (gcodePreview.renderExtrusion)

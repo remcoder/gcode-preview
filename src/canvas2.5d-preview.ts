@@ -149,11 +149,11 @@ export class Preview implements PreviewOptions {
   }
 
   processGCode(gcode: string) {
-      const { header, layers, limit } = this.parser.parseGcode(gcode);
+      const { header, layers } = this.parser.parseGcode(gcode);
 
       this.header = header;
       this.layers = layers;
-      this.limit = limit;
+      this.limit = layers.length -1;
 
       console.time('rendering');
       this.render();
