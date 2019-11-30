@@ -86,9 +86,8 @@ export class Parser {
 
     const header = { slicer: "MySlicer" }; //this.parseHeader(commands);
     const layers = this.groupIntoLayers(commands);
-    const limit = layers.length - 1;
     console.timeEnd('parsing');
-    return { header, layers, limit };
+    return { header, layers };
   }
 
   // TODO: prevent scanning the whole gcode file

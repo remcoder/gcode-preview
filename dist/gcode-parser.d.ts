@@ -25,7 +25,6 @@ export declare class Parser {
             slicer: string;
         };
         layers: Layer[];
-        limit: number;
     };
     parseHeader(commands: GCodeCommand[]): {
         slicer: string;
