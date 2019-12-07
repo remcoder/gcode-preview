@@ -18,7 +18,11 @@ export class Layer {
 }
 
 export class Parser {
-
+  layers: Layer[] = []
+  currentLayer : Layer
+  curZ = 0;
+  maxZ = 0;
+  
   parseCommand(line: string, keepComments = true) : GCodeCommand | null {
     const input = line.trim();
     const splitted = input.split(';');
@@ -50,65 +54,39 @@ export class Parser {
   }
 
   groupIntoLayers(commands : GCodeCommand[]) : Layer[] {
-    const layers = [];
-    let currentLayer : Layer;
-    let maxZ = 0;
-    const firstLayerMaxZ = 2;
-
     for(const cmd of commands.filter(cmd => cmd instanceof MoveCommand) as MoveCommand[]) {
       const params = cmd.params;
-        // create a new layer when
-        // 1. z movement is detected
-        // 2. the z movement reaches a new height (allows up/down movement within a layer)
-        // 3. the first z movement isn't higher than 1 (keeps initial high z movement from being interpreted as a layer floatin in the air)
-        if (params.z && params.z > maxZ && (maxZ != 0 || params.z < firstLayerMaxZ)) {
-          maxZ = params.z;
-          currentLayer = new Layer(layers.length, [cmd]);
-          layers.push(currentLayer);
-          continue;
-        }
-        if (currentLayer)
-            currentLayer.commands.push(cmd);
+      if (params.z) {
+        // abs mode
+        this.curZ = params.z;
+      }
+
+      if (params.e > 0 && (this.curZ > this.maxZ)) {
+        this.maxZ = this.curZ;
+        this.currentLayer = new Layer(this.layers.length, [cmd]);
+        this.layers.push(this.currentLayer);
+        continue;
+      }
+      if (this.currentLayer)
+        this.currentLayer.commands.push(cmd);
     }
 
-    return layers;
+    return this.layers;
   }
 
-  parseGcode(input: string) {
-    console.time('parsing');
-    const lines = input
-        .split('\n')
-        .filter(l => l.length>0); // discard empty lines
+  parseGcode(input: string | string[]) {
+    const lines = Array.isArray(input) ? input : input
+      .split('\n')
+      .filter(l => l.length>0); // discard empty lines
 
-    const commands : GCodeCommand[] = lines
+    const commands = this.lines2commands(lines);
+    this.groupIntoLayers(commands);
+    return { layers: this.layers };
+  }
+
+  private lines2commands(lines: string[]) {
+    return lines.filter(l => l.length>0) // discard empty lines
       .map(l => this.parseCommand(l))
       .filter(cmd => cmd !== null);
-
-    const header = { slicer: "MySlicer" }; //this.parseHeader(commands);
-    const layers = this.groupIntoLayers(commands);
-    console.timeEnd('parsing');
-    return { header, layers };
-  }
-
-  // TODO: prevent scanning the whole gcode file
-  parseHeader(commands: GCodeCommand[]) {
-    const comments = commands
-      .filter(cmd => cmd.comment !== null)
-      .map(cmd => cmd.comment);
-
-    const slicer = comments
-        .filter(com => /(G|g)enerated/.test(com) )
-        .map(com => {
-            if(com.includes('Slic3r'))
-                return 'Slic3r';
-            if (com.includes('Simplify3D'))
-                return 'Simplify3D';
-            if (com.includes('Cura_SteamEngine'))
-                return 'Cura_SteamEngine';
-        })[0];
-
-    return {
-        slicer
-    };
   }
 }

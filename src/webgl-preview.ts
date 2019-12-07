@@ -15,8 +15,6 @@ export class WebGLPreview implements WebGLPreviewOptions {
   parser = new Parser()
   limit: number
   targetId: string
-  layers: Layer[]
-  header: { slicer: string }
   scene: THREE.Scene
   camera: THREE.PerspectiveCamera
   renderer: THREE.WebGLRenderer
@@ -49,21 +47,21 @@ export class WebGLPreview implements WebGLPreviewOptions {
     this.animate();
   }
 
+  get layers() {
+    return this.parser.layers;
+  }
+
   animate() {
     requestAnimationFrame(() => this.animate() );
     this.renderer.render( this.scene, this.camera );
   }
 
-  processGCode(gcode: string) {
-    const { header, layers } = this.parser.parseGcode(gcode);
+  processGCode(gcode: string | string[]) {
+    this.parser.parseGcode(gcode);
 
-    this.header = header;
-    this.layers = layers;
-    this.limit - layers.length - 1;
+    this.limit = this.layers.length - 1;
 
-    console.time('rendering webgl');
     this.render();
-    console.timeEnd('rendering webgl');  
   }
 
   render() {

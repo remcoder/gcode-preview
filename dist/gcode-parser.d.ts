@@ -17,17 +17,16 @@ export declare class Layer {
     constructor(layer: number, commands: GCodeCommand[]);
 }
 export declare class Parser {
+    layers: Layer[];
+    currentLayer: Layer;
+    curZ: number;
+    maxZ: number;
     parseCommand(line: string, keepComments?: boolean): GCodeCommand | null;
     parseMove(params: string[]): MoveCommandParams;
     groupIntoLayers(commands: GCodeCommand[]): Layer[];
-    parseGcode(input: string): {
-        header: {
-            slicer: string;
-        };
+    parseGcode(input: string | string[]): {
         layers: Layer[];
     };
-    parseHeader(commands: GCodeCommand[]): {
-        slicer: string;
-    };
+    private lines2commands;
 }
 export {};

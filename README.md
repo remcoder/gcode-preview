@@ -33,8 +33,7 @@ javascript:
       targetId: 'gcode-preview',
   });
   
-  preview.processGCode(this.gcode);
-  preview.render();
+  preview.processGCode(gcode);
 ```
 
 ## Known issues
