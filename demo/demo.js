@@ -110,9 +110,28 @@ async function loadGCodeFromServer(file) {
 function _handleGCode(filename, gcode) {
   fileName.innerText = filename;
   fileSize.innerText = humanFileSize(gcode.length);
-  gcodePreview.processGCode(gcode);
-
-  updateUI();
+  
+  const lines = gcode.split('\n');
+  console.log('lines', lines.length)
+  const chunkSize = 5000;
+  console.log('chunk size', chunkSize)
+  const chunks = lines.length / chunkSize;
+  console.log('chunks', chunks)
+  updateUI();  
+  
+  let c = 0;
+  function loadProgressive() {
+    const start = c*chunkSize;
+    const end = (c+1)*chunkSize;
+    const chunk = lines.slice(start, end);
+    gcodePreview.processGCode(chunk)
+    updateUI();
+    c++;
+    if (c < chunks) { 
+      requestAnimationFrame(loadProgressive);
+    }
+  }
+  loadProgressive();
 }
 
 function humanFileSize(size) {

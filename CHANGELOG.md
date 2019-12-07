@@ -1,5 +1,10 @@
-## 2.0.6
+## next
 - Canvas2D: fix an issue where the model would not be centered correctly
+- add incremental parsing
+- bugfix: only create a new layer when extruding
+- allow input to be either a string or an array of strings
+- demo: shows how to use incremental parsing to render a file progressively
+
 
 ## 2.0
 - updated demo page

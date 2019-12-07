@@ -18,10 +18,6 @@ export declare class WebGLPreview implements WebGLPreviewOptions {
     parser: Parser;
     limit: number;
     targetId: string;
-    layers: Layer[];
-    header: {
-        slicer: string;
-    };
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
     renderer: THREE.WebGLRenderer;
@@ -34,8 +30,9 @@ export declare class WebGLPreview implements WebGLPreviewOptions {
     renderExtrusion: boolean;
     renderTravel: boolean;
     constructor(opts: WebGLPreviewOptions);
+    get layers(): Layer[];
     animate(): void;
-    processGCode(gcode: string): void;
+    processGCode(gcode: string | string[]): void;
     render(): void;
     resize(): void;
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
