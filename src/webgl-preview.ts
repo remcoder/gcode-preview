@@ -21,6 +21,8 @@ export class WebGLPreview implements WebGLPreviewOptions {
   backgroundColor = 0xe0e0e0
   travelColor = 0x990000
   extrusionColor = 0x00FF00
+  upperLayerColor : number | null = null // = new THREE.Color(`hsl(180, 50%, 50%)`).getHex()
+  currentSegmentColor : number | null = null // = new THREE.Color(`hsl(270, 50%, 50%)`).getHex()
   container: HTMLElement
   canvas : HTMLCanvasElement
   renderExtrusion = true
@@ -96,12 +98,26 @@ export class WebGLPreview implements WebGLPreviewOptions {
         }
       }
       
-      // const color = Math.round(0xff * index/this.layers.length) * 0xff;
-      const brightness = Math.round(80 * index/this.layers.length);
-      const color = new THREE.Color(`hsl(0, 0%, ${brightness}%)`).getHex();
+      if (this.renderExtrusion) {
+        const brightness = Math.round(80 * index/this.layers.length);
+        const extrusionColor = new THREE.Color(`hsl(0, 0%, ${brightness}%)`).getHex();
+        
+        if(index == this.limit) {
+          const layerColor = this.upperLayerColor != null ? 
+            this.upperLayerColor :
+            extrusionColor;
+          
+          const lastSegmentColor = this.currentSegmentColor != null ? this.currentSegmentColor : layerColor;
 
-      if (this.renderExtrusion)
-        this.addLine( currentLayer.extrusion, color);
+          const endPoint = currentLayer.extrusion.splice(-3);
+          this.addLine( currentLayer.extrusion, layerColor);
+          const preendPoint = currentLayer.extrusion.splice(-3);
+          this.addLine( [...preendPoint, ...endPoint], lastSegmentColor);
+        }
+        else {
+          this.addLine( currentLayer.extrusion, extrusionColor);
+        }
+      }
       
       if (this.renderTravel) {
         this.addLine( currentLayer.travel, this.travelColor);
