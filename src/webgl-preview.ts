@@ -88,7 +88,8 @@ export class WebGLPreview implements WebGLPreviewOptions {
             e: g.params.e !== undefined ? g.params.e : state.e
           };
           const extrude = g.params.e > 0;
-          this.addLineSegment(currentLayer, state, next, extrude);
+          if (extrude && this.renderExtrusion || !extrude && this.renderTravel)
+            this.addLineSegment(currentLayer, state, next, extrude);
           
           // update state 
           if (g.params.x) state.x = g.params.x;
