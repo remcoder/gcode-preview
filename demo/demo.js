@@ -1,10 +1,8 @@
 let gcodePreview;
 
 const slider = document.getElementById('layers');
-const scaleSlider = document.getElementById('scale');
 const toggleExtrusion = document.getElementById('extrusion');
 const toggleTravel = document.getElementById('travel');
-const toggleZoneColors = document.getElementById('zone-colors');
 const layerCount = document.getElementById('layer-count');
 const fileName = document.getElementById('file-name');
 const fileSize = document.getElementById('file-size');
@@ -12,17 +10,17 @@ const snapshot = document.getElementById('snapshot');
 
 function initDemo() {
   const preview = new GCodePreview.WebGLPreview({
-      targetId : 'renderer' 
+    targetId : 'renderer'
   });
 
   slider.addEventListener('input', function(evt) {
-      preview.limit = +slider.value;
-      preview.render();
+    preview.limit = +slider.value;
+    preview.render();
   });
 
   toggleExtrusion.addEventListener('click', function() {
-      preview.renderExtrusion = toggleExtrusion.checked;
-      preview.render();
+    preview.renderExtrusion = toggleExtrusion.checked;
+    preview.render();
   });
 
   toggleTravel.addEventListener('click', function() {
@@ -31,7 +29,7 @@ function initDemo() {
   });
 
   window.addEventListener('resize', function() {
-      preview.resize();
+    preview.resize();
   });
 
   preview.canvas.addEventListener('dragover', function(evt) {
@@ -86,7 +84,7 @@ function updateUI() {
 
 function loadGCode(file) {
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function() {
     _handleGCode(file.name, reader.result);
   }
   reader.readAsText(file);
@@ -112,11 +110,11 @@ function _handleGCode(filename, gcode) {
   fileSize.innerText = humanFileSize(gcode.length);
   
   const lines = gcode.split('\n');
-  console.log('lines', lines.length)
+  console.log('lines', lines.length);
   const chunkSize = 5000;
-  console.log('chunk size', chunkSize)
+  console.log('chunk size', chunkSize);
   const chunks = lines.length / chunkSize;
-  console.log('chunks', chunks)
+  console.log('chunks', chunks);
   updateUI();  
   
   let c = 0;
@@ -124,7 +122,7 @@ function _handleGCode(filename, gcode) {
     const start = c*chunkSize;
     const end = (c+1)*chunkSize;
     const chunk = lines.slice(start, end);
-    gcodePreview.processGCode(chunk)
+    gcodePreview.processGCode(chunk);
     updateUI();
     c++;
     if (c < chunks) { 

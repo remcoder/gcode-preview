@@ -1,4 +1,4 @@
-import { Parser, Layer, MoveCommand } from './gcode-parser';
+import { Parser, MoveCommand } from './gcode-parser';
 import * as THREE from 'three';
 import * as OrbitControls  from 'three-orbitcontrols';
 
@@ -103,8 +103,9 @@ export class WebGLPreview implements WebGLPreviewOptions {
       if (this.renderExtrusion)
         this.addLine( currentLayer.extrusion, color);
       
-      if (this.renderTravel)
+      if (this.renderTravel) {
         this.addLine( currentLayer.travel, this.travelColor);
+      }
     }
 
     this.group.quaternion.setFromEuler( new THREE.Euler( -Math.PI/2, 0, 0 ) );
