@@ -3,6 +3,7 @@ let gcodePreview;
 const slider = document.getElementById('layers');
 const toggleExtrusion = document.getElementById('extrusion');
 const toggleTravel = document.getElementById('travel');
+const toggleHighlight = document.getElementById('highlight');
 const layerCount = document.getElementById('layer-count');
 const fileName = document.getElementById('file-name');
 const fileSize = document.getElementById('file-size');
@@ -24,6 +25,18 @@ function initDemo() {
 
   toggleTravel.addEventListener('click', function() {
     preview.renderTravel = toggleTravel.checked;
+    preview.render();
+  });
+
+  toggleHighlight.addEventListener('click', function() {
+    if (toggleHighlight.checked) {
+      preview.upperLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
+      preview.currentSegmentColor = new THREE.Color(`hsl(270, 50%, 50%)`).getHex();
+    }
+    else {
+      preview.upperLayerColor = null;
+      preview.currentSegmentColor = null;
+    }
     preview.render();
   });
 

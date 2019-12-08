@@ -1,4 +1,4 @@
-import { Parser, Layer } from './gcode-parser';
+import { Parser } from './gcode-parser';
 import * as THREE from 'three';
 declare type RenderLayer = {
     extrusion: number[];
@@ -11,7 +11,6 @@ declare type Point = {
     z: number;
 };
 declare type WebGLPreviewOptions = Partial<{
-    limit: number;
     targetId: string;
 }>;
 export declare class WebGLPreview implements WebGLPreviewOptions {
@@ -25,12 +24,14 @@ export declare class WebGLPreview implements WebGLPreviewOptions {
     backgroundColor: number;
     travelColor: number;
     extrusionColor: number;
+    upperLayerColor: number | null;
+    currentSegmentColor: number | null;
     container: HTMLElement;
     canvas: HTMLCanvasElement;
     renderExtrusion: boolean;
     renderTravel: boolean;
     constructor(opts: WebGLPreviewOptions);
-    readonly layers: Layer[];
+    readonly layers: import("./gcode-parser").Layer[];
     animate(): void;
     processGCode(gcode: string | string[]): void;
     render(): void;
