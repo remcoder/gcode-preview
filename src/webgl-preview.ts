@@ -7,8 +7,7 @@ type Point = {x:number, y:number, z:number};
 type State = {x:number, y:number, z:number, e:number}; // feedrate?
 
 type WebGLPreviewOptions = Partial<{
-  limit: number,
-  targetId: string
+  targetId: string,
 }>
 
 export class WebGLPreview implements WebGLPreviewOptions {
@@ -28,8 +27,6 @@ export class WebGLPreview implements WebGLPreviewOptions {
   renderTravel = false
 
   constructor(opts: WebGLPreviewOptions) {
-    this.limit = opts.limit;
-
     this.scene =  new THREE.Scene();
     this.scene.background = new THREE.Color( this.backgroundColor );
     this.targetId = opts.targetId;
