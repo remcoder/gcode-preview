@@ -1,5 +1,9 @@
 ## next
-- Canvas2D: fix an issue where the model would not be centered correctly
+
+## alpha 2.1.0-alpha.1
+- don't reset the layer limit after parsing the gcode
+
+## alpha 2.1.0-alpha.0
 - add incremental parsing
 - bugfix: only create a new layer when extruding
 - allow input to be either a string or an array of strings
