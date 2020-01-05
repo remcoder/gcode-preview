@@ -100,7 +100,7 @@ export class WebGLPreview implements WebGLPreviewOptions {
         const brightness = Math.round(80 * index/this.layers.length);
         const extrusionColor = new THREE.Color(`hsl(0, 0%, ${brightness}%)`).getHex();
         
-        if(index == this.limit) {
+        if(index == this.layers.length - 1) {
           const layerColor = this.upperLayerColor != null ? 
             this.upperLayerColor :
             extrusionColor;
