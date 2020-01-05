@@ -10,7 +10,9 @@ const fileSize = document.getElementById('file-size');
 
 function initDemo() {
   const preview = new GCodePreview.WebGLPreview({
-    targetId : 'renderer'
+    targetId : 'renderer',
+    topLayerColor: new THREE.Color(`hsl(180, 50%, 50%)`).getHex(),
+    lastSegmentColor: new THREE.Color(`hsl(270, 50%, 50%)`).getHex()
   });
 
   slider.addEventListener('input', function(evt) {
@@ -30,12 +32,12 @@ function initDemo() {
 
   toggleHighlight.addEventListener('click', function() {
     if (toggleHighlight.checked) {
-      preview.upperLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
-      preview.currentSegmentColor = new THREE.Color(`hsl(270, 50%, 50%)`).getHex();
+      preview.topLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
+      preview.lastSegmentColor = new THREE.Color(`hsl(270, 50%, 50%)`).getHex();
     }
     else {
-      preview.upperLayerColor = null;
-      preview.currentSegmentColor = null;
+      preview.topLayerColor = null;
+      preview.lastSegmentColor = null;
     }
     preview.render();
   });
@@ -60,6 +62,8 @@ function initDemo() {
 
   gcodePreview = preview;
   
+  updateUI();
+
   return preview;
 }
 
@@ -77,6 +81,11 @@ function updateUI() {
     toggleTravel.setAttribute("checked", "checked");
   else
     toggleTravel.removeAttribute("checked");
+
+  if (gcodePreview.topLayerColor !== undefined)
+    toggleHighlight.setAttribute("checked", "checked");
+  else
+    toggleHighlight.removeAttribute("checked");
 }
 
 function loadGCode(file) {
@@ -108,7 +117,7 @@ function _handleGCode(filename, gcode) {
   
   const lines = gcode.split('\n');
   console.log('lines', lines.length);
-  const chunkSize = 5000;
+  const chunkSize = 1000;
   console.log('chunk size', chunkSize);
   const chunks = lines.length / chunkSize;
   console.log('chunks', chunks);
@@ -123,9 +132,11 @@ function _handleGCode(filename, gcode) {
     updateUI();
     c++;
     if (c < chunks) { 
-      requestAnimationFrame(loadProgressive);
+      setTimeout(loadProgressive, 100);
     }
   }
+  console.log('loading')
+  gcodePreview.clear();
   loadProgressive();
 }
 

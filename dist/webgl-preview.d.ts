@@ -12,10 +12,13 @@ declare type Point = {
 };
 declare type WebGLPreviewOptions = Partial<{
     targetId: string;
+    limit: number;
+    topLayerColor: number;
+    lastSegmentColor: number;
 }>;
 export declare class WebGLPreview implements WebGLPreviewOptions {
     parser: Parser;
-    limit: number;
+    limit?: number;
     targetId: string;
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
@@ -24,8 +27,8 @@ export declare class WebGLPreview implements WebGLPreviewOptions {
     backgroundColor: number;
     travelColor: number;
     extrusionColor: number;
-    upperLayerColor: number | null;
-    currentSegmentColor: number | null;
+    topLayerColor?: number;
+    lastSegmentColor?: number;
     container: HTMLElement;
     canvas: HTMLCanvasElement;
     renderExtrusion: boolean;
@@ -35,6 +38,7 @@ export declare class WebGLPreview implements WebGLPreviewOptions {
     animate(): void;
     processGCode(gcode: string | string[]): void;
     render(): void;
+    clear(): void;
     resize(): void;
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
     addLine(vertices: number[], color: number): void;
