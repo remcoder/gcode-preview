@@ -58,8 +58,6 @@ export class WebGLPreview implements WebGLPreviewOptions {
   processGCode(gcode: string | string[]) {
     this.parser.parseGcode(gcode);
 
-    this.limit = this.layers.length - 1;
-
     this.render();
   }
 
