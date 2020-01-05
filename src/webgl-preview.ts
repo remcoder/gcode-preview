@@ -8,11 +8,14 @@ type State = {x:number, y:number, z:number, e:number}; // feedrate?
 
 type WebGLPreviewOptions = Partial<{
   targetId: string,
+  limit: number,
+  topLayerColor: number,
+  lastSegmentColor: number
 }>
 
 export class WebGLPreview implements WebGLPreviewOptions {
   parser = new Parser()
-  limit: number
+  limit?: number
   targetId: string
   scene: THREE.Scene
   camera: THREE.PerspectiveCamera
@@ -21,8 +24,8 @@ export class WebGLPreview implements WebGLPreviewOptions {
   backgroundColor = 0xe0e0e0
   travelColor = 0x990000
   extrusionColor = 0x00FF00
-  upperLayerColor : number | null = null // = new THREE.Color(`hsl(180, 50%, 50%)`).getHex()
-  currentSegmentColor : number | null = null // = new THREE.Color(`hsl(270, 50%, 50%)`).getHex()
+  topLayerColor? : number
+  lastSegmentColor? : number
   container: HTMLElement
   canvas : HTMLCanvasElement
   renderExtrusion = true
@@ -32,6 +35,9 @@ export class WebGLPreview implements WebGLPreviewOptions {
     this.scene =  new THREE.Scene();
     this.scene.background = new THREE.Color( this.backgroundColor );
     this.targetId = opts.targetId;
+    this.limit = opts.limit;
+    this.topLayerColor = opts.topLayerColor;
+    this.lastSegmentColor = opts.lastSegmentColor;
     this.container = document.getElementById(this.targetId);
     if (!this.container) throw new Error('Unable to find element ' + this.targetId);
     
@@ -57,7 +63,6 @@ export class WebGLPreview implements WebGLPreviewOptions {
 
   processGCode(gcode: string | string[]) {
     this.parser.parseGcode(gcode);
-
     this.render();
   }
 
@@ -101,11 +106,11 @@ export class WebGLPreview implements WebGLPreviewOptions {
         const extrusionColor = new THREE.Color(`hsl(0, 0%, ${brightness}%)`).getHex();
         
         if(index == this.layers.length - 1) {
-          const layerColor = this.upperLayerColor != null ? 
-            this.upperLayerColor :
+          const layerColor = this.topLayerColor !== undefined ? 
+            this.topLayerColor :
             extrusionColor;
           
-          const lastSegmentColor = this.currentSegmentColor != null ? this.currentSegmentColor : layerColor;
+          const lastSegmentColor = this.lastSegmentColor !== undefined ? this.lastSegmentColor : layerColor;
 
           const endPoint = currentLayer.extrusion.splice(-3);
           this.addLine( currentLayer.extrusion, layerColor);
@@ -126,6 +131,11 @@ export class WebGLPreview implements WebGLPreviewOptions {
     this.group.position.set( - 100, - 20, 100 );
     this.scene.add( this.group );
     this.renderer.render( this.scene, this.camera );
+  }
+
+  clear() {
+    this.limit = Infinity;
+    this.parser = new Parser();
   }
 
   resize() {
