@@ -19,12 +19,12 @@ or
 
 ### Quick start
 
-html:
+#### Html
 ```
   <div id="gcode-preview">
 ```
 
-javascript:
+#### Javascript
 ```  
   const gcode = 'G0 X0 Y0 Z0.2\nG1 X42 Y42'; // draw a horizontal line
   const preview = new WebGLPreview({
@@ -36,7 +36,7 @@ javascript:
 ```
 
 ### Vue.js integration
-There's also a [vue.js example](https://github.com/remcoder/gcode-preview-vue-demo) that has a [Vue component](https://github.com/remcoder/gcode-preview-vue-demo/blob/master/src/components/GCodePreview.vue) to wrap the library.
+There's also a [Vue.js example](https://github.com/remcoder/gcode-preview-vue-demo) that has a [Vue component](https://github.com/remcoder/gcode-preview-vue-demo/blob/master/src/components/GCodePreview.vue) to wrap the library.
 
 ## Known issues
 ### Preview doesn't render in Brave
