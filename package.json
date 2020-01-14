@@ -41,6 +41,7 @@
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
+    "serialize-javascript": "^2.1.1",
     "three": "^0.110.0",
     "three-orbitcontrols": "^2.110.1"
   }
