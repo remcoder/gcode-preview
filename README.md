@@ -1,10 +1,11 @@
 # GCode Preview
-A simple GCode parser & viewer with 3D printing in mind. Written in Typescript. 
+A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D printing in mind. Written in Typescript. 
 
-## WebGL 3D + pan/zoom/rotate controls
+## 3D WebGL + pan/zoom/rotate controls
 ![Demo Animation](../assets/benchy.gif?raw=true)
 
-See a [demo](https://gcode-preview.web.app/) here
+## Demo
+Go try the [interactive demo](https://gcode-preview.web.app/).
 
 
 ## Installation
@@ -15,8 +16,6 @@ or
 
 `yarn add gcode-preview`
 
-### Vue.js example
-See [here](https://github.com/remcoder/gcode-preview-vue-demo) for an example with Vue.js
 
 ### Quick start
 
@@ -35,6 +34,9 @@ javascript:
   preview.processGCode(gcode);
   preview.render();
 ```
+
+### Vue.js integration
+There's also a [vue.js example](https://github.com/remcoder/gcode-preview-vue-demo) that has a [Vue component](https://github.com/remcoder/gcode-preview-vue-demo/blob/master/src/components/GCodePreview.vue) to wrap the library.
 
 ## Known issues
 ### Preview doesn't render in Brave
