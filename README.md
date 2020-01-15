@@ -26,7 +26,7 @@ or
 
 #### Javascript
 ```  
-  const gcode = 'G0 X0 Y0 Z0.2\nG1 X42 Y42'; // draw a horizontal line
+  const gcode = 'G0 X0 Y0 Z0.2\nG1 X42 Y42'; // draw a diagonal line
   const preview = new WebGLPreview({
       targetId: 'gcode-preview',
   });
