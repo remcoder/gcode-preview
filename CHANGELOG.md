@@ -1,9 +1,10 @@
 ## next
 
-## alpha 2.1.0-alpha.1
+## alpha 2.1.0-alpha.2
 - don't reset the layer limit after parsing the gcode
 - highlight the top layer and the last segment
 - top layer / last segment color is configurable
+- clear() method added to reset parser state
 
 ## alpha 2.1.0-alpha.0
 - add incremental parsing
