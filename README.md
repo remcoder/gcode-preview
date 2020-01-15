@@ -1,4 +1,4 @@
-# GCode Preview
+# GCode Preview <img src=https://badge.fury.io/js/gcode-preview.svg />
 A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D printing in mind. Written in Typescript. 
 
 ## 3D WebGL + pan/zoom/rotate controls
