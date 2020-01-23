@@ -34,7 +34,7 @@ export declare class WebGLPreview implements WebGLPreviewOptions {
     renderExtrusion: boolean;
     renderTravel: boolean;
     constructor(opts: WebGLPreviewOptions);
-    readonly layers: import("./gcode-parser").Layer[];
+    get layers(): import("./gcode-parser").Layer[];
     animate(): void;
     processGCode(gcode: string | string[]): void;
     render(): void;
