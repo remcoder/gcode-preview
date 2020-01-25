@@ -13,7 +13,8 @@ function initDemo() {
   const preview = new GCodePreview.WebGLPreview({
     targetId : 'renderer',
     topLayerColor: new THREE.Color(`hsl(180, 50%, 50%)`).getHex(),
-    lastSegmentColor: new THREE.Color(`hsl(270, 50%, 50%)`).getHex()
+    lastSegmentColor: new THREE.Color(`hsl(270, 50%, 50%)`).getHex(),
+    lineWidth: 0.005
   });
 
   slider.addEventListener('input', function(evt) {
