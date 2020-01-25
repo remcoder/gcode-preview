@@ -42,5 +42,6 @@ export declare class WebGLPreview implements WebGLPreviewOptions {
     resize(): void;
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
     addLine(vertices: number[], color: number): void;
+    addThickLine(vertices: number[], color: number): void;
 }
 export {};

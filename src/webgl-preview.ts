@@ -1,6 +1,10 @@
 import { Parser, MoveCommand } from './gcode-parser';
 import * as THREE from 'three';
 import * as OrbitControls  from 'three-orbitcontrols';
+import { Line2 } from './three-line2/Line2';
+import { LineMaterial } from './three-line2/LineMaterial';
+import { LineGeometry } from './three-line2/LineGeometry';
+import { LineSegments2 } from './three-line2/LineSegments2';
 
 type RenderLayer = { extrusion: number[], travel: number[], z: number };
 type Point = {x:number, y:number, z:number};
@@ -41,7 +45,7 @@ export class WebGLPreview implements WebGLPreviewOptions {
     this.container = document.getElementById(this.targetId);
     if (!this.container) throw new Error('Unable to find element ' + this.targetId);
     
-    this.camera = new THREE.PerspectiveCamera( 75, this.container.offsetWidth/this.container.offsetHeight, 0.1, 1000 );
+    this.camera = new THREE.PerspectiveCamera( 75, this.container.offsetWidth/this.container.offsetHeight, 10, 1000 );
     this.camera.position.set( 0, 0, 50 );
     this.renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true}); // enables snapshots
     this.renderer.setSize( this.container.offsetWidth, this.container.offsetHeight );
@@ -113,17 +117,17 @@ export class WebGLPreview implements WebGLPreviewOptions {
           const lastSegmentColor = this.lastSegmentColor !== undefined ? this.lastSegmentColor : layerColor;
 
           const endPoint = currentLayer.extrusion.splice(-3);
-          this.addLine( currentLayer.extrusion, layerColor);
+          this.addThickLine( currentLayer.extrusion, layerColor);
           const preendPoint = currentLayer.extrusion.splice(-3);
-          this.addLine( [...preendPoint, ...endPoint], lastSegmentColor);
+          this.addThickLine( [...preendPoint, ...endPoint], lastSegmentColor);
         }
         else {
-          this.addLine( currentLayer.extrusion, extrusionColor);
+          this.addThickLine( currentLayer.extrusion, extrusionColor);
         }
       }
       
       if (this.renderTravel) {
-        this.addLine( currentLayer.travel, this.travelColor);
+        this.addThickLine( currentLayer.travel, this.travelColor);
       }
     }
 
@@ -147,8 +151,7 @@ export class WebGLPreview implements WebGLPreviewOptions {
 
   addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) {
     const line = extrude ? layer.extrusion : layer.travel;
-    line.push( p1.x, p1.y, p1.z );
-    line.push( p2.x, p2.y, p2.z );
+    line.push( p1.x, p1.y, p1.z, p2.x, p2.y, p2.z );
   }
 
   addLine(vertices: number[], color: number) {
@@ -158,5 +161,20 @@ export class WebGLPreview implements WebGLPreviewOptions {
     const material = new THREE.LineBasicMaterial( { color: color } );
     const lineSegments = new THREE.LineSegments( geometry, material );
     this.group.add( lineSegments );
+  }
+
+  addThickLine(vertices: number[], color: number) {
+    const geometry = new LineGeometry();
+    geometry.setPositions( vertices );
+
+    const matLine = new LineMaterial({
+      color: color,
+      linewidth: 0.004, // in pixels
+    });
+
+    const line = new LineSegments2( geometry, matLine );
+    // line.computeLineDistances();
+    // line.scale.set( .1, .1, .1 );
+    this.group.add(line);
   }
 }
