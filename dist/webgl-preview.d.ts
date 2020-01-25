@@ -10,13 +10,14 @@ declare type Point = {
     y: number;
     z: number;
 };
-declare type WebGLPreviewOptions = Partial<{
+declare type WebGLPreviewOptions = {
     targetId: string;
-    limit: number;
-    topLayerColor: number;
-    lastSegmentColor: number;
-}>;
-export declare class WebGLPreview implements WebGLPreviewOptions {
+    limit?: number;
+    topLayerColor?: number;
+    lastSegmentColor?: number;
+    lineWidth: number;
+};
+export declare class WebGLPreview {
     parser: Parser;
     limit?: number;
     targetId: string;
@@ -33,6 +34,7 @@ export declare class WebGLPreview implements WebGLPreviewOptions {
     canvas: HTMLCanvasElement;
     renderExtrusion: boolean;
     renderTravel: boolean;
+    lineWidth: number | null;
     constructor(opts: WebGLPreviewOptions);
     get layers(): import("./gcode-parser").Layer[];
     animate(): void;

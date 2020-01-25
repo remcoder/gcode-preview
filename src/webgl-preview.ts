@@ -10,14 +10,15 @@ type RenderLayer = { extrusion: number[], travel: number[], z: number };
 type Point = {x:number, y:number, z:number};
 type State = {x:number, y:number, z:number, e:number}; // feedrate?
 
-type WebGLPreviewOptions = Partial<{
+type WebGLPreviewOptions = {
   targetId: string,
-  limit: number,
-  topLayerColor: number,
-  lastSegmentColor: number
-}>
+  limit?: number,
+  topLayerColor?: number,
+  lastSegmentColor?: number,
+  lineWidth: number
+}
 
-export class WebGLPreview implements WebGLPreviewOptions {
+export class WebGLPreview {
   parser = new Parser()
   limit?: number
   targetId: string
@@ -34,6 +35,7 @@ export class WebGLPreview implements WebGLPreviewOptions {
   canvas : HTMLCanvasElement
   renderExtrusion = true
   renderTravel = false
+  lineWidth : number | null = null
 
   constructor(opts: WebGLPreviewOptions) {
     this.scene =  new THREE.Scene();
@@ -42,6 +44,8 @@ export class WebGLPreview implements WebGLPreviewOptions {
     this.limit = opts.limit;
     this.topLayerColor = opts.topLayerColor;
     this.lastSegmentColor = opts.lastSegmentColor;
+    this.lineWidth = opts.lineWidth;
+    
     this.container = document.getElementById(this.targetId);
     if (!this.container) throw new Error('Unable to find element ' + this.targetId);
     
@@ -117,17 +121,17 @@ export class WebGLPreview implements WebGLPreviewOptions {
           const lastSegmentColor = this.lastSegmentColor !== undefined ? this.lastSegmentColor : layerColor;
 
           const endPoint = currentLayer.extrusion.splice(-3);
-          this.addThickLine( currentLayer.extrusion, layerColor);
+          this.addLine( currentLayer.extrusion, layerColor);
           const preendPoint = currentLayer.extrusion.splice(-3);
-          this.addThickLine( [...preendPoint, ...endPoint], lastSegmentColor);
+          this.addLine( [...preendPoint, ...endPoint], lastSegmentColor);
         }
         else {
-          this.addThickLine( currentLayer.extrusion, extrusionColor);
+          this.addLine( currentLayer.extrusion, extrusionColor);
         }
       }
       
       if (this.renderTravel) {
-        this.addThickLine( currentLayer.travel, this.travelColor);
+        this.addLine( currentLayer.travel, this.travelColor);
       }
     }
 
@@ -155,6 +159,11 @@ export class WebGLPreview implements WebGLPreviewOptions {
   }
 
   addLine(vertices: number[], color: number) {
+    if ( typeof this.lineWidth == "number" ) {
+      this.addThickLine( vertices, color);
+      return;
+    }
+    
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
     
@@ -169,7 +178,7 @@ export class WebGLPreview implements WebGLPreviewOptions {
 
     const matLine = new LineMaterial({
       color: color,
-      linewidth: 0.004, // in pixels
+      linewidth: this.lineWidth, // in pixels
     });
 
     const line = new LineSegments2( geometry, matLine );
