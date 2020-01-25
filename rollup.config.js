@@ -16,7 +16,7 @@ export default {
    name: 'GCodePreview', // the global which can be used in a browser
    globals: {
     'three': 'THREE',
-    'three-orbitcontrols': "THREE.OrbitControls"
+    'three-orbitcontrols': "THREE.OrbitControls",
    }
   }
  ],
