@@ -147,10 +147,12 @@ export class WebGLPreview {
   }
 
   resize() {
-    this.renderer.setSize( this.container.offsetWidth, this.container.offsetHeight );
+    const [w,h] = [this.container.offsetWidth, this.container.offsetHeight];
+    this.renderer.setSize( w,h );
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.camera.aspect = this.container.offsetWidth / this.container.offsetHeight;
+    this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h);
   }
 
   addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) {
