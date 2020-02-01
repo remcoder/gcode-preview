@@ -11,6 +11,7 @@ declare type Point = {
     z: number;
 };
 declare type WebGLPreviewOptions = {
+    canvas?: HTMLCanvasElement;
     targetId: string;
     limit?: number;
     topLayerColor?: number;

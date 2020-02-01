@@ -1,7 +1,6 @@
 import { Parser, MoveCommand } from './gcode-parser';
 import * as THREE from 'three';
 import * as OrbitControls  from 'three-orbitcontrols';
-import { Line2 } from './three-line2/Line2';
 import { LineMaterial } from './three-line2/LineMaterial';
 import { LineGeometry } from './three-line2/LineGeometry';
 import { LineSegments2 } from './three-line2/LineSegments2';
@@ -11,6 +10,7 @@ type Point = {x:number, y:number, z:number};
 type State = {x:number, y:number, z:number, e:number}; // feedrate?
 
 type WebGLPreviewOptions = {
+  canvas?: HTMLCanvasElement,
   targetId: string,
   limit?: number,
   topLayerColor?: number,
@@ -40,22 +40,34 @@ export class WebGLPreview {
   constructor(opts: WebGLPreviewOptions) {
     this.scene =  new THREE.Scene();
     this.scene.background = new THREE.Color( this.backgroundColor );
+    this.canvas = opts.canvas;
     this.targetId = opts.targetId;
     this.limit = opts.limit;
     this.topLayerColor = opts.topLayerColor;
     this.lastSegmentColor = opts.lastSegmentColor;
     this.lineWidth = opts.lineWidth;
     
-    this.container = document.getElementById(this.targetId);
-    if (!this.container) throw new Error('Unable to find element ' + this.targetId);
-    
-    this.camera = new THREE.PerspectiveCamera( 75, this.container.offsetWidth/this.container.offsetHeight, 10, 1000 );
-    this.camera.position.set( 0, 0, 50 );
-    this.renderer = new THREE.WebGLRenderer();
-    this.renderer.setSize( this.container.offsetWidth, this.container.offsetHeight );
+    console.debug('opts', opts);
+
+    if (!this.canvas) {
+      const container = document.getElementById(this.targetId);
+      if (!container) throw new Error('Unable to find element ' + this.targetId);
+
+      this.renderer = new THREE.WebGLRenderer();
+      this.canvas = this.renderer.domElement;
+      
+      container.appendChild( this.canvas );
+    }
+    else {
+      this.renderer = new THREE.WebGLRenderer( { canvas: this.canvas });
+    }
+
     this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.canvas = this.renderer.domElement;
-    this.container.appendChild( this.canvas );
+    
+    this.camera = new THREE.PerspectiveCamera( 75, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 1000 );
+    this.camera.position.set( 0, 0, 50 );
+    this.resize();
+    
     const controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.animate();
   }
@@ -147,7 +159,7 @@ export class WebGLPreview {
   }
 
   resize() {
-    const [w,h] = [this.container.offsetWidth, this.container.offsetHeight];
+    const [w,h] = [this.canvas.offsetWidth, this.canvas.offsetHeight];
     this.renderer.setSize( w,h );
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.camera.aspect = w / h;
