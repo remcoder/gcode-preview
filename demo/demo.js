@@ -10,8 +10,9 @@ const fileSize = document.getElementById('file-size');
 const snapshot = document.getElementById('snapshot');
 
 function initDemo() {
-  const preview = new GCodePreview.WebGLPreview({
-    targetId : 'renderer',
+  const preview = window.preview  = new GCodePreview.WebGLPreview({
+    canvas: document.querySelector('.gcode-previewer'),
+    // targetId : 'renderer',
     topLayerColor: new THREE.Color(`hsl(180, 50%, 50%)`).getHex(),
     lastSegmentColor: new THREE.Color(`hsl(270, 50%, 50%)`).getHex(),
     lineWidth: 0.005
