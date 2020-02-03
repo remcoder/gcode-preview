@@ -160,11 +160,10 @@ export class WebGLPreview {
 
   resize() {
     const [w,h] = [this.canvas.offsetWidth, this.canvas.offsetHeight];
-    this.renderer.setSize( w,h );
-    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
-    this.renderer.setSize(w, h);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(w, h, false);
   }
 
   addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) {
