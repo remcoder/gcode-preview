@@ -90,6 +90,8 @@ function updateUI() {
   slider.value = gcodePreview.layers.length-1;
   layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
   
+  console.log(gcodePreview.layers)
+
   if (gcodePreview.renderExtrusion)
     toggleExtrusion.setAttribute("checked", "checked");
   else
@@ -133,14 +135,12 @@ function _handleGCode(filename, gcode) {
   fileName.innerText = filename;
   fileSize.innerText = humanFileSize(gcode.length);
   
-  const lines = gcode.split('\n');
-  console.log('lines', lines.length);
-  const chunkSize = 1000;
-  console.log('chunk size', chunkSize);
-  const chunks = lines.length / chunkSize;
-  console.log('chunks', chunks);
   updateUI();  
   
+  startLoadingProgressive(gcode);
+}
+
+function startLoadingProgressive(gcode) {
   let c = 0;
   function loadProgressive() {
     const start = c*chunkSize;
@@ -150,11 +150,19 @@ function _handleGCode(filename, gcode) {
     updateUI();
     c++;
     if (c < chunks) { 
-      setTimeout(loadProgressive, 100);
+      window.__loadTimer__ = setTimeout(loadProgressive, 100);
     }
   }
+  const lines = gcode.split('\n');
+  console.log('lines', lines.length);
+  const chunkSize = 1000;
+  console.log('chunk size', chunkSize);
+  const chunks = lines.length / chunkSize;
+  console.log('chunks', chunks);
   console.log('loading')
   gcodePreview.clear();
+  if (window.__loadTimer__) 
+      clearTimeout(window.__loadTimer__);
   loadProgressive();
 }
 
