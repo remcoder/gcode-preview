@@ -65,7 +65,11 @@ export class Parser {
         this.curZ = params.z;
       }
 
-      if (params.e > 0 && this.curZ > this.maxZ) {
+      if (
+        params.e > 0 &&
+        (params.x != undefined || params.y != undefined) &&
+        this.curZ > this.maxZ
+      ) {
         this.maxZ = this.curZ;
         this.currentLayer = new Layer(this.layers.length, [cmd]);
         this.layers.push(this.currentLayer);
