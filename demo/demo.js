@@ -37,11 +37,19 @@ function initDemo() {
       evt.stopPropagation()
       evt.preventDefault()
       evt.dataTransfer.dropEffect = 'copy'
+      document.body.className = "dragging";
+  });
+
+  preview.canvas.addEventListener('dragleave', function(evt) {
+      evt.stopPropagation()
+      evt.preventDefault()
+      document.body.className = "";
   });
 
   preview.canvas.addEventListener('drop', function(evt) {
       evt.stopPropagation()
       evt.preventDefault()
+      document.body.className = "";
       const files = evt.dataTransfer.files
       const file = files[0]
       loadGCode(file);

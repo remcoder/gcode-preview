@@ -1,14 +1,21 @@
 <head>
-  <title>GCode Preview 2.0 -- Written by Remco Veldkamp</title>
+  <title>GCode Preview 2.0 -- Preview a 3d print from a gcode file</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+  <div class="dnd">☝️ Drop a gcode file here to view it</div>
+  <div class="version-box"><a href="https://www.npmjs.com/package/gcode-preview">
+    <img src="http://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
+  </a></div>
   <div class="sidebar">
     <div>
-      <h1>GCode Preview 2.0</h1>
+      <h1>GCode Preview</h1>
+      <h2 class="description">Preview a 3d print from a gcode file</h2>
+      <br>
       <section>
-        <a id="file-name"></a>
+        
+        file <a id="file-name">loading..</a>
         <div id="layer-count"></div>
         <div id="file-size"></div>
       </section>
@@ -33,20 +40,29 @@
     </div>
     <div>
       <section>
+        <br>
         <div>
-          <a href="https://github.com/remcoder/gcode-preview">Github</a>
+          
         </div>
+        <div>
+          <a href="https://github.com/remcoder/gcode-preview">Github repo</a>
+        </div>
+        <br>
         <div>
           <a
             href="https://github.com/remcoder/gcode-preview/archive/master.zip"
-            >Download</a
-          >
+            >Download stable</a>
+        </div>
+        <div>
+          <a
+            href="https://github.com/remcoder/gcode-preview/archive/develop.zip"
+            >Download latest</a>
         </div>
       </section>
       <section>
         <div>MIT License</div>
-        <div>Copyright 2019</div>
-        <div><a href="http://twitter.com/remcoder">Remco Veldkamp</a></div>
+        <div>Copyright 2020</div>
+        <div><a href="http://github.com/remcoder">Remco Veldkamp</a></div>
       </section>
     </div>
   </div>
