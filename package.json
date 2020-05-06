@@ -1,6 +1,6 @@
 {
   "name": "gcode-preview",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Render a 3d print model from a gcode file",
   "author": "remcoder@gmail.com",
   "license": "MIT",
@@ -16,7 +16,7 @@
   ],
   "types": "dist/gcode-preview.d.ts",
   "devDependencies": {
-    "@types/jest": "^24.0.16",
+    "@types/jest": "^24.0.23",
     "copyfiles": "^2.1.1",
     "del-cli": "^1.1.0",
     "install": "^0.12.2",
@@ -41,6 +41,7 @@
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
+    "serialize-javascript": "^2.1.1",
     "three": "^0.110.0",
     "three-orbitcontrols": "^2.110.1"
   }
