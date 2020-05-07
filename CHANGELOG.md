@@ -1,6 +1,7 @@
 ## next
 
 ## 2.1.0-alpha.5
+- fix an issue with incremental rendering where the top layer would sometimes not have the correct color
 - allow canvas snapshots (to save the image as a file for instance)
 
 ## 2.1.0-alpha.4
