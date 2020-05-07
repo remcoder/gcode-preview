@@ -1,5 +1,23 @@
 <head>
-  <title>GCode Preview 2.0 -- Preview a 3d print from a gcode file</title>
+  <script>
+    function loadAnalytics() {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.setAttribute("async", "true");
+      script.setAttribute("src", "https://www.googletagmanager.com/gtag/js?id=UA-165890546-1");
+      document.documentElement.firstChild.appendChild(script);
+    }
+
+    if (document.location.host == 'gcode-preview.web.app') {
+      loadAnalytics();
+  
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-165890546-1');
+    }
+  </script>
+  <title>GCode Preview - Preview a 3d print from a gcode file</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
