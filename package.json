@@ -1,7 +1,7 @@
 {
   "name": "gcode-preview",
   "version": "2.1.0-alpha.4",
-  "description": "Render a 3d print model from a gcode file",
+  "description": "Preview a 3d print from a gcode file",
   "author": "remcoder@gmail.com",
   "license": "MIT",
   "repository": {
@@ -25,21 +25,22 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-terser": "^5.2.0",
     "rollup-plugin-typescript2": "^0.25.3",
-    "ts-jest": "^25.0.0",
+    "ts-jest": "^25.5.0",
     "typescript": "^3.7.5",
     "watch": "^1.0.2"
   },
   "scripts": {
     "prebuild": "del-cli dist/**/*",
     "build": "rollup -c && copyfiles dist/gcode-preview.js demo",
-    "watch": "watch 'yarn run build' src",
-    "predemo": "yarn run build",
+    "watch": "watch 'npm run build' src",
+    "predemo": "npm run build",
     "demo": "live-server demo --watch=.",
     "test": "jest",
     "test:watch": "jest --watch",
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
+    "serialize-javascript": "^2.1.1",
     "three": "^0.112.1",
     "three-orbitcontrols": "^2.110.3"
   }

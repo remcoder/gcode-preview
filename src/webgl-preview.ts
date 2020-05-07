@@ -54,12 +54,15 @@ export class WebGLPreview {
       if (!container)
         throw new Error('Unable to find element ' + this.targetId);
 
-      this.renderer = new THREE.WebGLRenderer();
+      this.renderer = new THREE.WebGLRenderer({preserveDrawingBuffer : true});
       this.canvas = this.renderer.domElement;
 
       container.appendChild(this.canvas);
     } else {
-      this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
+      this.renderer = new THREE.WebGLRenderer({ 
+        canvas: this.canvas,
+        preserveDrawingBuffer: true
+      });
     }
 
     this.renderer.setPixelRatio(window.devicePixelRatio);

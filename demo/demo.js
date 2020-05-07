@@ -7,6 +7,7 @@ const toggleHighlight = document.getElementById('highlight');
 const layerCount = document.getElementById('layer-count');
 const fileName = document.getElementById('file-name');
 const fileSize = document.getElementById('file-size');
+const snapshot = document.getElementById('snapshot');
 
 function initDemo() {
   const preview = (window.preview = new GCodePreview.WebGLPreview({
@@ -47,17 +48,32 @@ function initDemo() {
   });
 
   preview.canvas.addEventListener('dragover', function(evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
-    evt.dataTransfer.dropEffect = 'copy';
+      evt.stopPropagation();
+      evt.preventDefault();
+      evt.dataTransfer.dropEffect = 'copy';
+      document.body.className = "dragging";
+  });
+
+  preview.canvas.addEventListener('dragleave', function(evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      document.body.className = "";
   });
 
   preview.canvas.addEventListener('drop', function(evt) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      document.body.className = "";
+      const files = evt.dataTransfer.files;
+      const file = files[0];
+      loadGCode(file);
+  });
+
+  snapshot.addEventListener('click', function(evt) {
     evt.stopPropagation();
     evt.preventDefault();
-    const files = evt.dataTransfer.files;
-    const file = files[0];
-    loadGCode(file);
+
+    Canvas2Image.saveAsJPEG(gcodePreview.canvas,innerWidth, innerHeight, fileName.innerText.replace('.gcode','.jpg'));
   });
 
   gcodePreview = preview;
@@ -129,12 +145,12 @@ function startLoadingProgressive(gcode) {
     updateUI();
     c++;
     if (c < chunks) {
-      window.__loadTimer__ = setTimeout(loadProgressive, 25);
+      window.__loadTimer__ = setTimeout(loadProgressive, 16);
     }
   }
   const lines = gcode.split('\n');
   console.log('lines', lines.length);
-  const chunkSize = 100;
+  const chunkSize = 1000;
   console.log('chunk size', chunkSize);
   const chunks = lines.length / chunkSize;
   console.log('chunks', chunks);
