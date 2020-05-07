@@ -8,6 +8,7 @@ const toggleZoneColors = document.getElementById('zone-colors');
 const layerCount = document.getElementById('layer-count');
 const fileName = document.getElementById('file-name');
 const fileSize = document.getElementById('file-size');
+const snapshot = document.getElementById('snapshot');
 
 function initDemo() {
   const preview = new GCodePreview.WebGLPreview({
@@ -34,25 +35,32 @@ function initDemo() {
   });
 
   preview.canvas.addEventListener('dragover', function(evt) {
-      evt.stopPropagation()
-      evt.preventDefault()
-      evt.dataTransfer.dropEffect = 'copy'
+      evt.stopPropagation();
+      evt.preventDefault();
+      evt.dataTransfer.dropEffect = 'copy';
       document.body.className = "dragging";
   });
 
   preview.canvas.addEventListener('dragleave', function(evt) {
-      evt.stopPropagation()
-      evt.preventDefault()
+      evt.stopPropagation();
+      evt.preventDefault();
       document.body.className = "";
   });
 
   preview.canvas.addEventListener('drop', function(evt) {
-      evt.stopPropagation()
-      evt.preventDefault()
+      evt.stopPropagation();
+      evt.preventDefault();
       document.body.className = "";
-      const files = evt.dataTransfer.files
-      const file = files[0]
+      const files = evt.dataTransfer.files;
+      const file = files[0];
       loadGCode(file);
+  });
+
+  snapshot.addEventListener('click', function(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    Canvas2Image.saveAsJPEG(gcodePreview.canvas,innerWidth, innerHeight, fileName.innerText.replace('.gcode','.jpg'));
   });
 
   gcodePreview = preview;
@@ -100,7 +108,7 @@ async function loadGCodeFromServer(file) {
 }
 
 function _handleGCode(filename, gcode) {
-  fileName.innerText = filename
+  fileName.innerText = filename;
   fileSize.innerText = humanFileSize(gcode.length);
   gcodePreview.processGCode(gcode);
 

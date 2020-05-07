@@ -21,7 +21,7 @@
       </section>
       <section>
         <div class="controls">
-          <label>Layers:</label>&nbsp;<input
+          <label>Layers</label>&nbsp;<input
             type="range"
             min="0"
             value="0"
@@ -36,6 +36,9 @@
           <label for="travel">Travel</label
           ><input type="checkbox" id="travel" />
         </div>
+      </section>
+      <section>
+        <button id=snapshot>Create snapshot</button>
       </section>
     </div>
     <div>
@@ -70,6 +73,7 @@
   <div id="renderer" class="gcode-previewer"></div>
   <script src="three.min.js"></script>
   <script src="OrbitControls.js"></script>
+  <script src="canvas2image.js"></script>
   <script src="dist/gcode-preview.js"></script>
   <script src="demo.js"></script>
   <script>
