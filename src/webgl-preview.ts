@@ -40,7 +40,7 @@ export class WebGLPreview implements WebGLPreviewOptions {
     
     this.camera = new THREE.PerspectiveCamera( 75, this.container.offsetWidth/this.container.offsetHeight, 0.1, 1000 );
     this.camera.position.set( 0, 0, 50 );
-    this.renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: false}); // enables snapshots
+    this.renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true}); // enables snapshots
     this.renderer.setSize( this.container.offsetWidth, this.container.offsetHeight );
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.canvas = this.renderer.domElement;
