@@ -7,3 +7,4 @@ dist/__tests__
 yarn-error.log
 .firebase/hosting.*
 TODO.md
+.DS_Store
