@@ -43,6 +43,14 @@ There's also a [Vue.js example](https://github.com/remcoder/gcode-preview-vue-de
 This is caused by the device recognition shield in Brave. By changing the setting for "Device Recognition" in Shield settings to "Allow all device recognition attemps" or "Only block cross-site device recognition attemps" you should not get this error.
 https://github.com/mrdoob/three.js/issues/16904
 
+## Notice: deprecation of Canvas2D
+In favor of WebGL, I'm deprecating the Canvas 2Drendering. My reasons for this are: 
+ - WebGL (via THREE.js) gives me more options, like rotating the model
+ - WebGL renders faster
+ - I don't want to maintain 2 rendering methods due to time constraints
+
+This means that as of version 2.1.0 only WebGL will be supported. I you really want to use Canvas 2D, stay at the 2.0.x version branch and/or consider forking.
+
 ## Sponsors
 
 A big thanks to these sponsors for their contributions. 

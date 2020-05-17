@@ -117,7 +117,8 @@ export class Preview implements PreviewOptions {
       this.ctx.rotate(this.rotation * Math.PI / 180);
 
       // center model
-      this.ctx.translate(-this.center.x, -this.center.y);
+      if (this.center)
+        this.ctx.translate(-this.center.x, -this.center.y);
 
       this.renderWithColor(layer, index);
 
@@ -196,6 +197,9 @@ export class Preview implements PreviewOptions {
       if (cmd.params.y > maxY) maxY = cmd.params.y;
     }
 
+    if (minX === Infinity || maxX === -Infinity || minY === Infinity || minY === -Infinity)
+      return null;
+
     return {
         minX,
         maxX,
@@ -205,9 +209,10 @@ export class Preview implements PreviewOptions {
 }
 
 getCenter(layer: Layer) {
-  const l = layer || this.layers[0];
-  const bounds = this.getOuterBounds(l);
-
+  const bounds = this.getOuterBounds(layer);
+  
+  if (!bounds) return null;
+  
   return {
       x : bounds.minX + (bounds.maxX - bounds.minX) / 2,
       y : bounds.minY + (bounds.maxY - bounds.minY) / 2
@@ -215,7 +220,18 @@ getCenter(layer: Layer) {
 }
 
 getAdjustedCenter() {
-  const center = this.getCenter(this.layers[0]);
+  let center = null;
+  let l = 0;
+  // some gcode sequences, like priming lines, don't move in the Y direction, in which case there isn't really a bounding box
+  while(!center && l<this.layers.length) {
+    center = this.getCenter(this.layers[l]);
+    l++;
+  }
+  
+  if (!center) {
+    console.warn('Could not determine center of toolpath.');
+    return null;
+  }
   this.maxProjectionOffset = this.projectIso({x:0,y:0}, this.layers.length-1);
   center.x += this.maxProjectionOffset.x/2;
   center.y += this.maxProjectionOffset.y/2;
