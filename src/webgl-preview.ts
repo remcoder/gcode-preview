@@ -187,7 +187,7 @@ export class WebGLPreview {
   }
 
   addLine(vertices: number[], color: number) {
-    if (typeof this.lineWidth == 'number') {
+    if (typeof this.lineWidth == 'number' && this.lineWidth > 0) {
       this.addThickLine(vertices, color);
       return;
     }
@@ -204,17 +204,18 @@ export class WebGLPreview {
   }
 
   addThickLine(vertices: number[], color: number) {
-    const geometry = new LineGeometry();
-    geometry.setPositions(vertices);
+    if (!vertices.length) return;
 
+    const geometry = new LineGeometry();
+    
     const matLine = new LineMaterial({
       color: color,
-      linewidth: this.lineWidth // in pixels
+      linewidth: this.lineWidth / (1000 * window.devicePixelRatio)
     });
-
+    
+    geometry.setPositions(vertices);
     const line = new LineSegments2(geometry, matLine);
-    // line.computeLineDistances();
-    // line.scale.set( .1, .1, .1 );
+    
     this.group.add(line);
   }
 }

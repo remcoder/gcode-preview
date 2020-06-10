@@ -109,3 +109,15 @@ a {
 .dragging canvas {
   opacity: 0.7;
 }
+
+.experimental {
+  padding: 5px;
+  background-color: rgba(20, 55, 80, 0.5);;
+  font-size: 90%;
+}
+
+.experimental h4 {
+  margin: 0;
+  font-variant: small-caps;
+  font-weight: normal;
+}
