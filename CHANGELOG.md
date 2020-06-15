@@ -1,4 +1,4 @@
-## next
+## 2.1.0
 - remove lineWidth for now
 
 ## 2.1.0-alpha.5
