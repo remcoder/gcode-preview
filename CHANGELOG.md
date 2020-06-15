@@ -1,4 +1,5 @@
 ## next
+- remove lineWidth for now
 
 ## 2.1.0-alpha.5
 - fix an issue with incremental rendering where the top layer would sometimes not have the correct color

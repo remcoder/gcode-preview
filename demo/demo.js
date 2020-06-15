@@ -8,7 +8,7 @@ const layerCount = document.getElementById('layer-count');
 const fileName = document.getElementById('file-name');
 const fileSize = document.getElementById('file-size');
 const snapshot = document.getElementById('snapshot');
-const lineWidth = document.getElementById('line-width');
+// const lineWidth = document.getElementById('line-width');
 
 function initDemo() {
   const preview = (window.preview = new GCodePreview.WebGLPreview({
@@ -16,7 +16,7 @@ function initDemo() {
     // targetId : 'renderer',
     topLayerColor: new THREE.Color(`hsl(180, 50%, 50%)`).getHex(),
     lastSegmentColor: new THREE.Color(`hsl(270, 50%, 50%)`).getHex(),
-    lineWidth: 4
+    // lineWidth: 4
   }));
 
   preview.renderExtrusion = true;
@@ -48,10 +48,10 @@ function initDemo() {
     preview.render();
   });
 
-  lineWidth.addEventListener('change', function() {
-    preview.lineWidth = parseInt(lineWidth.value,10);
-    preview.render();
-  });
+  // lineWidth.addEventListener('change', function() {
+  //   preview.lineWidth = parseInt(lineWidth.value,10);
+  //   preview.render();
+  // });
 
   window.addEventListener('resize', function() {
     preview.resize();

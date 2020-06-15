@@ -45,7 +45,7 @@ export class WebGLPreview {
     this.limit = opts.limit;
     this.topLayerColor = opts.topLayerColor;
     this.lastSegmentColor = opts.lastSegmentColor;
-    this.lineWidth = opts.lineWidth;
+    // this.lineWidth = opts.lineWidth;
 
     console.debug('opts', opts);
 
