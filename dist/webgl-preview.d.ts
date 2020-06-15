@@ -17,8 +17,6 @@ declare type WebGLPreviewOptions = {
     topLayerColor?: number;
     lastSegmentColor?: number;
     lineWidth: number;
-    renderExtrusion: boolean;
-    renderTravel: boolean;
 };
 export declare class WebGLPreview {
     parser: Parser;
