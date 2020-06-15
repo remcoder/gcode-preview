@@ -42,8 +42,8 @@ function initDemo() {
       preview.topLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
       preview.lastSegmentColor = new THREE.Color(`hsl(270, 50%, 50%)`).getHex();
     } else {
-      preview.topLayerColor = null;
-      preview.lastSegmentColor = null;
+      preview.topLayerColor = undefined;
+      preview.lastSegmentColor = undefined;
     }
     preview.render();
   });

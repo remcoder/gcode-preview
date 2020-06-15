@@ -138,15 +138,8 @@ export class WebGLPreview {
         ).getHex();
 
         if (index == this.layers.length - 1) {
-          const layerColor =
-            this.topLayerColor !== undefined
-              ? this.topLayerColor
-              : extrusionColor;
-
-          const lastSegmentColor =
-            this.lastSegmentColor !== undefined
-              ? this.lastSegmentColor
-              : layerColor;
+          const layerColor = this.topLayerColor ?? extrusionColor;
+          const lastSegmentColor = this.lastSegmentColor ?? layerColor;
 
           const endPoint = currentLayer.extrusion.splice(-3);
           this.addLine(currentLayer.extrusion, layerColor);
