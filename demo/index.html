@@ -1,12 +1,30 @@
 <head>
-  <title>GCode Preview 2.0 -- Preview a 3d print from a gcode file</title>
+  <script>
+    function loadAnalytics() {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.setAttribute("async", "true");
+      script.setAttribute("src", "https://www.googletagmanager.com/gtag/js?id=UA-165890546-1");
+      document.documentElement.firstChild.appendChild(script);
+    }
+
+    if (document.location.host == 'gcode-preview.web.app') {
+      loadAnalytics();
+  
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-165890546-1');
+    }
+  </script>
+  <title>GCode Preview - Preview a 3d print from a gcode file</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
   <div class="dnd">☝️ Drop a gcode file here to view it</div>
   <div class="version-box"><a href="https://www.npmjs.com/package/gcode-preview">
-    <img src="http://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
+    <img src="https://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
   </a></div>
   <div class="sidebar">
     <div>
@@ -21,7 +39,7 @@
       </section>
       <section>
         <div class="controls">
-          <label>Layers:</label>&nbsp;<input
+          <label>Layers</label>&nbsp;<input
             type="range"
             min="0"
             value="0"
@@ -36,7 +54,24 @@
           <label for="travel">Travel</label
           ><input type="checkbox" id="travel" />
         </div>
+        <div class="controls">
+          <label for="highlight">Highlight top layer</label
+          ><input type="checkbox" id="highlight" />
+        </div>
+
+        
       </section>
+      <section>
+        <button id=snapshot>Create snapshot</button>
+      </section>
+
+      <!-- <section class="experimental">
+        <h4>experimental</h4>
+        <div class="controls">
+          <label for="lineWidth">Line width</label>
+          <input id="line-width" type="range" min="0" max="10" step="1" value="2" />
+        </div>
+      </section> -->
     </div>
     <div>
       <section>
@@ -67,9 +102,10 @@
     </div>
   </div>
 
-  <div id="renderer" class="gcode-previewer"></div>
+  <canvas id="renderer" class="gcode-previewer"></canvas>
   <script src="three.min.js"></script>
   <script src="OrbitControls.js"></script>
+  <script src="canvas2image.js"></script>
   <script src="dist/gcode-preview.js"></script>
   <script src="demo.js"></script>
   <script>
