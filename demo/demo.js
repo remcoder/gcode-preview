@@ -152,19 +152,21 @@ function startLoadingProgressive(gcode) {
     const start = c * chunkSize;
     const end = (c + 1) * chunkSize;
     const chunk = lines.slice(start, end);
-    gcodePreview.processGCode(chunk);
-    updateUI();
+    
     c++;
     if (c < chunks) {
-      window.__loadTimer__ = setTimeout(loadProgressive, 25);
+      window.__loadTimer__ = requestAnimationFrame(loadProgressive)
     }
     else {
       layers.removeAttribute('disabled');
     }
+    gcodePreview.processGCode(chunk);
+    updateUI();
   }
+
   const lines = gcode.split('\n');
   console.log('lines', lines.length);
-  const chunkSize = 100;
+  const chunkSize = 1000;
   console.log('chunk size', chunkSize);
   const chunks = lines.length / chunkSize;
   console.log('chunks', chunks);
