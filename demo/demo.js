@@ -1,6 +1,6 @@
 let gcodePreview;
 
-const slider = document.getElementById('layers');
+const layers = document.getElementById('layers');
 const toggleExtrusion = document.getElementById('extrusion');
 const toggleTravel = document.getElementById('travel');
 const toggleHighlight = document.getElementById('highlight');
@@ -22,8 +22,8 @@ function initDemo() {
   preview.renderExtrusion = true;
   preview.renderTravel = false;
 
-  slider.addEventListener('input', function(evt) {
-    preview.limit = +slider.value;
+  layers.addEventListener('input', function(evt) {
+    preview.limit = +layers.value;
     preview.render();
   });
 
@@ -94,8 +94,8 @@ function initDemo() {
 }
 
 function updateUI() {
-  slider.setAttribute('max', gcodePreview.layers.length - 1);
-  slider.value = gcodePreview.layers.length - 1;
+  layers.setAttribute('max', gcodePreview.layers.length - 1);
+  layers.value = gcodePreview.layers.length - 1;
   layerCount.innerText =
     gcodePreview.layers && gcodePreview.layers.length + ' layers';
 
@@ -147,6 +147,7 @@ function _handleGCode(filename, gcode) {
 
 function startLoadingProgressive(gcode) {
   let c = 0;
+  layers.setAttribute('disabled', 'disabled');
   function loadProgressive() {
     const start = c * chunkSize;
     const end = (c + 1) * chunkSize;
@@ -156,6 +157,9 @@ function startLoadingProgressive(gcode) {
     c++;
     if (c < chunks) {
       window.__loadTimer__ = setTimeout(loadProgressive, 25);
+    }
+    else {
+      layers.removeAttribute('disabled');
     }
   }
   const lines = gcode.split('\n');
