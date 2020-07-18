@@ -11,16 +11,16 @@ type State = { x: number; y: number; z: number; e: number }; // feedrate?
 
 type WebGLPreviewOptions = {
   canvas?: HTMLCanvasElement;
-  targetId: string;
-  limit?: number;
+  targetId?: string;
+  // limit?: number;
   topLayerColor?: number;
   lastSegmentColor?: number;
-  lineWidth: number;
+  lineWidth?: number;
 };
 
 export class WebGLPreview {
   parser = new Parser();
-  limit?: number;
+  // limit?: number;
   targetId: string;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
@@ -36,18 +36,25 @@ export class WebGLPreview {
   renderExtrusion = true;
   renderTravel = false;
   lineWidth: number | null = null;
+  startLayer: number | null = null;
+  endLayer: number | null = null;
+  singleLayerMode: boolean = false;
 
   constructor(opts: WebGLPreviewOptions) {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(this.backgroundColor);
     this.canvas = opts.canvas;
     this.targetId = opts.targetId;
-    this.limit = opts.limit;
+    // this.limit = opts.limit;
     this.topLayerColor = opts.topLayerColor;
     this.lastSegmentColor = opts.lastSegmentColor;
-    // this.lineWidth = opts.lineWidth;
+    this.lineWidth = opts.lineWidth;
 
     console.debug('opts', opts);
+
+    if (!this.canvas && !this.targetId) {
+      throw Error('Set either opts.canvas or opts.targetId');
+    }
 
     if (!this.canvas) {
       const container = document.getElementById(this.targetId);
@@ -79,6 +86,16 @@ export class WebGLPreview {
     return this.parser.layers;
   }
 
+  // convert from 1-based to 0-based
+  get maxLayerIndex() {
+    return (this.endLayer ?? this.layers.length) -1;
+  }
+
+  // convert from 1-based to 0-based
+  get minLayerIndex() {
+    return this.singleLayerMode ? this.maxLayerIndex : (this.startLayer ?? 0) - 1;
+  }
+
   animate() {
     requestAnimationFrame(() => this.animate());
     this.renderer.render(this.scene, this.camera);
@@ -98,7 +115,7 @@ export class WebGLPreview {
     const state = { x: 0, y: 0, z: 0, e: 0 };
 
     for (let index = 0; index < this.layers.length; index++) {
-      if (index > this.limit) break;
+      if (index > this.maxLayerIndex) break;
 
       const currentLayer: RenderLayer = {
         extrusion: [],
@@ -116,12 +133,16 @@ export class WebGLPreview {
             z: g.params.z !== undefined ? g.params.z : state.z,
             e: g.params.e !== undefined ? g.params.e : state.e
           };
-          const extrude = g.params.e > 0;
-          if (
-            (extrude && this.renderExtrusion) ||
-            (!extrude && this.renderTravel)
-          )
-            this.addLineSegment(currentLayer, state, next, extrude);
+          
+          if (index >= this.minLayerIndex) {
+            const extrude = g.params.e > 0;
+            if (
+              (extrude && this.renderExtrusion) ||
+              (!extrude && this.renderTravel)
+            ) {
+              this.addLineSegment(currentLayer, state, next, extrude);
+            }
+          }
 
           // update state
           if (g.params.x) state.x = g.params.x;
@@ -162,7 +183,9 @@ export class WebGLPreview {
   }
 
   clear() {
-    this.limit = Infinity;
+    this.startLayer = 1;
+    this.endLayer = Infinity;
+    this.singleLayerMode = false;
     this.parser = new Parser();
   }
 

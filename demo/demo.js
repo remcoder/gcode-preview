@@ -1,6 +1,8 @@
 let gcodePreview;
 
-const layers = document.getElementById('layers');
+const startLayer = document.getElementById('start-layer');
+const endLayer = document.getElementById('end-layer');
+const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
 const toggleTravel = document.getElementById('travel');
 const toggleHighlight = document.getElementById('highlight');
@@ -22,8 +24,26 @@ function initDemo() {
   preview.renderExtrusion = true;
   preview.renderTravel = false;
 
-  layers.addEventListener('input', function(evt) {
-    preview.limit = +layers.value;
+  startLayer.addEventListener('input', function(evt) {
+    preview.startLayer = +startLayer.value;
+    endLayer.value = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
+    preview.render();
+  });
+
+  endLayer.addEventListener('input', function(evt) {
+    preview.endLayer = +endLayer.value;
+    startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
+    preview.render();
+  });
+
+  toggleSingleLayerMode.addEventListener('click', function() {
+    preview.singleLayerMode = toggleSingleLayerMode.checked;
+    if (preview.singleLayerMode) {
+      startLayer.setAttribute('disabled', 'disabled');
+    } 
+    else {
+      startLayer.removeAttribute('disabled');
+    }
     preview.render();
   });
 
@@ -94,8 +114,10 @@ function initDemo() {
 }
 
 function updateUI() {
-  layers.setAttribute('max', gcodePreview.layers.length - 1);
-  layers.value = gcodePreview.layers.length - 1;
+  startLayer.setAttribute('max', gcodePreview.layers.length);
+  endLayer.setAttribute('max', gcodePreview.layers.length);
+  endLayer.value = gcodePreview.layers.length;
+  
   layerCount.innerText =
     gcodePreview.layers && gcodePreview.layers.length + ' layers';
 
@@ -147,7 +169,8 @@ function _handleGCode(filename, gcode) {
 
 function startLoadingProgressive(gcode) {
   let c = 0;
-  layers.setAttribute('disabled', 'disabled');
+  startLayer.setAttribute('disabled', 'disabled');
+  endLayer.setAttribute('disabled', 'disabled');
   function loadProgressive() {
     const start = c * chunkSize;
     const end = (c + 1) * chunkSize;
@@ -158,7 +181,8 @@ function startLoadingProgressive(gcode) {
       window.__loadTimer__ = requestAnimationFrame(loadProgressive)
     }
     else {
-      layers.removeAttribute('disabled');
+      startLayer.removeAttribute('disabled');
+      endLayer.removeAttribute('disabled');
     }
     gcodePreview.processGCode(chunk);
     updateUI();

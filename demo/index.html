@@ -39,12 +39,24 @@
       </section>
       <section>
         <div class="controls">
-          <label>Layers</label>&nbsp;<input
+          <label>End layer</label>&nbsp;<input
             type="range"
-            min="0"
+            min="1"
             value="0"
-            id="layers"
+            id="end-layer"
           />
+        </div>
+        <div class="controls">
+          <label>Start layer</label>&nbsp;<input
+            type="range"
+            min="1"
+            value="0"
+            id="start-layer"
+          />
+        </div>
+        <div class="controls">
+          <label for="single-layer-mode">Single layer mode</label
+          ><input type="checkbox" id="single-layer-mode" />
         </div>
         <div class="controls">
           <label for="extrusion">Extrusion</label
