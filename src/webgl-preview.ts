@@ -11,6 +11,8 @@ type State = { x: number; y: number; z: number; e: number }; // feedrate?
 
 type WebGLPreviewOptions = {
   canvas?: HTMLCanvasElement;
+  endLayer?: number;
+  startLayer?: number;
   targetId?: string;
   // limit?: number;
   topLayerColor?: number;
@@ -35,9 +37,9 @@ export class WebGLPreview {
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
   renderTravel = false;
-  lineWidth: number | null = null;
-  startLayer: number | null = null;
-  endLayer: number | null = null;
+  lineWidth?: number;
+  startLayer?: number;
+  endLayer?: number;
   singleLayerMode: boolean = false;
 
   constructor(opts: WebGLPreviewOptions) {
@@ -45,7 +47,9 @@ export class WebGLPreview {
     this.scene.background = new THREE.Color(this.backgroundColor);
     this.canvas = opts.canvas;
     this.targetId = opts.targetId;
-    // this.limit = opts.limit;
+    // this.endLayer = opts.limit;
+    this.endLayer = opts.endLayer;
+    this.startLayer = opts.startLayer;
     this.topLayerColor = opts.topLayerColor;
     this.lastSegmentColor = opts.lastSegmentColor;
     this.lineWidth = opts.lineWidth;

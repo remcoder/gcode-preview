@@ -12,6 +12,8 @@ declare type Point = {
 };
 declare type WebGLPreviewOptions = {
     canvas?: HTMLCanvasElement;
+    endLayer?: number;
+    startLayer?: number;
     targetId?: string;
     topLayerColor?: number;
     lastSegmentColor?: number;
@@ -33,9 +35,9 @@ export declare class WebGLPreview {
     canvas: HTMLCanvasElement;
     renderExtrusion: boolean;
     renderTravel: boolean;
-    lineWidth: number | null;
-    startLayer: number | null;
-    endLayer: number | null;
+    lineWidth?: number;
+    startLayer?: number;
+    endLayer?: number;
     singleLayerMode: boolean;
     constructor(opts: WebGLPreviewOptions);
     get layers(): import("./gcode-parser").Layer[];
