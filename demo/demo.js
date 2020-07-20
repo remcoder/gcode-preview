@@ -1,6 +1,8 @@
 let gcodePreview;
 
-const slider = document.getElementById('layers');
+const startLayer = document.getElementById('start-layer');
+const endLayer = document.getElementById('end-layer');
+const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
 const toggleTravel = document.getElementById('travel');
 const toggleHighlight = document.getElementById('highlight');
@@ -22,8 +24,26 @@ function initDemo() {
   preview.renderExtrusion = true;
   preview.renderTravel = false;
 
-  slider.addEventListener('input', function(evt) {
-    preview.limit = +slider.value;
+  startLayer.addEventListener('input', function(evt) {
+    preview.startLayer = +startLayer.value;
+    endLayer.value = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
+    preview.render();
+  });
+
+  endLayer.addEventListener('input', function(evt) {
+    preview.endLayer = +endLayer.value;
+    startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
+    preview.render();
+  });
+
+  toggleSingleLayerMode.addEventListener('click', function() {
+    preview.singleLayerMode = toggleSingleLayerMode.checked;
+    if (preview.singleLayerMode) {
+      startLayer.setAttribute('disabled', 'disabled');
+    } 
+    else {
+      startLayer.removeAttribute('disabled');
+    }
     preview.render();
   });
 
@@ -94,8 +114,10 @@ function initDemo() {
 }
 
 function updateUI() {
-  slider.setAttribute('max', gcodePreview.layers.length - 1);
-  slider.value = gcodePreview.layers.length - 1;
+  startLayer.setAttribute('max', gcodePreview.layers.length);
+  endLayer.setAttribute('max', gcodePreview.layers.length);
+  endLayer.value = gcodePreview.layers.length;
+  
   layerCount.innerText =
     gcodePreview.layers && gcodePreview.layers.length + ' layers';
 
@@ -147,20 +169,28 @@ function _handleGCode(filename, gcode) {
 
 function startLoadingProgressive(gcode) {
   let c = 0;
+  startLayer.setAttribute('disabled', 'disabled');
+  endLayer.setAttribute('disabled', 'disabled');
   function loadProgressive() {
     const start = c * chunkSize;
     const end = (c + 1) * chunkSize;
     const chunk = lines.slice(start, end);
-    gcodePreview.processGCode(chunk);
-    updateUI();
+    
     c++;
     if (c < chunks) {
-      window.__loadTimer__ = setTimeout(loadProgressive, 25);
+      window.__loadTimer__ = requestAnimationFrame(loadProgressive)
     }
+    else {
+      startLayer.removeAttribute('disabled');
+      endLayer.removeAttribute('disabled');
+    }
+    gcodePreview.processGCode(chunk);
+    updateUI();
   }
+
   const lines = gcode.split('\n');
   console.log('lines', lines.length);
-  const chunkSize = 100;
+  const chunkSize = 1000;
   console.log('chunk size', chunkSize);
   const chunks = lines.length / chunkSize;
   console.log('chunks', chunks);

@@ -1,3 +1,6 @@
+## 2.1.1
+- add startLayer, endLayer and singleLayerMode
+
 ## 2.1.0
 - remove lineWidth for now
 

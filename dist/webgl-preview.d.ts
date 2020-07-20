@@ -12,15 +12,15 @@ declare type Point = {
 };
 declare type WebGLPreviewOptions = {
     canvas?: HTMLCanvasElement;
-    targetId: string;
-    limit?: number;
+    endLayer?: number;
+    startLayer?: number;
+    targetId?: string;
     topLayerColor?: number;
     lastSegmentColor?: number;
-    lineWidth: number;
+    lineWidth?: number;
 };
 export declare class WebGLPreview {
     parser: Parser;
-    limit?: number;
     targetId: string;
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
@@ -35,9 +35,14 @@ export declare class WebGLPreview {
     canvas: HTMLCanvasElement;
     renderExtrusion: boolean;
     renderTravel: boolean;
-    lineWidth: number | null;
+    lineWidth?: number;
+    startLayer?: number;
+    endLayer?: number;
+    singleLayerMode: boolean;
     constructor(opts: WebGLPreviewOptions);
     get layers(): import("./gcode-parser").Layer[];
+    get maxLayerIndex(): number;
+    get minLayerIndex(): number;
     animate(): void;
     processGCode(gcode: string | string[]): void;
     render(): void;
