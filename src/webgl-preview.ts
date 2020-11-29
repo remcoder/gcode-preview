@@ -91,7 +91,6 @@ export class WebGLPreview {
 
     this.resize();
 
-
     const controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.animate();
   }
@@ -130,6 +129,11 @@ export class WebGLPreview {
       const buildVolume = new GridHelper( this.buildVolume.x, 10, this.buildVolume.y, 10 );
       this.scene.add( buildVolume );
     }
+
+    // for debugging 
+    // const axesHelper = new THREE.AxesHelper( 100 );
+    // this.scene.add( axesHelper );
+
 
     this.group = new THREE.Group();
     this.group.name = 'gcode';
@@ -198,7 +202,15 @@ export class WebGLPreview {
     }
 
     this.group.quaternion.setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
-    this.group.position.set(-100, 0, 100);
+    
+    if (this.buildVolume) {
+      this.group.position.set(-this.buildVolume.x/2, 0, this.buildVolume.y/2);
+    }
+    else {
+      // FIXME: this is just a very crude approximation for centering
+      this.group.position.set(-100, 0, 100);
+    }
+    
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
   }
