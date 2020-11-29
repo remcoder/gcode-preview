@@ -4,6 +4,7 @@ import * as OrbitControls from 'three-orbitcontrols';
 import { LineMaterial } from './three-line2/LineMaterial';
 import { LineGeometry } from './three-line2/LineGeometry';
 import { LineSegments2 } from './three-line2/LineSegments2';
+import {GridHelper} from './gridHelper';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
 type Point = { x: number; y: number; z: number };
@@ -118,6 +119,10 @@ export class WebGLPreview {
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
+    const size = { x: 200, y: 100, z: 200};
+
+    const buildVolume = new GridHelper( size.x, 10, size.y, 10 );
+    this.scene.add( buildVolume );
     this.group = new THREE.Group();
     this.group.name = 'gcode';
     const state = { x: 0, y: 0, z: 0, e: 0 };
@@ -185,7 +190,7 @@ export class WebGLPreview {
     }
 
     this.group.quaternion.setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
-    this.group.position.set(-100, -20, 100);
+    this.group.position.set(-100, 0, 100);
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
   }
