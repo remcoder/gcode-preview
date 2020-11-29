@@ -4,7 +4,8 @@ import * as OrbitControls from 'three-orbitcontrols';
 import { LineMaterial } from './three-line2/LineMaterial';
 import { LineGeometry } from './three-line2/LineGeometry';
 import { LineSegments2 } from './three-line2/LineSegments2';
-import {GridHelper} from './gridHelper';
+import { GridHelper } from './gridHelper';
+import { LineBox } from './lineBox';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
 type Vector3 = { x: number; y: number; z: number };
@@ -123,17 +124,14 @@ export class WebGLPreview {
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
-
-    if (this.buildVolume) {
-      console.log(this.buildVolume)
-      const buildVolume = new GridHelper( this.buildVolume.x, 10, this.buildVolume.y, 10 );
-      this.scene.add( buildVolume );
-    }
-
+    
     // for debugging 
     // const axesHelper = new THREE.AxesHelper( 100 );
     // this.scene.add( axesHelper );
 
+    if (this.buildVolume) {
+      this.drawBuildVolume();
+    }
 
     this.group = new THREE.Group();
     this.group.name = 'gcode';
@@ -213,6 +211,19 @@ export class WebGLPreview {
     
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  drawBuildVolume() {
+    this.scene.add( new GridHelper( this.buildVolume.x, 10, this.buildVolume.y, 10 ));
+  
+    const geometryBox = LineBox(
+      this.buildVolume.x, 
+      this.buildVolume.z, 
+      this.buildVolume.y,
+      0x888888);
+
+    geometryBox.position.setY(this.buildVolume.z/2);
+    this.scene.add( geometryBox );
   }
 
   clear() {
