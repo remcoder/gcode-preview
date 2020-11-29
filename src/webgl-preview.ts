@@ -77,7 +77,7 @@ export class WebGLPreview {
       });
     }
 
-    this.camera = new THREE.PerspectiveCamera( 75, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 1000 );
+    this.camera = new THREE.PerspectiveCamera( 75, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 5000 );
     this.camera.position.set( 0, 0, 50 );
 
     this.resize();
