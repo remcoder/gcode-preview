@@ -21,7 +21,8 @@ declare type WebGLPreviewOptions = {
     lastSegmentColor?: number;
     lineWidth?: number;
     buildVolume?: BuildVolume;
-    initialCameraPosition: number[];
+    initialCameraPosition?: number[];
+    debug?: boolean;
 };
 export declare class WebGLPreview {
     parser: Parser;
@@ -45,6 +46,7 @@ export declare class WebGLPreview {
     singleLayerMode: boolean;
     buildVolume: BuildVolume;
     initialCameraPosition: number[];
+    debug: boolean;
     constructor(opts: WebGLPreviewOptions);
     get layers(): import("./gcode-parser").Layer[];
     get maxLayerIndex(): number;

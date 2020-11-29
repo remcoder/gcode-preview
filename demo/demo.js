@@ -24,7 +24,8 @@ function initDemo() {
     lastSegmentColor: new THREE.Color(`hsl(270, 50%, 50%)`).getHex(),
     // lineWidth: 4
     buildVolume: {x: 150, y: 150, z: 150},
-    initialCameraPosition: [-100,400,450]
+    initialCameraPosition: [0,400,450],
+    // debug: true
   }));
 
   preview.renderExtrusion = true;

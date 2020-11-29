@@ -23,7 +23,8 @@ type WebGLPreviewOptions = {
   lastSegmentColor?: number;
   lineWidth?: number;
   buildVolume?: BuildVolume;
-  initialCameraPosition: number[];
+  initialCameraPosition?: number[];
+  debug?: boolean;
 };
 
 export class WebGLPreview {
@@ -46,9 +47,10 @@ export class WebGLPreview {
   lineWidth?: number;
   startLayer?: number;
   endLayer?: number;
-  singleLayerMode: boolean = false;
+  singleLayerMode = false;
   buildVolume: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
+  debug = false;
 
   constructor(opts: WebGLPreviewOptions) {
     this.scene = new THREE.Scene();
@@ -63,6 +65,7 @@ export class WebGLPreview {
     this.lineWidth = opts.lineWidth;
     this.buildVolume = opts.buildVolume;
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
+    this.debug = opts.debug ?? this.debug;
 
     console.debug('opts', opts);
 
@@ -128,9 +131,11 @@ export class WebGLPreview {
       this.scene.remove(this.scene.children[0]);
     }
     
-    // for debugging 
-    // const axesHelper = new THREE.AxesHelper( 100 );
-    // this.scene.add( axesHelper );
+    if (this.debug) {
+      // show webgl axes 
+      const axesHelper = new THREE.AxesHelper( Math.max(this.buildVolume.x/2, this.buildVolume.y/2) + 20 );
+      this.scene.add( axesHelper );
+    }
 
     if (this.buildVolume) {
       this.drawBuildVolume();
