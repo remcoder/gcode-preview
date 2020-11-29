@@ -23,6 +23,7 @@ type WebGLPreviewOptions = {
   lastSegmentColor?: number;
   lineWidth?: number;
   buildVolume?: BuildVolume;
+  initialCameraPosition: number[];
 };
 
 export class WebGLPreview {
@@ -47,6 +48,7 @@ export class WebGLPreview {
   endLayer?: number;
   singleLayerMode: boolean = false;
   buildVolume: BuildVolume;
+  initialCameraPosition = [-100, 400, 450];
 
   constructor(opts: WebGLPreviewOptions) {
     this.scene = new THREE.Scene();
@@ -60,6 +62,7 @@ export class WebGLPreview {
     this.lastSegmentColor = opts.lastSegmentColor;
     this.lineWidth = opts.lineWidth;
     this.buildVolume = opts.buildVolume;
+    this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
 
     console.debug('opts', opts);
 
@@ -85,7 +88,7 @@ export class WebGLPreview {
     }
 
     this.camera = new THREE.PerspectiveCamera( 25, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 5000 );
-    this.camera.position.set( 0, 0, 50 );
+    this.camera.position.fromArray(this.initialCameraPosition);
     const fogFar = (this.camera as THREE.PerspectiveCamera).far;
     const fogNear = fogFar * 0.8;
     this.scene.fog = new THREE.Fog( this.scene.background, fogNear, fogFar);

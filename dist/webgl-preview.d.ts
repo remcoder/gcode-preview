@@ -5,11 +5,13 @@ declare type RenderLayer = {
     travel: number[];
     z: number;
 };
-declare type Point = {
+declare type Vector3 = {
     x: number;
     y: number;
     z: number;
 };
+declare type Point = Vector3;
+declare type BuildVolume = Vector3;
 declare type WebGLPreviewOptions = {
     canvas?: HTMLCanvasElement;
     endLayer?: number;
@@ -18,6 +20,8 @@ declare type WebGLPreviewOptions = {
     topLayerColor?: number;
     lastSegmentColor?: number;
     lineWidth?: number;
+    buildVolume?: BuildVolume;
+    initialCameraPosition: number[];
 };
 export declare class WebGLPreview {
     parser: Parser;
@@ -39,6 +43,8 @@ export declare class WebGLPreview {
     startLayer?: number;
     endLayer?: number;
     singleLayerMode: boolean;
+    buildVolume: BuildVolume;
+    initialCameraPosition: number[];
     constructor(opts: WebGLPreviewOptions);
     get layers(): import("./gcode-parser").Layer[];
     get maxLayerIndex(): number;
@@ -46,6 +52,7 @@ export declare class WebGLPreview {
     animate(): void;
     processGCode(gcode: string | string[]): void;
     render(): void;
+    drawBuildVolume(): void;
     clear(): void;
     resize(): void;
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
