@@ -7,7 +7,9 @@ import { LineSegments2 } from './three-line2/LineSegments2';
 import {GridHelper} from './gridHelper';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
-type Point = { x: number; y: number; z: number };
+type Vector3 = { x: number; y: number; z: number };
+type Point = Vector3;
+type BuildVolume = Vector3;
 type State = { x: number; y: number; z: number; e: number }; // feedrate?
 
 type WebGLPreviewOptions = {
@@ -19,6 +21,7 @@ type WebGLPreviewOptions = {
   topLayerColor?: number;
   lastSegmentColor?: number;
   lineWidth?: number;
+  buildVolume?: BuildVolume;
 };
 
 export class WebGLPreview {
@@ -42,6 +45,7 @@ export class WebGLPreview {
   startLayer?: number;
   endLayer?: number;
   singleLayerMode: boolean = false;
+  buildVolume: BuildVolume;
 
   constructor(opts: WebGLPreviewOptions) {
     this.scene = new THREE.Scene();
@@ -54,6 +58,7 @@ export class WebGLPreview {
     this.topLayerColor = opts.topLayerColor;
     this.lastSegmentColor = opts.lastSegmentColor;
     this.lineWidth = opts.lineWidth;
+    this.buildVolume = opts.buildVolume;
 
     console.debug('opts', opts);
 
@@ -119,10 +124,13 @@ export class WebGLPreview {
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
-    const size = { x: 200, y: 100, z: 200};
 
-    const buildVolume = new GridHelper( size.x, 10, size.y, 10 );
-    this.scene.add( buildVolume );
+    if (this.buildVolume) {
+      console.log(this.buildVolume)
+      const buildVolume = new GridHelper( this.buildVolume.x, 10, this.buildVolume.y, 10 );
+      this.scene.add( buildVolume );
+    }
+
     this.group = new THREE.Group();
     this.group.name = 'gcode';
     const state = { x: 0, y: 0, z: 0, e: 0 };
