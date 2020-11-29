@@ -83,7 +83,7 @@ export class WebGLPreview {
       });
     }
 
-    this.camera = new THREE.PerspectiveCamera( 75, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 5000 );
+    this.camera = new THREE.PerspectiveCamera( 25, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 5000 );
     this.camera.position.set( 0, 0, 50 );
     const fogFar = (this.camera as THREE.PerspectiveCamera).far;
     const fogNear = fogFar * 0.8;
