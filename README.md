@@ -15,13 +15,15 @@ buildVolume: {
 ```
 
 example:
-![image](https://user-images.githubusercontent.com/461650/103179898-c014a100-4890-11eb-8a25-13415c26f0f4.png)
+
+<img src='https://user-images.githubusercontent.com/461650/103179898-c014a100-4890-11eb-8a25-13415c26f0f4.png' width=200>
 
 ## Demo
 Go try the [interactive demo](https://gcode-preview.web.app/).
 
 
 ## Installation
+[![npm version](http://img.shields.io/npm/v/gcode-preview.svg?style=flat)](https://npmjs.org/package/gcode-preview "View this project on npm") 
 
  `npm install gcode-preview`
 
