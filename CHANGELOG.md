@@ -1,3 +1,6 @@
+## 2.2
+- add buildVolume param to render the build volume
+
 ## 2.1.1
 - add startLayer, endLayer and singleLayerMode
 
