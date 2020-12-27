@@ -84,6 +84,7 @@ If you want to help out, consider any of the following:
   - unit tests
   - demos, especially in combination with frameworks like React, Svelte etc
 
+## Donate
 If you want to show gratitude you can always buy me beer/coffee/filament 
 [via a Paypal donation](https://www.paypal.com/paypalme/my/profile ) ^_^
 
