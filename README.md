@@ -4,7 +4,7 @@ A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D 
 ## 3D WebGL + pan/zoom/rotate controls
 ![Demo Animation](../assets/benchy.gif?raw=true)
 
-## New in v2.2: build volume
+## New in v2.2.0: build volume
 The build volume will be rendered if the `buildVolume` parameter is passed. It has the following type: 
 ```
 buildVolume: { 
@@ -74,5 +74,18 @@ A big thanks to these sponsors for their contributions.
 
 [<img width=42 src="https://www.duet3d.com/image/catalog/logo/50_blue_wifi.png"> Duet3D](https://www.duet3d.com/)
 
+## Contributing
+If you want to help out, consider any of the following:
+ - test the GCode Preview with a variety of gcode files, from different slicers
+ - report any bugs you find and add as much detail as possible, or even better, a screenshot
+ - even better yet: send in a pull request :-)
+ - apart from the the code code, lots of improvements can still be made in:
+  - documentation
+  - unit tests
+  - demos, especially in combination with frameworks like React, Svelte etc
+
+If you want to show gratitude you can always buy me beer/coffee/filament 
+[via a Paypal donation](https://www.paypal.com/paypalme/my/profile ) ^_^
+
 ## Changelog
-jump to the [CHANGELOG](CHANGELOG.md)
+Jump to the [CHANGELOG](CHANGELOG.md)
