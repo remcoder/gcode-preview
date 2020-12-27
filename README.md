@@ -4,11 +4,26 @@ A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D 
 ## 3D WebGL + pan/zoom/rotate controls
 ![Demo Animation](../assets/benchy.gif?raw=true)
 
+## New in v2.2: build volume
+The build volume will be rendered if the `buildVolume` parameter is passed. It has the following type: 
+```
+buildVolume: { 
+  x: number; 
+  y: number; 
+  z: number
+}
+```
+
+example:
+
+<img src='https://user-images.githubusercontent.com/461650/103179898-c014a100-4890-11eb-8a25-13415c26f0f4.png' width=200>
+
 ## Demo
 Go try the [interactive demo](https://gcode-preview.web.app/).
 
 
 ## Installation
+[![npm version](http://img.shields.io/npm/v/gcode-preview.svg?style=flat)](https://npmjs.org/package/gcode-preview "View this project on npm") 
 
  `npm install gcode-preview`
 
@@ -36,7 +51,7 @@ or
 ```
 
 ### Vue.js integration
-There's also a [Vue.js example](https://github.com/remcoder/gcode-preview-vue-demo) that has a [Vue component](https://github.com/remcoder/gcode-preview-vue-demo/blob/master/src/components/GCodePreview.vue) to wrap the library.
+There's a [Vue.js example](https://github.com/remcoder/gcode-preview/tree/develop/vue-demo) that has a [Vue component](https://github.com/remcoder/gcode-preview/blob/develop/vue-demo/src/components/GCodePreview.vue) to wrap the library.
 
 ## Known issues
 ### Preview doesn't render in Brave
@@ -58,3 +73,6 @@ A big thanks to these sponsors for their contributions.
 [<img width=42 src="http://logo.q42.com/q42-logo.svg" /> Q42 ](http://q42.com)
 
 [<img width=42 src="https://www.duet3d.com/image/catalog/logo/50_blue_wifi.png"> Duet3D](https://www.duet3d.com/)
+
+## Changelog
+jump to the [CHANGELOG](CHANGELOG.md)

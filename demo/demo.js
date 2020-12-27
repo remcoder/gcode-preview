@@ -10,6 +10,10 @@ const layerCount = document.getElementById('layer-count');
 const fileName = document.getElementById('file-name');
 const fileSize = document.getElementById('file-size');
 const snapshot = document.getElementById('snapshot');
+const buildVolumeX = document.getElementById('buildVolumeX');
+const buildVolumeY = document.getElementById('buildVolumeY');
+const buildVolumeZ = document.getElementById('buildVolumeZ');
+const drawBuildVolume = document.getElementById('drawBuildVolume');
 // const lineWidth = document.getElementById('line-width');
 
 function initDemo() {
@@ -19,6 +23,9 @@ function initDemo() {
     topLayerColor: new THREE.Color(`hsl(180, 50%, 50%)`).getHex(),
     lastSegmentColor: new THREE.Color(`hsl(270, 50%, 50%)`).getHex(),
     // lineWidth: 4
+    buildVolume: {x: 150, y: 150, z: 150},
+    initialCameraPosition: [0,400,450],
+    // debug: true
   }));
 
   preview.renderExtrusion = true;
@@ -67,6 +74,42 @@ function initDemo() {
     }
     preview.render();
   });
+
+  function updateBuildVolume (evt) {
+    const x = parseInt(buildVolumeX.value, 10);
+    const y = parseInt(buildVolumeY.value, 10);
+    const z = parseInt(buildVolumeZ.value, 10);
+    const draw = drawBuildVolume.checked;
+
+    if (draw && !isNaN(x) && !isNaN(y)) {
+      preview.buildVolume = { 
+        x: x, 
+        y: y,
+        z: z
+      }
+    }
+    else {
+      preview.buildVolume = null;
+    }
+    
+    preview.render();
+
+    if (draw) {
+      buildVolumeX.removeAttribute('disabled');
+      buildVolumeY.removeAttribute('disabled');
+      buildVolumeZ.removeAttribute('disabled');
+    }
+    else {
+      buildVolumeX.setAttribute('disabled', 'disabled');
+      buildVolumeY.setAttribute('disabled', 'disabled');
+      buildVolumeZ.setAttribute('disabled', 'disabled');
+    }
+  }
+
+  buildVolumeX.addEventListener('input', updateBuildVolume);
+  buildVolumeY.addEventListener('input', updateBuildVolume);
+  buildVolumeZ.addEventListener('input', updateBuildVolume);
+  drawBuildVolume.addEventListener('input', updateBuildVolume);
 
   // lineWidth.addEventListener('change', function() {
   //   preview.lineWidth = parseInt(lineWidth.value,10);

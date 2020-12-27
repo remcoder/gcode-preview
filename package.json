@@ -1,6 +1,6 @@
 {
   "name": "gcode-preview",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Preview a 3d print from a gcode file",
   "author": "remcoder@gmail.com",
   "license": "MIT",
@@ -16,17 +16,17 @@
   ],
   "types": "dist/gcode-preview.d.ts",
   "devDependencies": {
-    "@types/jest": "^26.0.4",
-    "copyfiles": "^2.3.0",
+    "@types/jest": "^26.0.15",
+    "copyfiles": "^2.4.1",
     "del-cli": "^3.0.1",
-    "jest": "^26.1.0",
+    "jest": "^26.6.3",
     "live-server": "^1.2.1",
-    "rollup": "^2.22.0",
+    "rollup": "2.23.1",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^6.1.0",
-    "rollup-plugin-typescript2": "^0.27.1",
-    "ts-jest": "^26.1.3",
-    "typescript": "^3.9.7",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.29.0",
+    "ts-jest": "^26.4.4",
+    "typescript": "4.x",
     "watch": "^1.0.2"
   },
   "scripts": {
@@ -40,7 +40,7 @@
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
-    "three": "^0.118.3",
+    "three": "^0.123.0",
     "three-orbitcontrols": "^2.110.3"
   }
 }

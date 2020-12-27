@@ -38,7 +38,9 @@ export default {
       startLayer: this.startLayer,
       topLayerColor: new THREE.Color(this.topLayerColor).getHex(),
       lastSegmentColor: new THREE.Color(this.lastSegmentColor).getHex(),
-      lineWidth: this.lineWidth
+      lineWidth: this.lineWidth,
+      buildVolume: {x: 250, y:220, z: 150},
+      initialCameraPosition: [0, 400, 450]
     });
 
     window.addEventListener('resize', () => {

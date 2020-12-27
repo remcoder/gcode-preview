@@ -1,0 +1,24 @@
+
+input
+A [p0,p1,p1,p2] // connected
+B [p0,p1,p2,p3] // disconnected
+
+output
+A [[p0,p1,p2]] // connected & shortened
+B [[p0, p1], [p2,p3]] // disconnected
+
+// start array
+var all = [];
+
+if (all.length == 0)
+ // start pair
+var line = [p0, p1]
+all.push(line)
+
+next pair
+
+p2, p3
+if (p1 == p2)
+// add to current coninuous line
+
+else // create new line segment

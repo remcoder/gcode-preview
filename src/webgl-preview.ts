@@ -4,9 +4,13 @@ import * as OrbitControls from 'three-orbitcontrols';
 import { LineMaterial } from './three-line2/LineMaterial';
 import { LineGeometry } from './three-line2/LineGeometry';
 import { LineSegments2 } from './three-line2/LineSegments2';
+import { GridHelper } from './gridHelper';
+import { LineBox } from './lineBox';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
-type Point = { x: number; y: number; z: number };
+type Vector3 = { x: number; y: number; z: number };
+type Point = Vector3;
+type BuildVolume = Vector3;
 type State = { x: number; y: number; z: number; e: number }; // feedrate?
 
 type WebGLPreviewOptions = {
@@ -18,6 +22,9 @@ type WebGLPreviewOptions = {
   topLayerColor?: number;
   lastSegmentColor?: number;
   lineWidth?: number;
+  buildVolume?: BuildVolume;
+  initialCameraPosition?: number[];
+  debug?: boolean;
 };
 
 export class WebGLPreview {
@@ -40,7 +47,10 @@ export class WebGLPreview {
   lineWidth?: number;
   startLayer?: number;
   endLayer?: number;
-  singleLayerMode: boolean = false;
+  singleLayerMode = false;
+  buildVolume: BuildVolume;
+  initialCameraPosition = [-100, 400, 450];
+  debug = false;
 
   constructor(opts: WebGLPreviewOptions) {
     this.scene = new THREE.Scene();
@@ -53,6 +63,9 @@ export class WebGLPreview {
     this.topLayerColor = opts.topLayerColor;
     this.lastSegmentColor = opts.lastSegmentColor;
     this.lineWidth = opts.lineWidth;
+    this.buildVolume = opts.buildVolume;
+    this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
+    this.debug = opts.debug ?? this.debug;
 
     console.debug('opts', opts);
 
@@ -77,8 +90,11 @@ export class WebGLPreview {
       });
     }
 
-    this.camera = new THREE.PerspectiveCamera( 75, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 1000 );
-    this.camera.position.set( 0, 0, 50 );
+    this.camera = new THREE.PerspectiveCamera( 25, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 5000 );
+    this.camera.position.fromArray(this.initialCameraPosition);
+    const fogFar = (this.camera as THREE.PerspectiveCamera).far;
+    const fogNear = fogFar * 0.8;
+    this.scene.fog = new THREE.Fog( this.scene.background, fogNear, fogFar);
 
     this.resize();
 
@@ -114,6 +130,17 @@ export class WebGLPreview {
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
+    
+    if (this.debug) {
+      // show webgl axes 
+      const axesHelper = new THREE.AxesHelper( Math.max(this.buildVolume.x/2, this.buildVolume.y/2) + 20 );
+      this.scene.add( axesHelper );
+    }
+
+    if (this.buildVolume) {
+      this.drawBuildVolume();
+    }
+
     this.group = new THREE.Group();
     this.group.name = 'gcode';
     const state = { x: 0, y: 0, z: 0, e: 0 };
@@ -181,9 +208,30 @@ export class WebGLPreview {
     }
 
     this.group.quaternion.setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
-    this.group.position.set(-100, -20, 100);
+    
+    if (this.buildVolume) {
+      this.group.position.set(-this.buildVolume.x/2, 0, this.buildVolume.y/2);
+    }
+    else {
+      // FIXME: this is just a very crude approximation for centering
+      this.group.position.set(-100, 0, 100);
+    }
+    
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  drawBuildVolume() {
+    this.scene.add( new GridHelper( this.buildVolume.x, 10, this.buildVolume.y, 10 ));
+  
+    const geometryBox = LineBox(
+      this.buildVolume.x, 
+      this.buildVolume.z, 
+      this.buildVolume.y,
+      0x888888);
+
+    geometryBox.position.setY(this.buildVolume.z/2);
+    this.scene.add( geometryBox );
   }
 
   clear() {
