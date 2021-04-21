@@ -40,7 +40,7 @@
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
-    "three": "^0.123.0",
+    "three": "^0.125.0",
     "three-orbitcontrols": "^2.110.3"
   }
 }
