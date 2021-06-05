@@ -62,7 +62,7 @@ class GridHelper extends LineSegments {
 
         super(geometry, material);
 
-        this.type = 'BuildVolume';
+        // this.type = 'BuildVolume';
     }
 }
 
