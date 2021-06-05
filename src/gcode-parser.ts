@@ -11,7 +11,7 @@ export class MoveCommand extends GCodeCommand {
     super(gcode, comment);
   }
 }
-type MoveCommandParamName = 'x' | 'y' | 'z' | 'e';
+type MoveCommandParamName = 'x' | 'y' | 'z' | 'e' | 'f';
 type MoveCommandParams = {
   [key in MoveCommandParamName]?: number;
 };
@@ -49,7 +49,7 @@ export class Parser {
   parseMove(params: string[]): MoveCommandParams {
     return params.reduce((acc: MoveCommandParams, cur: string) => {
       const key = cur.charAt(0).toLowerCase();
-      if (key == 'x' || key == 'y' || key == 'z' || key == 'e')
+      if (key == 'x' || key == 'y' || key == 'z' || key == 'e' || key == 'f')
         acc[key] = parseFloat(cur.slice(1));
       return acc;
     }, {});

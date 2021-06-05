@@ -41,8 +41,10 @@ or
 
 #### Javascript
 ```  
+  import * as GCodePreview from "gcode-preview";
+  
   const gcode = 'G0 X0 Y0 Z0.2\nG1 X42 Y42'; // draw a diagonal line
-  const preview = new WebGLPreview({
+  const preview = new GCodePreview.WebGLPreview({
       targetId: 'gcode-preview',
   });
   

@@ -7,7 +7,7 @@ export declare class MoveCommand extends GCodeCommand {
     params: MoveCommandParams;
     constructor(gcode: string, params: MoveCommandParams, comment?: string);
 }
-declare type MoveCommandParamName = 'x' | 'y' | 'z' | 'e';
+declare type MoveCommandParamName = 'x' | 'y' | 'z' | 'e' | 'f';
 declare type MoveCommandParams = {
     [key in MoveCommandParamName]?: number;
 };
