@@ -51,6 +51,7 @@ export class WebGLPreview {
   buildVolume: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
   debug = false;
+  disposables: { dispose() : void }[] = [];
 
   constructor(opts: WebGLPreviewOptions) {
     this.scene = new THREE.Scene();
@@ -130,7 +131,11 @@ export class WebGLPreview {
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
-    
+
+    while (this.disposables.length > 0) {
+      this.disposables.pop().dispose();
+    }
+
     if (this.debug) {
       // show webgl axes 
       const axesHelper = new THREE.AxesHelper( Math.max(this.buildVolume.x/2, this.buildVolume.y/2) + 20 );
@@ -188,7 +193,7 @@ export class WebGLPreview {
         const extrusionColor = new THREE.Color(
           `hsl(0, 0%, ${brightness}%)`
         ).getHex();
-
+        
         if (index == this.layers.length - 1) {
           const layerColor = this.topLayerColor ?? extrusionColor;
           const lastSegmentColor = this.lastSegmentColor ?? layerColor;
@@ -265,9 +270,11 @@ export class WebGLPreview {
       'position',
       new THREE.Float32BufferAttribute(vertices, 3)
     );
-
+    this.disposables.push(geometry);
     const material = new THREE.LineBasicMaterial({ color: color });
+    this.disposables.push(material);
     const lineSegments = new THREE.LineSegments(geometry, material);
+    
     this.group.add(lineSegments);
   }
 
@@ -275,12 +282,14 @@ export class WebGLPreview {
     if (!vertices.length) return;
 
     const geometry = new LineGeometry();
+    this.disposables.push(geometry)
     
     const matLine = new LineMaterial({
       color: color,
       linewidth: this.lineWidth / (1000 * window.devicePixelRatio)
     });
-    
+    this.disposables.push(matLine)
+
     geometry.setPositions(vertices);
     const line = new LineSegments2(geometry, matLine);
     
