@@ -47,6 +47,9 @@ export declare class WebGLPreview {
     buildVolume: BuildVolume;
     initialCameraPosition: number[];
     debug: boolean;
+    disposables: {
+        dispose(): void;
+    }[];
     constructor(opts: WebGLPreviewOptions);
     get layers(): import("./gcode-parser").Layer[];
     get maxLayerIndex(): number;
