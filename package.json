@@ -39,7 +39,7 @@
     "watch": "watch 'npm run build' src",
     "predemo": "npm run build && copyfiles -f node_modules/three/build/three.min.js demo",
     "demo": "live-server demo --watch=.",
-    "lint": "eslint .",
+    "lint": "eslint . --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "preversion": "npm run test",

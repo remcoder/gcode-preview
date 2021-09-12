@@ -16,8 +16,8 @@ class GridHelper extends LineSegments {
         color1 = new Color(color1);
         color2 = new Color(color2);
 
-        var x = Math.round( sizeX / stepX );
-        var y = Math.round( sizeZ / stepZ );
+        const x = Math.round( sizeX / stepX );
+        const y = Math.round( sizeZ / stepZ );
             
         sizeX = x * stepX/2;
         sizeZ = y * stepZ/2;
@@ -25,14 +25,14 @@ class GridHelper extends LineSegments {
         const vertices = [];
         const colors: Color | string | number[] = [];
         let j = 0;
-        for ( var i = - 1 * sizeX; i <= sizeX; i += stepX ) {
+        for ( let i = - 1 * sizeX; i <= sizeX; i += stepX ) {
 
             vertices.push(
                  i, 0, - 1 * sizeZ , //x Y z
                  i, 0, sizeZ  //x Y z
             );
     
-            var color = i === 0 ? color1 : color2;
+            const color = i === 0 ? color1 : color2;
     
             color.toArray(colors, j); j+=3
             color.toArray(colors, j); j+=3
@@ -40,14 +40,14 @@ class GridHelper extends LineSegments {
             color.toArray(colors, j); j+=3
         }
     
-        for ( var i = - 1 * sizeZ; i <= sizeZ; i += stepZ ) {
+        for ( let i = - 1 * sizeZ; i <= sizeZ; i += stepZ ) {
     
             vertices.push(
                  - 1 * sizeX, 0, i , //x Y z
                  sizeX, 0, i  //x Y z
             );
     
-            var color = i === 0 ? color1 : color2;
+            const color = i === 0 ? color1 : color2;
     
             color.toArray(colors, j); j+=3
             color.toArray(colors, j); j+=3

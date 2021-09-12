@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */ 
 export abstract class GCodeCommand {
   constructor(public gcode?: string, public comment?: string) {}
 }
@@ -34,10 +35,11 @@ export class Parser {
 
     const parts = cmd.split(/ +/g);
     const gcode = parts[0].toLowerCase();
+    let params : MoveCommandParams;
     switch (gcode) {
       case 'g0':
       case 'g1':
-        const params = this.parseMove(parts.slice(1));
+        params = this.parseMove(parts.slice(1));
         return new MoveCommand(gcode, params, comment);
       default:
         //console.warn(`Unrecognized gcode: ${gcode}`);
@@ -81,7 +83,7 @@ export class Parser {
     return this.layers;
   }
 
-  parseGcode(input: string | string[]) {
+  parseGcode(input: string | string[]) : { layers : Layer[]} {
     const lines = Array.isArray(input)
       ? input
       : input.split('\n').filter(l => l.length > 0); // discard empty lines

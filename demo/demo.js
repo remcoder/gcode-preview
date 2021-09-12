@@ -1,4 +1,7 @@
+/* global THREE, GCodePreview, Canvas2Image */
+
 let gcodePreview;
+const exported_var = 42; // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
 
 const startLayer = document.getElementById('start-layer');
 const endLayer = document.getElementById('end-layer');
@@ -16,7 +19,7 @@ const buildVolumeZ = document.getElementById('buildVolumeZ');
 const drawBuildVolume = document.getElementById('drawBuildVolume');
 // const lineWidth = document.getElementById('line-width');
 
-function initDemo() {
+function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const preview = (window.preview = new GCodePreview.WebGLPreview({
     canvas: document.querySelector('.gcode-previewer'),
     // targetId : 'renderer',
@@ -31,13 +34,13 @@ function initDemo() {
   preview.renderExtrusion = true;
   preview.renderTravel = false;
 
-  startLayer.addEventListener('input', function(evt) {
+  startLayer.addEventListener('input', function() {
     preview.startLayer = +startLayer.value;
     endLayer.value = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
     preview.render();
   });
 
-  endLayer.addEventListener('input', function(evt) {
+  endLayer.addEventListener('input', function() {
     preview.endLayer = +endLayer.value;
     startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
     preview.render();
@@ -75,7 +78,7 @@ function initDemo() {
     preview.render();
   });
 
-  function updateBuildVolume (evt) {
+  function updateBuildVolume () {
     const x = parseInt(buildVolumeX.value, 10);
     const y = parseInt(buildVolumeY.value, 10);
     const z = parseInt(buildVolumeZ.value, 10);
@@ -188,7 +191,7 @@ function loadGCode(file) {
   fileName.setAttribute('href', '#');
 }
 
-async function loadGCodeFromServer(file) {
+async function loadGCodeFromServer(file) { // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const response = await fetch(file);
 
   if (response.status !== 200) {
