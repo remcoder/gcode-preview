@@ -68,6 +68,7 @@ export class WebGLPreview {
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
 
+    console.info('Using THREE r' + THREE.REVISION);
     console.debug('opts', opts);
 
     if (!this.canvas && !this.targetId) {
