@@ -1,3 +1,9 @@
+## 2.4
+- improve memory usage by properly disposing of unused geometries and materials.
+
+## 2.3
+- properly handle feedrate
+
 ## 2.2
 - add buildVolume param to render the build volume
 
