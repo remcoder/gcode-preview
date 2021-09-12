@@ -40,7 +40,7 @@
     "test:watch": "jest --watch",
     "preversion": "npm run test",
     "version:minor": "npm version minor",
-    "postversion" : "npm publish --dry-run",
+    "postversion": "npm publish --dry-run && npm run deploy",
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
