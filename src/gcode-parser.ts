@@ -1,4 +1,6 @@
 /* eslint-disable no-unused-vars */ 
+import { Thumbnail } from './thumbnail';
+
 export class GCodeCommand {
   constructor(public gcode?: string, public comment?: string) {}
 }
@@ -17,34 +19,10 @@ type MoveCommandParams = {
   [key in MoveCommandParamName]?: number;
 };
 
+type Metadata = { thumbnails :  Map<string, Thumbnail> };
+
 export class Layer {
   constructor(public layer: number, public commands: GCodeCommand[]) {}
-}
-
-const prefix = 'data:image/jpeg;base64,';
-
-export class Thumb {
-  public infoParts: string[];
-  public size: string;
-  public sizeParts: string[];
-  public width: number;
-  public height: number;
-  public charLength: number;
-  public chars = '';
-
-  constructor(public thumbInfo: string)
-  {
-    this.infoParts = thumbInfo.split(' ');
-    this.size = this.infoParts[0];
-    this.sizeParts = this.size.split('x');
-    this.width = +this.sizeParts[0];
-    this.height = +this.sizeParts[1];
-    this.charLength = +this.infoParts[1];
-  }
-
-  get src() : string {
-    return prefix + this.chars;
-  } 
 }
 
 export class Parser {
@@ -52,10 +30,10 @@ export class Parser {
   currentLayer: Layer;
   curZ = 0;
   maxZ = 0;
-  metadata = { thumbnails : new Map<string,Thumb>()};
-  parseMetadata = true;
+  metadata = { thumbnails : new Map<string,Thumbnail>()};
+  shouldParseMetadata = true;
 
-  parseGcode(input: string | string[]) : { layers : Layer[], thumbs: Map<string,Thumb> } {
+  parseGcode(input: string | string[]) : { layers : Layer[], metadata: Metadata } {
     const lines = Array.isArray(input)
       ? input
       : input.split('\n').filter(l => l.length > 0); // discard empty lines
@@ -63,9 +41,9 @@ export class Parser {
     const commands = this.lines2commands(lines);
     
     this.groupIntoLayers(commands.filter(cmd=>cmd instanceof MoveCommand) as MoveCommand[]);
-    this.metadata.thumbnails = this.processMetadata(commands.filter(cmd=>cmd.comment))
+    this.metadata = this.parseMetadata(commands.filter(cmd=>cmd.comment))
     
-    return { layers: this.layers, thumbs: this.metadata.thumbnails };
+    return { layers: this.layers, metadata: this.metadata };
   }
 
   private lines2commands(lines: string[]) {
@@ -74,7 +52,7 @@ export class Parser {
   }
 
   parseCommand(line: string, keepComments = true, parseMetadata = true): GCodeCommand | null {
-    this.parseMetadata = parseMetadata;
+    this.shouldParseMetadata = parseMetadata;
     const input = line.trim();
     const splitted = input.split(';');
     const cmd = splitted[0];
@@ -129,10 +107,10 @@ export class Parser {
     return this.layers;
   }
 
-  processMetadata(metadata: GCodeCommand[]) : Map<string,Thumb> {
-    const thumbnails = new Map<string,Thumb>();
+  parseMetadata(metadata: GCodeCommand[]) : Metadata {
+    const thumbnails = new Map<string,Thumbnail>();
     
-    let thumb : Thumb = null;
+    let thumb : Thumbnail = null;
 
     for(const cmd of metadata) {
       const comment = cmd.comment;
@@ -140,21 +118,26 @@ export class Parser {
       const idxThumbEnd = comment.indexOf('thumbnail end');
       
       if (idxThumbBegin > -1) {
-        thumb = new Thumb(comment.slice(idxThumbBegin + 15).trim());
+        thumb = Thumbnail.parse(comment.slice(idxThumbBegin + 15).trim());
       }
       else if (thumb) {
         if (idxThumbEnd == -1) {
           thumb.chars += comment.trim();
         }
         else  {
-          thumbnails.set(thumb.size, thumb);
-          console.debug('thumb found' , thumb.size);
-          console.debug('declared length', thumb.charLength, 'actual length', thumb.chars.length);
+          if (thumb.isValid) {
+            thumbnails.set(thumb.size, thumb);
+            console.debug('thumb found' , thumb.size);
+            console.debug('declared length', thumb.charLength, 'actual length', thumb.chars.length);
+          }
+          else {
+            console.warn('thumb found but seems to be invalid');
+          }
           thumb = null;
         }
       }
     }
 
-    return thumbnails;
+    return { thumbnails };
   }
 }
