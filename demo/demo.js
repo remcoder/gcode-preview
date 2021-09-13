@@ -1,7 +1,7 @@
 /* global THREE, GCodePreview, Canvas2Image */
 
 let gcodePreview;
-const exported_var = 42; // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
+const chunkSize = 1000;
 
 const startLayer = document.getElementById('start-layer');
 const endLayer = document.getElementById('end-layer');
@@ -19,12 +19,16 @@ const buildVolumeZ = document.getElementById('buildVolumeZ');
 const drawBuildVolume = document.getElementById('drawBuildVolume');
 // const lineWidth = document.getElementById('line-width');
 
+// const prusaOrange = '#c86e3b';
+const topLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
+const lastSegmentColor = new THREE.Color(`hsl(270, 50%, 50%)`).getHex();
+
 function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const preview = (window.preview = new GCodePreview.WebGLPreview({
     canvas: document.querySelector('.gcode-previewer'),
     // targetId : 'renderer',
-    topLayerColor: new THREE.Color(`hsl(180, 50%, 50%)`).getHex(),
-    lastSegmentColor: new THREE.Color(`hsl(270, 50%, 50%)`).getHex(),
+    topLayerColor: topLayerColor,
+    lastSegmentColor: lastSegmentColor,
     // lineWidth: 4
     buildVolume: {x: 150, y: 150, z: 150},
     initialCameraPosition: [0,400,450],
@@ -69,8 +73,8 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
 
   toggleHighlight.addEventListener('click', function() {
     if (toggleHighlight.checked) {
-      preview.topLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
-      preview.lastSegmentColor = new THREE.Color(`hsl(270, 50%, 50%)`).getHex();
+      preview.topLayerColor = topLayerColor;
+      preview.lastSegmentColor = lastSegmentColor;
     } else {
       preview.topLayerColor = undefined;
       preview.lastSegmentColor = undefined;
@@ -247,7 +251,6 @@ function startLoadingProgressive(gcode) {
 
   const lines = gcode.split('\n');
   console.log('lines', lines.length);
-  const chunkSize = 1000000;
   console.log('chunk size', chunkSize);
   const chunks = lines.length / chunkSize;
   console.log('chunks', chunks);
