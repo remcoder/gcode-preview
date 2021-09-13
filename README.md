@@ -77,14 +77,16 @@ A big thanks to these sponsors for their contributions.
 [<img width=42 src="https://www.duet3d.com/image/catalog/logo/50_blue_wifi.png"> Duet3D](https://www.duet3d.com/)
 
 ## Contributing
-If you want to help out, consider any of the following:
- - test the GCode Preview with a variety of gcode files, from different slicers
- - report any bugs you find and add as much detail as possible, or even better, a screenshot
+If you have found a bug or if have an idea for a feature, don't hesitate to [create an issue](https://github.com/remcoder/gcode-preview/issues/new).
+
+It would be great if you want to help out because I'm always short on time to do more testing and improving. So for instance, maybe you'd like to help out with:
+ - testing GCode Preview with a variety of gcode files, from different slicers
+ - reporting any bugs you find and add as much detail as possible, or even better, a screenshot
  - even better yet: send in a pull request :-)
- - apart from the the code code, lots of improvements can still be made in:
-  - documentation
-  - unit tests
-  - demos, especially in combination with frameworks like React, Svelte etc
+ - apart from the main code, lots of improvements can still be made in:
+   - documentation
+   - unit tests
+   - demos, especially in combination with frameworks like React, Svelte etc
 
 ## Donate
 If you want to show gratitude you can always buy me beer/coffee/filament 
