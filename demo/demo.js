@@ -180,6 +180,17 @@ function updateUI() {
   if (gcodePreview.topLayerColor !== undefined)
     toggleHighlight.setAttribute('checked', 'checked');
   else toggleHighlight.removeAttribute('checked');
+
+  var first = gcodePreview.parser.metadata.thumbnails.get('16x16');
+  if (first)
+  {
+    setFavicons(first.src);
+  }
+  var second = gcodePreview.parser.metadata.thumbnails.get('220x124');
+  if (second)
+  {
+    document.getElementById('thumb').src = second.src;
+  }
 }
 
 function loadGCode(file) {
@@ -236,7 +247,7 @@ function startLoadingProgressive(gcode) {
 
   const lines = gcode.split('\n');
   console.log('lines', lines.length);
-  const chunkSize = 1000;
+  const chunkSize = 1000000;
   console.log('chunk size', chunkSize);
   const chunks = lines.length / chunkSize;
   console.log('chunks', chunks);
@@ -253,4 +264,12 @@ function humanFileSize(size) {
     ' ' +
     ['B', 'kB', 'MB', 'GB', 'TB'][i]
   );
+}
+
+function setFavicons(favImg){
+  let headTitle = document.querySelector('head');
+  let setFavicon = document.createElement('link');
+  setFavicon.setAttribute('rel','shortcut icon');
+  setFavicon.setAttribute('href',favImg);
+  headTitle.appendChild(setFavicon);
 }

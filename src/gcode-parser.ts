@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */ 
-export abstract class GCodeCommand {
+export class GCodeCommand {
   constructor(public gcode?: string, public comment?: string) {}
 }
 
@@ -21,13 +21,60 @@ export class Layer {
   constructor(public layer: number, public commands: GCodeCommand[]) {}
 }
 
+const prefix = 'data:image/jpeg;base64,';
+
+export class Thumb {
+  public infoParts: string[];
+  public size: string;
+  public sizeParts: string[];
+  public width: number;
+  public height: number;
+  public charLength: number;
+  public chars = '';
+
+  constructor(public thumbInfo: string)
+  {
+    this.infoParts = thumbInfo.split(' ');
+    this.size = this.infoParts[0];
+    this.sizeParts = this.size.split('x');
+    this.width = +this.sizeParts[0];
+    this.height = +this.sizeParts[1];
+    this.charLength = +this.infoParts[1];
+  }
+
+  get src() : string {
+    return prefix + this.chars;
+  } 
+}
+
 export class Parser {
   layers: Layer[] = [];
   currentLayer: Layer;
   curZ = 0;
   maxZ = 0;
+  metadata = { thumbnails : new Map<string,Thumb>()};
+  parseMetadata = true;
 
-  parseCommand(line: string, keepComments = true): GCodeCommand | null {
+  parseGcode(input: string | string[]) : { layers : Layer[], thumbs: Map<string,Thumb> } {
+    const lines = Array.isArray(input)
+      ? input
+      : input.split('\n').filter(l => l.length > 0); // discard empty lines
+
+    const commands = this.lines2commands(lines);
+    
+    this.groupIntoLayers(commands.filter(cmd=>cmd instanceof MoveCommand) as MoveCommand[]);
+    this.metadata.thumbnails = this.processMetadata(commands.filter(cmd=>cmd.comment))
+    
+    return { layers: this.layers, thumbs: this.metadata.thumbnails };
+  }
+
+  private lines2commands(lines: string[]) {
+    return lines
+      .map(l => this.parseCommand(l));
+  }
+
+  parseCommand(line: string, keepComments = true, parseMetadata = true): GCodeCommand | null {
+    this.parseMetadata = parseMetadata;
     const input = line.trim();
     const splitted = input.split(';');
     const cmd = splitted[0];
@@ -43,9 +90,10 @@ export class Parser {
         return new MoveCommand(gcode, params, comment);
       default:
         //console.warn(`Unrecognized gcode: ${gcode}`);
-        return null;
+        return new GCodeCommand(gcode, comment);
     }
   }
+
 
   // G0 & G1
   parseMove(params: string[]): MoveCommandParams {
@@ -57,10 +105,8 @@ export class Parser {
     }, {});
   }
 
-  groupIntoLayers(commands: GCodeCommand[]): Layer[] {
-    for (const cmd of commands.filter(
-      cmd => cmd instanceof MoveCommand
-    ) as MoveCommand[]) {
+  groupIntoLayers(commands: MoveCommand[]): Layer[] {
+    for (const cmd of commands) {
       const params = cmd.params;
       if (params.z) {
         // abs mode
@@ -83,20 +129,32 @@ export class Parser {
     return this.layers;
   }
 
-  parseGcode(input: string | string[]) : { layers : Layer[]} {
-    const lines = Array.isArray(input)
-      ? input
-      : input.split('\n').filter(l => l.length > 0); // discard empty lines
+  processMetadata(metadata: GCodeCommand[]) : Map<string,Thumb> {
+    const thumbnails = new Map<string,Thumb>();
+    
+    let thumb : Thumb = null;
 
-    const commands = this.lines2commands(lines);
-    this.groupIntoLayers(commands);
-    return { layers: this.layers };
-  }
+    for(const cmd of metadata) {
+      const comment = cmd.comment;
+      const idxThumbBegin = comment.indexOf('thumbnail begin');
+      const idxThumbEnd = comment.indexOf('thumbnail end');
+      
+      if (idxThumbBegin > -1) {
+        thumb = new Thumb(comment.slice(idxThumbBegin + 15).trim());
+      }
+      else if (thumb) {
+        if (idxThumbEnd == -1) {
+          thumb.chars += comment.trim();
+        }
+        else  {
+          thumbnails.set(thumb.size, thumb);
+          console.debug('thumb found' , thumb.size);
+          console.debug('declared length', thumb.charLength, 'actual length', thumb.chars.length);
+          thumb = null;
+        }
+      }
+    }
 
-  private lines2commands(lines: string[]) {
-    return lines
-      .filter(l => l.length > 0) // discard empty lines
-      .map(l => this.parseCommand(l))
-      .filter(cmd => cmd !== null);
+    return thumbnails;
   }
 }

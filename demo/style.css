@@ -22,6 +22,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   transform: translateZ(0);
+  overflow: scroll;
 }
 
 .description {
@@ -120,4 +121,8 @@ a {
   margin: 0;
   font-variant: small-caps;
   font-weight: normal;
+}
+
+#thumb {
+  display: block;
 }
