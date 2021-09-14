@@ -19,7 +19,7 @@ type MoveCommandParams = {
   [key in MoveCommandParamName]?: number;
 };
 
-type Metadata = { thumbnails :  Map<string, Thumbnail> };
+type Metadata = { thumbnails :  Record<string, Thumbnail> };
 
 export class Layer {
   constructor(public layer: number, public commands: GCodeCommand[]) {}
@@ -30,7 +30,7 @@ export class Parser {
   currentLayer: Layer;
   curZ = 0;
   maxZ = 0;
-  metadata = { thumbnails : new Map<string,Thumbnail>()};
+  metadata : Metadata = { thumbnails : {} };
   shouldParseMetadata = true;
 
   parseGcode(input: string | string[]) : { layers : Layer[], metadata: Metadata } {
@@ -108,7 +108,7 @@ export class Parser {
   }
 
   parseMetadata(metadata: GCodeCommand[]) : Metadata {
-    const thumbnails = new Map<string,Thumbnail>();
+    const thumbnails : Record<string,Thumbnail> = {};
     
     let thumb : Thumbnail = null;
 
@@ -126,7 +126,7 @@ export class Parser {
         }
         else  {
           if (thumb.isValid) {
-            thumbnails.set(thumb.size, thumb);
+            thumbnails[thumb.size] = thumb;
             console.debug('thumb found' , thumb.size);
             console.debug('declared length', thumb.charLength, 'actual length', thumb.chars.length);
           }

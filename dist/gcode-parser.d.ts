@@ -1,3 +1,4 @@
+import { Thumbnail } from './thumbnail';
 export declare class GCodeCommand {
     gcode?: string;
     comment?: string;
@@ -11,22 +12,13 @@ declare type MoveCommandParamName = 'x' | 'y' | 'z' | 'e' | 'f';
 declare type MoveCommandParams = {
     [key in MoveCommandParamName]?: number;
 };
+declare type Metadata = {
+    thumbnails: Map<string, Thumbnail>;
+};
 export declare class Layer {
     layer: number;
     commands: GCodeCommand[];
     constructor(layer: number, commands: GCodeCommand[]);
-}
-export declare class Thumb {
-    thumbInfo: string;
-    infoParts: string[];
-    size: string;
-    sizeParts: string[];
-    width: number;
-    height: number;
-    charLength: number;
-    chars: string;
-    constructor(thumbInfo: string);
-    get src(): string;
 }
 export declare class Parser {
     layers: Layer[];
@@ -34,17 +26,17 @@ export declare class Parser {
     curZ: number;
     maxZ: number;
     metadata: {
-        thumbnails: Map<string, Thumb>;
+        thumbnails: Map<string, Thumbnail>;
     };
-    parseMetadata: boolean;
+    shouldParseMetadata: boolean;
     parseGcode(input: string | string[]): {
         layers: Layer[];
-        thumbs: Map<string, Thumb>;
+        metadata: Metadata;
     };
     private lines2commands;
     parseCommand(line: string, keepComments?: boolean, parseMetadata?: boolean): GCodeCommand | null;
     parseMove(params: string[]): MoveCommandParams;
     groupIntoLayers(commands: MoveCommand[]): Layer[];
-    processMetadata(metadata: GCodeCommand[]): Map<string, Thumb>;
+    parseMetadata(metadata: GCodeCommand[]): Metadata;
 }
 export {};

@@ -48,21 +48,21 @@ test('well-formatted thumbnail should be parsed', () => {
   expect(parsed).not.toBeNull();
   expect(parsed.metadata).not.toBeNull();
   expect(parsed.metadata.thumbnails).not.toBeNull();
-  expect(parsed.metadata.thumbnails.size).toEqual(1);
+  expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(1);
 });
 
 test('no thumbnail should be parsed if none present', () => {
   const parser = new Parser();
   const parsed = parser.parseGcode('; no thumbnail');
   
-  expect(parsed.metadata.thumbnails.size).toEqual(0);
+  expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(0);
 });
 
 test('thumbnail with incorrect size should be ignored', () => {
   const parser = new Parser();
   const parsed = parser.parseGcode(gcodeCommentsWithThumbnail.replace('856', '857'));
   
-  expect(parsed.metadata.thumbnails.size).toEqual(0);
+  expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(0);
 });
 
 test('no thumbnail should be parsed if "end thumbnail" is missing', () => {
@@ -71,7 +71,7 @@ test('no thumbnail should be parsed if "end thumbnail" is missing', () => {
   parts.pop();
   const parsed = parser.parseGcode(parts.join(';'));
   
-  expect(parsed.metadata.thumbnails.size).toEqual(0);
+  expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(0);
 });
 
 test('only 1 thumbnail should be parsed if "end thumbnail" is missing for the first but not the second', () => {
@@ -84,9 +84,8 @@ test('only 1 thumbnail should be parsed if "end thumbnail" is missing for the fi
   
   expect(parsed).not.toBeNull();
   expect(parsed.metadata.thumbnails).not.toBeNull();
-  expect(parsed.metadata.thumbnails.size).toEqual(1);
-  const secondThumb = (parsed.metadata.thumbnails.values().next().value as Thumbnail);
-
+  expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(1);
+  const secondThumb = Object.values(parsed.metadata.thumbnails)[0] as Thumbnail;
   expect(secondThumb.charLength).toEqual(secondThumb.chars.length);
 });
 
@@ -98,5 +97,5 @@ test('skip thumb if not base64', () => {
   ; thumbnail end`;
   const parsed = parser.parseGcode(gcodeWithIllegalBase64);
   
-  expect(parsed.metadata.thumbnails.size).toEqual(0);
+  expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(0);
 });
