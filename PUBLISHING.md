@@ -13,3 +13,4 @@
  - checkout master
  - merge tag
  - switch to develop
+ - create a release in Github based on the tag
