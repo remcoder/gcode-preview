@@ -1,4 +1,4 @@
-import { Parser } from './gcode-parser';
+import { Parser, Layer } from './gcode-parser';
 import * as THREE from 'three';
 declare type RenderLayer = {
     extrusion: number[];
@@ -51,7 +51,7 @@ export declare class WebGLPreview {
         dispose(): void;
     }[];
     constructor(opts: WebGLPreviewOptions);
-    get layers(): import("./gcode-parser").Layer[];
+    get layers(): Layer[];
     get maxLayerIndex(): number;
     get minLayerIndex(): number;
     animate(): void;

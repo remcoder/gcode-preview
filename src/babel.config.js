@@ -1,4 +1,5 @@
-// babel.config.js
+/* eslint-env node */
+
 module.exports = {
   presets: [
     [

@@ -1,4 +1,4 @@
-import { Parser, MoveCommand } from './gcode-parser';
+import { Parser, MoveCommand, Layer } from './gcode-parser';
 import * as THREE from 'three';
 import * as OrbitControls from 'three-orbitcontrols';
 import { LineMaterial } from './three-line2/LineMaterial';
@@ -68,6 +68,7 @@ export class WebGLPreview {
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
 
+    console.info('Using THREE r' + THREE.REVISION);
     console.debug('opts', opts);
 
     if (!this.canvas && !this.targetId) {
@@ -99,35 +100,37 @@ export class WebGLPreview {
 
     this.resize();
 
+    /* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
     const controls = new OrbitControls(this.camera, this.renderer.domElement);
+    /* eslint-enable no-unused-vars, @typescript-eslint/no-unused-vars */
     this.animate();
   }
 
-  get layers() {
+  get layers() :Layer[] {
     return this.parser.layers;
   }
 
   // convert from 1-based to 0-based
-  get maxLayerIndex() {
+  get maxLayerIndex() : number {
     return (this.endLayer ?? this.layers.length) -1;
   }
 
   // convert from 1-based to 0-based
-  get minLayerIndex() {
+  get minLayerIndex() : number{
     return this.singleLayerMode ? this.maxLayerIndex : (this.startLayer ?? 0) - 1;
   }
 
-  animate() {
+  animate() : void{
     requestAnimationFrame(() => this.animate());
     this.renderer.render(this.scene, this.camera);
   }
 
-  processGCode(gcode: string | string[]) {
+  processGCode(gcode: string | string[]) : void{
     this.parser.parseGcode(gcode);
     this.render();
   }
 
-  render() {
+  render() : void {
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
@@ -226,7 +229,7 @@ export class WebGLPreview {
     this.renderer.render(this.scene, this.camera);
   }
 
-  drawBuildVolume() {
+  drawBuildVolume() :void {
     this.scene.add( new GridHelper( this.buildVolume.x, 10, this.buildVolume.y, 10 ));
   
     const geometryBox = LineBox(
@@ -239,14 +242,14 @@ export class WebGLPreview {
     this.scene.add( geometryBox );
   }
 
-  clear() {
+  clear() :void {
     this.startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
     this.parser = new Parser();
   }
 
-  resize() {
+  resize() :void {
     const [w, h] = [this.canvas.offsetWidth, this.canvas.offsetHeight];
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
@@ -254,13 +257,13 @@ export class WebGLPreview {
     this.renderer.setSize(w, h, false);
   }
 
-  addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) {
+  addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) : void {
     const line = extrude ? layer.extrusion : layer.travel;
     line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
 
-  addLine(vertices: number[], color: number) {
-    if (typeof this.lineWidth == 'number' && this.lineWidth > 0) {
+  addLine(vertices: number[], color: number) : void {
+    if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
       this.addThickLine(vertices, color);
       return;
     }
@@ -278,7 +281,7 @@ export class WebGLPreview {
     this.group.add(lineSegments);
   }
 
-  addThickLine(vertices: number[], color: number) {
+  addThickLine(vertices: number[], color: number) : void {
     if (!vertices.length) return;
 
     const geometry = new LineGeometry();

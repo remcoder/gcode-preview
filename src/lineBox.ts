@@ -1,6 +1,6 @@
 import THREE from 'three';
 
-function box( width : number, height: number, depth: number, color: THREE.Color | number | string ) {
+function box( width : number, height: number, depth: number) {
     width = width * 0.5,
     height = height * 0.5,
     depth = depth * 0.5;
@@ -50,8 +50,8 @@ function box( width : number, height: number, depth: number, color: THREE.Color 
     return geometry;
 }
   
-export  function LineBox(x: number,y: number,z: number, color: THREE.Color | number | string) {
-    const geometryBox = box( x,y,z, color );
+export function LineBox(x: number,y: number,z: number, color: THREE.Color | number | string) : THREE.LineSegments<THREE.BufferGeometry, THREE.LineDashedMaterial> {
+    const geometryBox = box( x,y,z);
 
     const lineSegments = new THREE.LineSegments( geometryBox, new THREE.LineDashedMaterial( { color: new THREE.Color(color), dashSize: 3, gapSize: 1 } ) );
     lineSegments.computeLineDistances();

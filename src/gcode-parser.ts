@@ -1,4 +1,7 @@
-export abstract class GCodeCommand {
+/* eslint-disable no-unused-vars */ 
+import { Thumbnail } from './thumbnail';
+
+export class GCodeCommand {
   constructor(public gcode?: string, public comment?: string) {}
 }
 
@@ -16,6 +19,8 @@ type MoveCommandParams = {
   [key in MoveCommandParamName]?: number;
 };
 
+type Metadata = { thumbnails :  Record<string, Thumbnail> };
+
 export class Layer {
   constructor(public layer: number, public commands: GCodeCommand[]) {}
 }
@@ -25,6 +30,25 @@ export class Parser {
   currentLayer: Layer;
   curZ = 0;
   maxZ = 0;
+  metadata : Metadata = { thumbnails : {} };
+
+  parseGcode(input: string | string[]) : { layers : Layer[], metadata: Metadata } {
+    const lines = Array.isArray(input)
+      ? input
+      : input.split('\n').filter(l => l.length > 0); // discard empty lines
+
+    const commands = this.lines2commands(lines);
+    
+    this.groupIntoLayers(commands.filter(cmd=>cmd instanceof MoveCommand) as MoveCommand[]);
+    this.metadata = this.parseMetadata(commands.filter(cmd=>cmd.comment))
+    
+    return { layers: this.layers, metadata: this.metadata };
+  }
+
+  private lines2commands(lines: string[]) {
+    return lines
+      .map(l => this.parseCommand(l));
+  }
 
   parseCommand(line: string, keepComments = true): GCodeCommand | null {
     const input = line.trim();
@@ -34,16 +58,18 @@ export class Parser {
 
     const parts = cmd.split(/ +/g);
     const gcode = parts[0].toLowerCase();
+    let params : MoveCommandParams;
     switch (gcode) {
       case 'g0':
       case 'g1':
-        const params = this.parseMove(parts.slice(1));
+        params = this.parseMove(parts.slice(1));
         return new MoveCommand(gcode, params, comment);
       default:
         //console.warn(`Unrecognized gcode: ${gcode}`);
-        return null;
+        return new GCodeCommand(gcode, comment);
     }
   }
+
 
   // G0 & G1
   parseMove(params: string[]): MoveCommandParams {
@@ -55,10 +81,8 @@ export class Parser {
     }, {});
   }
 
-  groupIntoLayers(commands: GCodeCommand[]): Layer[] {
-    for (const cmd of commands.filter(
-      cmd => cmd instanceof MoveCommand
-    ) as MoveCommand[]) {
+  groupIntoLayers(commands: MoveCommand[]): Layer[] {
+    for (const cmd of commands) {
       const params = cmd.params;
       if (params.z) {
         // abs mode
@@ -81,20 +105,37 @@ export class Parser {
     return this.layers;
   }
 
-  parseGcode(input: string | string[]) {
-    const lines = Array.isArray(input)
-      ? input
-      : input.split('\n').filter(l => l.length > 0); // discard empty lines
+  parseMetadata(metadata: GCodeCommand[]) : Metadata {
+    const thumbnails : Record<string,Thumbnail> = {};
+    
+    let thumb : Thumbnail = null;
 
-    const commands = this.lines2commands(lines);
-    this.groupIntoLayers(commands);
-    return { layers: this.layers };
-  }
+    for(const cmd of metadata) {
+      const comment = cmd.comment;
+      const idxThumbBegin = comment.indexOf('thumbnail begin');
+      const idxThumbEnd = comment.indexOf('thumbnail end');
+      
+      if (idxThumbBegin > -1) {
+        thumb = Thumbnail.parse(comment.slice(idxThumbBegin + 15).trim());
+      }
+      else if (thumb) {
+        if (idxThumbEnd == -1) {
+          thumb.chars += comment.trim();
+        }
+        else  {
+          if (thumb.isValid) {
+            thumbnails[thumb.size] = thumb;
+            console.debug('thumb found' , thumb.size);
+            console.debug('declared length', thumb.charLength, 'actual length', thumb.chars.length);
+          }
+          else {
+            console.warn('thumb found but seems to be invalid');
+          }
+          thumb = null;
+        }
+      }
+    }
 
-  private lines2commands(lines: string[]) {
-    return lines
-      .filter(l => l.length > 0) // discard empty lines
-      .map(l => this.parseCommand(l))
-      .filter(cmd => cmd !== null);
+    return { thumbnails };
   }
 }
