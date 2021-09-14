@@ -188,7 +188,7 @@ function updateUI() {
   else toggleHighlight.removeAttribute('checked');
 
   if (!favIcon) {
-    favIcon = gcodePreview.parser.metadata.thumbnails.get('16x16');
+    favIcon = gcodePreview.parser.metadata.thumbnails['16x16'];
     if (favIcon)
     {
       setFavicons(favIcon.src);
@@ -196,7 +196,7 @@ function updateUI() {
   }
 
   if(!thumb) {
-    thumb = gcodePreview.parser.metadata.thumbnails.get('220x124');
+    thumb = gcodePreview.parser.metadata.thumbnails['220x124'];
     if (thumb)
     {
       document.getElementById('thumb').src = thumb.src;
