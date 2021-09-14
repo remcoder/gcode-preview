@@ -13,7 +13,7 @@ declare type MoveCommandParams = {
     [key in MoveCommandParamName]?: number;
 };
 declare type Metadata = {
-    thumbnails: Map<string, Thumbnail>;
+    thumbnails: Record<string, Thumbnail>;
 };
 export declare class Layer {
     layer: number;
@@ -25,16 +25,13 @@ export declare class Parser {
     currentLayer: Layer;
     curZ: number;
     maxZ: number;
-    metadata: {
-        thumbnails: Map<string, Thumbnail>;
-    };
-    shouldParseMetadata: boolean;
+    metadata: Metadata;
     parseGcode(input: string | string[]): {
         layers: Layer[];
         metadata: Metadata;
     };
     private lines2commands;
-    parseCommand(line: string, keepComments?: boolean, parseMetadata?: boolean): GCodeCommand | null;
+    parseCommand(line: string, keepComments?: boolean): GCodeCommand | null;
     parseMove(params: string[]): MoveCommandParams;
     groupIntoLayers(commands: MoveCommand[]): Layer[];
     parseMetadata(metadata: GCodeCommand[]): Metadata;

@@ -1,7 +1,5 @@
 export declare class Thumbnail {
-    infoParts: string[];
     size: string;
-    sizeParts: string[];
     width: number;
     height: number;
     charLength: number;

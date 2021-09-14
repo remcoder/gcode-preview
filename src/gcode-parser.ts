@@ -31,7 +31,6 @@ export class Parser {
   curZ = 0;
   maxZ = 0;
   metadata : Metadata = { thumbnails : {} };
-  shouldParseMetadata = true;
 
   parseGcode(input: string | string[]) : { layers : Layer[], metadata: Metadata } {
     const lines = Array.isArray(input)
@@ -51,8 +50,7 @@ export class Parser {
       .map(l => this.parseCommand(l));
   }
 
-  parseCommand(line: string, keepComments = true, parseMetadata = true): GCodeCommand | null {
-    this.shouldParseMetadata = parseMetadata;
+  parseCommand(line: string, keepComments = true): GCodeCommand | null {
     const input = line.trim();
     const splitted = input.split(';');
     const cmd = splitted[0];
