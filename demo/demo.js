@@ -1,6 +1,8 @@
 /* global THREE, GCodePreview, Canvas2Image */
 
 let gcodePreview;
+let favIcon;
+let thumb;
 const chunkSize = 1000;
 
 const startLayer = document.getElementById('start-layer');
@@ -185,15 +187,20 @@ function updateUI() {
     toggleHighlight.setAttribute('checked', 'checked');
   else toggleHighlight.removeAttribute('checked');
 
-  var first = gcodePreview.parser.metadata.thumbnails.get('16x16');
-  if (first)
-  {
-    setFavicons(first.src);
+  if (!favIcon) {
+    favIcon = gcodePreview.parser.metadata.thumbnails.get('16x16');
+    if (favIcon)
+    {
+      setFavicons(favIcon.src);
+    }
   }
-  var second = gcodePreview.parser.metadata.thumbnails.get('220x124');
-  if (second)
-  {
-    document.getElementById('thumb').src = second.src;
+
+  if(!thumb) {
+    thumb = gcodePreview.parser.metadata.thumbnails.get('220x124');
+    if (thumb)
+    {
+      document.getElementById('thumb').src = thumb.src;
+    }
   }
 }
 
