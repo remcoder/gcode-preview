@@ -1,5 +1,5 @@
 # GCode Preview [![npm version](http://img.shields.io/npm/v/gcode-preview.svg?style=flat)](https://npmjs.org/package/gcode-preview "View this project on npm") [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
-A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D printing in mind. Written in Typescript. 
+A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D printing in mind. Written in Typescript. Try the [demo](https://gcode-preview.web.app/)
 
 ## 3D WebGL + pan/zoom/rotate controls
 ![Demo Animation](../assets/benchy.gif?raw=true)
