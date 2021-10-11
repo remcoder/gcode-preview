@@ -11,6 +11,6 @@
  
  - push develop to github
  - checkout master
- - merge tag
+ - merge tag & push
  - switch to develop
  - create a release in Github based on the tag
