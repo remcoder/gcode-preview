@@ -50,11 +50,11 @@ export class Parser {
   metadata : Metadata = { thumbnails : {} };
 
   parseGcode(input: string | string[]) : { layers : Layer[], metadata: Metadata } {
-    const lines = Array.isArray(input)
+    this.lines = Array.isArray(input)
       ? input
-      : input.split('\n').filter(l => l.length > 0); // discard empty lines
+      : input.split('\n');
 
-    const commands = this.lines2commands(lines);
+    const commands = this.lines2commands(this.lines);
     
     this.groupIntoLayers(commands.filter(cmd=>cmd instanceof MoveCommand) as MoveCommand[]);
     this.metadata = this.parseMetadata(commands.filter(cmd=>cmd.comment))
