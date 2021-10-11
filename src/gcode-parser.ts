@@ -76,7 +76,6 @@ export class Parser {
     const parts = cmd.split(/ +/g);
     const gcode = parts[0].toLowerCase();
     let params;
-
     switch (gcode) {
       case 'g0':
       case 'g1':
@@ -99,7 +98,6 @@ export class Parser {
       return acc;
     }, {});
   }
-
 
   private  isAlpha(char : string | singleLetter) : char is singleLetter {
     const code = char.charCodeAt(0);
