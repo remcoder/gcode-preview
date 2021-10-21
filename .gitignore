@@ -8,3 +8,4 @@ yarn-error.log
 .firebase/hosting.*
 TODO.md
 .DS_Store
+examples/files
