@@ -35,7 +35,7 @@ export declare class Parser {
     curZ: number;
     maxZ: number;
     metadata: Metadata;
-    parseGcode(input: string | string[]): {
+    parseGCode(input: string | string[]): {
         layers: Layer[];
         metadata: Metadata;
     };
@@ -46,5 +46,8 @@ export declare class Parser {
     private parseParams;
     private groupIntoLayers;
     parseMetadata(metadata: GCodeCommand[]): Metadata;
+}
+export interface Parser {
+    parseGcode: typeof Parser.prototype.parseGCode;
 }
 export {};

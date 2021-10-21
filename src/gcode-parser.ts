@@ -49,7 +49,7 @@ export class Parser {
   maxZ = 0;
   metadata : Metadata = { thumbnails : {} };
 
-  parseGcode(input: string | string[]) : { layers : Layer[], metadata: Metadata } {
+  parseGCode(input: string | string[]) : { layers : Layer[], metadata: Metadata } {
     const lines = Array.isArray(input)
       ? input
       : input.split('\n');
@@ -191,3 +191,9 @@ export class Parser {
     return { thumbnails };
   }
 }
+
+// backwards compat;
+export interface Parser {
+  parseGcode: typeof Parser.prototype.parseGCode;
+}
+Parser.prototype.parseGcode = Parser.prototype.parseGCode;

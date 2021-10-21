@@ -8,7 +8,7 @@
     - publishes to npm
     - and deploys to firebase
 
- 
+ - test https://gcode-preview.web.app/
  - push develop to github
  - checkout master
  - merge tag & push
