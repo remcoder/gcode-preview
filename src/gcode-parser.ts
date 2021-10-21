@@ -193,6 +193,7 @@ export class Parser {
 }
 
 // backwards compat;
+// eslint-disable-next-line no-redeclare
 export interface Parser {
   parseGcode: typeof Parser.prototype.parseGCode;
 }

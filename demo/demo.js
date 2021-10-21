@@ -155,9 +155,9 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
 function storeSettings() {
   localStorage.setItem('settings', JSON.stringify({
     buildVolume: { 
-      x : preview.buildVolume.x,
-      y : preview.buildVolume.y,
-      z : preview.buildVolume.z,
+      x : gcodePreview.buildVolume.x,
+      y : gcodePreview.buildVolume.y,
+      z : gcodePreview.buildVolume.z,
     }
   }));
 }
