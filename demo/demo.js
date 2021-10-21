@@ -25,13 +25,16 @@ const topLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
 const lastSegmentColor = new THREE.Color(`hsl(270, 50%, 50%)`).getHex();
 
 function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
+  const settings = JSON.parse(localStorage.getItem('settings'));
+  console.log('settings', settings);
+  
   const preview = (window.preview = new GCodePreview.WebGLPreview({
     canvas: document.querySelector('.gcode-previewer'),
     // targetId : 'renderer',
     topLayerColor: topLayerColor,
     lastSegmentColor: lastSegmentColor,
     // lineWidth: 4
-    buildVolume: {x: 150, y: 150, z: 150},
+    buildVolume: settings?.buildVolume || {x: 150, y: 150, z: 150},
     initialCameraPosition: [0,400,450],
     // debug: true
   }));
@@ -87,6 +90,7 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     const x = parseInt(buildVolumeX.value, 10);
     const y = parseInt(buildVolumeY.value, 10);
     const z = parseInt(buildVolumeZ.value, 10);
+
     const draw = drawBuildVolume.checked;
 
     if (draw && !isNaN(x) && !isNaN(y)) {
@@ -112,8 +116,13 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
       buildVolumeY.setAttribute('disabled', 'disabled');
       buildVolumeZ.setAttribute('disabled', 'disabled');
     }
+
+    storeSettings();
   }
 
+  buildVolumeX.value = settings?.buildVolume?.x;
+  buildVolumeY.value = settings?.buildVolume?.y;
+  buildVolumeZ.value = settings?.buildVolume?.z;
   buildVolumeX.addEventListener('input', updateBuildVolume);
   buildVolumeY.addEventListener('input', updateBuildVolume);
   buildVolumeZ.addEventListener('input', updateBuildVolume);
@@ -162,6 +171,16 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
   updateUI();
 
   return preview;
+}
+
+function storeSettings() {
+  localStorage.setItem('settings', JSON.stringify({
+    buildVolume: { 
+      x : preview.buildVolume.x,
+      y : preview.buildVolume.y,
+      z : preview.buildVolume.z,
+    }
+  }));
 }
 
 function updateUI() {
