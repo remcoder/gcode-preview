@@ -23,6 +23,7 @@ declare type WebGLPreviewOptions = {
     buildVolume?: BuildVolume;
     initialCameraPosition?: number[];
     debug?: boolean;
+    allowDragNDrop: boolean;
 };
 export declare class WebGLPreview {
     parser: Parser;
@@ -47,9 +48,8 @@ export declare class WebGLPreview {
     buildVolume: BuildVolume;
     initialCameraPosition: number[];
     debug: boolean;
-    disposables: {
-        dispose(): void;
-    }[];
+    allowDragNDrop: boolean;
+    private disposables;
     constructor(opts: WebGLPreviewOptions);
     get layers(): Layer[];
     get maxLayerIndex(): number;
@@ -63,5 +63,6 @@ export declare class WebGLPreview {
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
     addLine(vertices: number[], color: number): void;
     addThickLine(vertices: number[], color: number): void;
+    private _enableDropHandler;
 }
 export {};

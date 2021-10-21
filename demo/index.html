@@ -23,6 +23,8 @@
 </head>
 
 <body>
+  <canvas id="renderer" class="gcode-previewer"></canvas>
+  
   <div class="dnd">☝️ Drop a gcode file here to view it</div>
   <div class="version-box"><a href="https://www.npmjs.com/package/gcode-preview">
     <img src="https://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
@@ -134,7 +136,7 @@
     </div>
   </div>
 
-  <canvas id="renderer" class="gcode-previewer"></canvas>
+  
   <script src="three.min.js"></script>
   <script src="OrbitControls.js"></script>
   <script src="canvas2image.js"></script>

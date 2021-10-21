@@ -25,6 +25,7 @@ type WebGLPreviewOptions = {
   buildVolume?: BuildVolume;
   initialCameraPosition?: number[];
   debug?: boolean;
+  allowDragNDrop: boolean;
 };
 
 export class WebGLPreview {
@@ -51,7 +52,8 @@ export class WebGLPreview {
   buildVolume: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
   debug = false;
-  disposables: { dispose() : void }[] = [];
+  allowDragNDrop = false;
+  private disposables: { dispose() : void }[] = [];
 
   constructor(opts: WebGLPreviewOptions) {
     this.scene = new THREE.Scene();
@@ -67,6 +69,7 @@ export class WebGLPreview {
     this.buildVolume = opts.buildVolume;
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
+    this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
 
     console.info('Using THREE r' + THREE.REVISION);
     console.debug('opts', opts);
@@ -104,6 +107,9 @@ export class WebGLPreview {
     const controls = new OrbitControls(this.camera, this.renderer.domElement);
     /* eslint-enable no-unused-vars, @typescript-eslint/no-unused-vars */
     this.animate();
+
+    if (this.allowDragNDrop)
+      this._enableDropHandler();
   }
 
   get layers() :Layer[] {
@@ -297,5 +303,36 @@ export class WebGLPreview {
     const line = new LineSegments2(geometry, matLine);
     
     this.group.add(line);
+  }
+
+  // experimental DnD support
+  private _enableDropHandler() {
+    this.canvas.addEventListener('dragover', (evt) => {
+        evt.stopPropagation();
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = 'copy';
+        this.canvas.classList.add('dragging');
+    });
+
+    this.canvas.addEventListener('dragleave', (evt) => {
+        evt.stopPropagation();
+        evt.preventDefault();
+        this.canvas.classList.remove('dragging');
+    });
+
+    this.canvas.addEventListener('drop', (evt) => {
+      evt.stopPropagation();
+      evt.preventDefault();
+      this.canvas.classList.remove('dragging');
+      const files = evt.dataTransfer.files;
+      const file = files[0];
+      
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.clear();
+        this.processGCode(reader.result as string);
+      };
+      reader.readAsText(file);
+    });
   }
 }

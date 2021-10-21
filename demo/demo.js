@@ -37,6 +37,7 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     buildVolume: settings?.buildVolume || {x: 150, y: 150, z: 150},
     initialCameraPosition: [0,400,450],
     // debug: true
+    allowDragNDrop: true
   }));
 
   preview.renderExtrusion = true;
@@ -137,28 +138,6 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     preview.resize();
   });
 
-  preview.canvas.addEventListener('dragover', function(evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      evt.dataTransfer.dropEffect = 'copy';
-      document.body.className = "dragging";
-  });
-
-  preview.canvas.addEventListener('dragleave', function(evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      document.body.className = "";
-  });
-
-  preview.canvas.addEventListener('drop', function(evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      document.body.className = "";
-      const files = evt.dataTransfer.files;
-      const file = files[0];
-      loadGCode(file);
-  });
-
   snapshot.addEventListener('click', function(evt) {
     evt.stopPropagation();
     evt.preventDefault();
@@ -214,15 +193,6 @@ function updateUI() {
     thumb = gcodePreview.parser.metadata.thumbnails['220x124'];
     document.getElementById('thumb').src = thumb?.src ?? 'https://via.placeholder.com/120x60?text=noThumbnail';
   }
-}
-
-function loadGCode(file) {
-  const reader = new FileReader();
-  reader.onload = function() {
-    _handleGCode(file.name, reader.result);
-  };
-  reader.readAsText(file);
-  fileName.setAttribute('href', '#');
 }
 
 async function loadGCodeFromServer(file) { // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
