@@ -13,7 +13,7 @@
 <script>
 'use strict'
 
-import { WebGLPreview } from 'gcode-preview';
+import * as GCodePreview from 'gcode-preview';
 import * as THREE from 'three';
 
 export default {
@@ -32,7 +32,7 @@ export default {
   },
 
   mounted() {
-    this.preview = new WebGLPreview({
+    this.preview = new GCodePreview.init({
       canvas: this.$refs.preview,
       endLayer: this.endLayer,
       startLayer: this.startLayer,
