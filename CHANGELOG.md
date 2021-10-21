@@ -1,5 +1,6 @@
 ## 2.6.1
 - Fix bug where the .lines property was overwritten instead of appended to
+- Fix bug where the thumbnails was not properly stored
 ## 2.6
 - preserve input gcode, including comments, accessible as `GCodePreview.parser.lines`
 ## 2.5

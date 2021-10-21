@@ -1,5 +1,4 @@
 /* global THREE, GCodePreview, Canvas2Image */
-
 let gcodePreview;
 let favIcon;
 let thumb;
@@ -187,20 +186,14 @@ function updateUI() {
     toggleHighlight.setAttribute('checked', 'checked');
   else toggleHighlight.removeAttribute('checked');
 
-  if (!favIcon) {
+  if (favIcon != gcodePreview.parser.metadata.thumbnails['16x16']) {
     favIcon = gcodePreview.parser.metadata.thumbnails['16x16'];
-    if (favIcon)
-    {
-      setFavicons(favIcon.src);
-    }
+    setFavicons(favIcon?.src);
   }
-
-  if(!thumb) {
+  
+  if(thumb != gcodePreview.parser.metadata.thumbnails['220x124']) {
     thumb = gcodePreview.parser.metadata.thumbnails['220x124'];
-    if (thumb)
-    {
-      document.getElementById('thumb').src = thumb.src;
-    }
+    document.getElementById('thumb').src = thumb?.src ?? 'https://via.placeholder.com/120x60?text=noThumbnail';
   }
 }
 
@@ -251,6 +244,7 @@ function startLoadingProgressive(gcode) {
     else {
       startLayer.removeAttribute('disabled');
       endLayer.removeAttribute('disabled');
+      console.log(preview.parser.metadata.thumbnails);
     }
     gcodePreview.processGCode(chunk);
     updateUI();
