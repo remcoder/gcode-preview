@@ -30,7 +30,6 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
   
   const preview = (window.preview = new GCodePreview.init({
     canvas: document.querySelector('.gcode-previewer'),
-    // targetId : 'renderer',
     topLayerColor: topLayerColor,
     lastSegmentColor: lastSegmentColor,
     // lineWidth: 4

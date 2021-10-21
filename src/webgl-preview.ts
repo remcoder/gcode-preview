@@ -74,6 +74,10 @@ export class WebGLPreview {
     console.info('Using THREE r' + THREE.REVISION);
     console.debug('opts', opts);
 
+    if (this.targetId) {
+      console.warn('`targetId` is deprecated and will removed in the future. Use `canvas` instead.')
+    }
+
     if (!this.canvas && !this.targetId) {
       throw Error('Set either opts.canvas or opts.targetId');
     }
