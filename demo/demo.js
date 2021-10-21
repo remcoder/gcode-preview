@@ -2,7 +2,7 @@
 let gcodePreview;
 let favIcon;
 let thumb;
-const chunkSize = 1000;
+let chunkSize = 1000;
 
 const startLayer = document.getElementById('start-layer');
 const endLayer = document.getElementById('end-layer');
@@ -239,6 +239,7 @@ async function loadGCodeFromServer(file) { // eslint-disable-line no-unused-vars
 }
 
 function _handleGCode(filename, gcode) {
+  chunkSize = gcode.length / 1000;
   fileName.innerText = filename;
   fileSize.innerText = humanFileSize(gcode.length);
 

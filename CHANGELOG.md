@@ -1,9 +1,15 @@
 ## 2.6.1
 - Fix bug where the .lines property was overwritten instead of appended to
 - Fix bug where the thumbnails was not properly stored
-- Improve naming consistency (preview.parser.parseGCode iso parseGcode)
+- Improve naming:
+     - preview.parser.parseGCode iso now deprecated parseGcode
+     - Added .init constructor in favor of now deprecated WebGLPreview
+     - the old deprecated version remain working for now
+- DEMO:
+     - Store build volume dimensions in localStorage
+     - Make loading of large files faster by increasing the chunk size
 - Added examples using Fetch API
-- Store build volume dimensions in localStorage
+
 ## 2.6
 - preserve input gcode, including comments, accessible as `GCodePreview.parser.lines`
 ## 2.5
