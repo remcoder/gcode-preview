@@ -28,7 +28,7 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
   const settings = JSON.parse(localStorage.getItem('settings'));
   console.log('settings', settings);
   
-  const preview = (window.preview = new GCodePreview.WebGLPreview({
+  const preview = (window.preview = new GCodePreview.init({
     canvas: document.querySelector('.gcode-previewer'),
     // targetId : 'renderer',
     topLayerColor: topLayerColor,

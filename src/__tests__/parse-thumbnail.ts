@@ -43,7 +43,7 @@ test('not matching size should be invalid', () => {
 
 test('well-formatted thumbnail should be parsed', () => {
   const parser = new Parser();
-  const parsed = parser.parseGcode(gcodeCommentsWithThumbnail);
+  const parsed = parser.parseGCode(gcodeCommentsWithThumbnail);
   
   expect(parsed).not.toBeNull();
   expect(parsed.metadata).not.toBeNull();
@@ -53,14 +53,14 @@ test('well-formatted thumbnail should be parsed', () => {
 
 test('no thumbnail should be parsed if none present', () => {
   const parser = new Parser();
-  const parsed = parser.parseGcode('; no thumbnail');
+  const parsed = parser.parseGCode('; no thumbnail');
   
   expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(0);
 });
 
 test('thumbnail with incorrect size should be ignored', () => {
   const parser = new Parser();
-  const parsed = parser.parseGcode(gcodeCommentsWithThumbnail.replace('856', '857'));
+  const parsed = parser.parseGCode(gcodeCommentsWithThumbnail.replace('856', '857'));
   
   expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(0);
 });
@@ -69,7 +69,7 @@ test('no thumbnail should be parsed if "end thumbnail" is missing', () => {
   const parser = new Parser();
   const parts = gcodeCommentsWithThumbnail.split(';');
   parts.pop();
-  const parsed = parser.parseGcode(parts.join(';'));
+  const parsed = parser.parseGCode(parts.join(';'));
   
   expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(0);
 });
@@ -80,7 +80,7 @@ test('only 1 thumbnail should be parsed if "end thumbnail" is missing for the fi
   parts.pop();
   const parts2 = gcodeCommentsWithThumbnail.split(';');
   parts.push(...parts2);
-  const parsed = parser.parseGcode(parts.join(';'));
+  const parsed = parser.parseGCode(parts.join(';'));
   
   expect(parsed).not.toBeNull();
   expect(parsed.metadata.thumbnails).not.toBeNull();
@@ -95,7 +95,7 @@ test('skip thumb if not base64', () => {
   ; thumbnail begin 16x16 123
   ; ` + encodedImg.slice(0,-1) + `
   ; thumbnail end`;
-  const parsed = parser.parseGcode(gcodeWithIllegalBase64);
+  const parsed = parser.parseGCode(gcodeWithIllegalBase64);
   
   expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(0);
 });

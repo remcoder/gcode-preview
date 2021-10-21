@@ -9,39 +9,39 @@
 
     <pre>
         <code class="language-js">
-            const preview = new GCodePreview.WebGLPreview({
-                canvas: document.querySelector('canvas')
-            });
-    
-            function decode(uint8array){
-                return new TextDecoder("utf-8").decode(uint8array);
+        const preview = new GCodePreview.init({
+            canvas: document.querySelector('canvas')
+        });
+
+        function decode(uint8array){
+            return new TextDecoder("utf-8").decode(uint8array);
+        }
+
+        async function load() {
+            const response = await fetch('../demo/benchy.gcode');
+            
+            if (response.status !== 200) {
+                console.error('ERROR. Status Code: ' + response.status);
+                return;
             }
-    
-            async function load() {
-                const response = await fetch('../demo/benchy.gcode');
-                
-                if (response.status !== 200) {
-                    console.error('ERROR. Status Code: ' + response.status);
-                    return;
-                }
-    
-                const reader = response.body.getReader();
-    
-                let result;
-                let tail = '';
-                do {
-                    result = await reader.read();
-                    const str = decode(result.value);
-                    const idxNewLine = str.lastIndexOf('\n');
-                    const maxFullLine = str.slice(0,idxNewLine);
-    
-                    // parse increments but don't render yet
-                    preview.parser.parseGCode(tail + maxFullLine);
-                    tail = str.slice(idxNewLine); 
-                } while (!result.done)
-    
-                preview.render();
-            }
+
+            const reader = response.body.getReader();
+
+            let result;
+            let tail = '';
+            do {
+                result = await reader.read();
+                const str = decode(result.value);
+                const idxNewLine = str.lastIndexOf('\n');
+                const maxFullLine = str.slice(0,idxNewLine);
+
+                // parse increments but don't render yet
+                preview.parser.parseGCode(tail + maxFullLine);
+                tail = str.slice(idxNewLine); 
+            } while (!result.done)
+
+            preview.render();
+        }
         </code>
     </pre>
 
@@ -49,7 +49,7 @@
     <script src="../node_modules/three/examples/js/controls/OrbitControls.js"></script>
     <script src="../dist/gcode-preview.js"></script>
     <script>
-        const preview = new GCodePreview.WebGLPreview({
+        const preview = new GCodePreview.init({
             canvas: document.querySelector('canvas')
         });
 

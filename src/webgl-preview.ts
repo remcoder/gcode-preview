@@ -126,7 +126,7 @@ export class WebGLPreview {
   }
 
   processGCode(gcode: string | string[]) : void{
-    this.parser.parseGcode(gcode);
+    this.parser.parseGCode(gcode);
     this.render();
   }
 

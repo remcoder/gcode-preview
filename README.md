@@ -50,20 +50,25 @@ or
 
 #### Html
 ```
-  <div id="gcode-preview">
+    <body>
+      <canvas class="gcode-preview"></canvas>
+      
+      <script src="three/build/three.min.js"></script>
+      <script src="three/examples/js/controls/OrbitControls.js"></script>
+      <script src="gcode-preview.js"></script>
+
+    </body>
 ```
 
 #### Javascript
 ```  
-  import * as GCodePreview from "gcode-preview";
-  
-  const gcode = 'G0 X0 Y0 Z0.2\nG1 X42 Y42'; // draw a diagonal line
-  const preview = new GCodePreview.WebGLPreview({
-      targetId: 'gcode-preview',
+  const preview = new GCodePreview.init({
+      document.querySelector('canvas'),
   });
   
+  // draw a diagonal line
+  const gcode = 'G0 X0 Y0 Z0.2\nG1 X42 Y42 E10';
   preview.processGCode(gcode);
-  preview.render();
 ```
 
 ### Vue.js integration
