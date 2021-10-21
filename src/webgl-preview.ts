@@ -320,19 +320,39 @@ export class WebGLPreview {
         this.canvas.classList.remove('dragging');
     });
 
-    this.canvas.addEventListener('drop', (evt) => {
+    this.canvas.addEventListener('drop', async (evt) => {
       evt.stopPropagation();
       evt.preventDefault();
       this.canvas.classList.remove('dragging');
       const files = evt.dataTransfer.files;
       const file = files[0];
-      
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.clear();
-        this.processGCode(reader.result as string);
-      };
-      reader.readAsText(file);
+
+      this.clear();
+      await this._readFromStream(file.stream());
+      this.render();
     });
   }
+
+  async _readFromStream(stream: ReadableStream) : Promise<void> {
+    const reader = stream.getReader();
+    let result;
+    let tail = '';
+    let size = 0;
+    do {
+        result = await reader.read();
+        size += result.value?.length ?? 0;
+        const str = decode(result.value);
+        const idxNewLine = str.lastIndexOf('\n');
+        const maxFullLine = str.slice(0,idxNewLine);
+
+        // parse increments but don't render yet
+        this.parser.parseGCode(tail + maxFullLine);
+        tail = str.slice(idxNewLine); 
+    } while (!result.done);
+    console.debug('read from stream', size);
+  }
+}
+
+function decode(uint8array: Uint8Array){
+  return new TextDecoder("utf-8").decode(uint8array);
 }

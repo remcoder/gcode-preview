@@ -64,5 +64,6 @@ export declare class WebGLPreview {
     addLine(vertices: number[], color: number): void;
     addThickLine(vertices: number[], color: number): void;
     private _enableDropHandler;
+    _readFromStream(stream: ReadableStream): Promise<void>;
 }
 export {};
