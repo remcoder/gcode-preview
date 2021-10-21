@@ -2,6 +2,7 @@
 - Fix bug where the .lines property was overwritten instead of appended to
 - Fix bug where the thumbnails was not properly stored
 - (experimental) Add drag 'n drop support
+- (experimental) Stream support (for both Fetch and drag n drop )
 - Naming & cleanup:
      - preview.parser.parseGCode iso now deprecated parseGcode
      - Added .init constructor in favor of now deprecated WebGLPreview
