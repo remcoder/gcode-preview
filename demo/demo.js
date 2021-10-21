@@ -244,7 +244,7 @@ function startLoadingProgressive(gcode) {
     else {
       startLayer.removeAttribute('disabled');
       endLayer.removeAttribute('disabled');
-      console.log(preview.parser.metadata.thumbnails);
+      console.log(gcodePreview.parser.metadata.thumbnails);
     }
     gcodePreview.processGCode(chunk);
     updateUI();
