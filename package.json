@@ -1,6 +1,6 @@
 {
   "name": "gcode-preview",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Preview a 3d print from a gcode file",
   "author": "remcoder@gmail.com",
   "license": "MIT",
@@ -42,7 +42,7 @@
     "lint": "eslint . --fix",
     "test": "jest",
     "test:watch": "jest --watch",
-    "preversion": "npm run test",
+    "preversion": "npm run test && npm run lint",
     "version:patch": "npm version patch",
     "version:minor": "npm version minor",
     "postversion": "npm publish && npm run deploy",

@@ -41,7 +41,7 @@ export class Layer {
 }
 
 export class Parser {
-  lines: string[];
+  lines: string[] = [];
   preamble = new Layer(-1, [], 0);
   layers: Layer[] = [];
   currentLayer: Layer;
@@ -50,14 +50,21 @@ export class Parser {
   metadata : Metadata = { thumbnails : {} };
 
   parseGcode(input: string | string[]) : { layers : Layer[], metadata: Metadata } {
-    this.lines = Array.isArray(input)
+    const lines = Array.isArray(input)
       ? input
       : input.split('\n');
 
-    const commands = this.lines2commands(this.lines);
+    this.lines = this.lines.concat(lines);
+
+    const commands = this.lines2commands(lines);
     
     this.groupIntoLayers(commands.filter(cmd=>cmd instanceof MoveCommand) as MoveCommand[]);
-    this.metadata = this.parseMetadata(commands.filter(cmd=>cmd.comment))
+    
+    // merge thumbs
+    const thumbs = this.parseMetadata(commands.filter(cmd=>cmd.comment)).thumbnails;
+    for (const [key, value] of Object.entries(thumbs)) {
+      this.metadata.thumbnails[key] = value
+    }
     
     return { layers: this.layers, metadata: this.metadata };
   }
