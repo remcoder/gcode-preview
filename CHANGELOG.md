@@ -1,6 +1,4 @@
-## 2.6.1
-- Fix bug where the .lines property was overwritten instead of appended to
-- Fix bug where the thumbnails was not properly stored
+## 2.7.0
 - (experimental) Add drag 'n drop support
 - (experimental) Stream support (for both Fetch and drag n drop )
 - Naming & cleanup:
@@ -12,6 +10,10 @@
      - Store build volume dimensions in localStorage
      - Make loading of large files faster by increasing the chunk size
 - Added examples using Fetch API
+
+## 2.6.1
+- Fix bug where the .lines property was overwritten instead of appended to
+- Fix bug where the thumbnails was not properly stored
 
 ## 2.6
 - preserve input gcode, including comments, accessible as `GCodePreview.parser.lines`
