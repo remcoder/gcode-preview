@@ -49,7 +49,7 @@
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
-    "three": "^0.132.2",
+    "three": "^0.137.0",
     "three-orbitcontrols": "^2.110.3"
   }
 }
