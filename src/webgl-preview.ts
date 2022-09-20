@@ -332,7 +332,9 @@ export class WebGLPreview {
       const file = files[0];
 
       this.clear();
-      await this._readFromStream(file.stream());
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await this._readFromStream(file.stream()as unknown as ReadableStream<any>);
       this.render();
     });
   }
