@@ -13,8 +13,8 @@
 <script>
 'use strict'
 
-import * as GCodePreview from 'gcode-preview';
 import * as THREE from 'three';
+import { GCodePreview } from 'gcode-preview';
 
 export default {
   props: {
@@ -32,7 +32,7 @@ export default {
   },
 
   mounted() {
-    this.preview = new GCodePreview.init({
+    this.preview = new GCodePreview({
       canvas: this.$refs.preview,
       endLayer: this.endLayer,
       startLayer: this.startLayer,

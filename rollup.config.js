@@ -5,7 +5,7 @@ import {terser} from 'rollup-plugin-terser';
 import resolve from 'rollup-plugin-node-resolve';
 
 export default {
- input: 'src/gcode-preview.ts', // our source file
+ input: 'src/index.ts', // our source file
  output: [
   {
    file: pkg.module,
