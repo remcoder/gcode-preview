@@ -14,5 +14,5 @@
       },
       "typeRoots" : ["types","node_modules/@types"]
     },
-    "files": ["src/gcode-preview.ts"]
+    "files": ["src/index.ts"]
 }

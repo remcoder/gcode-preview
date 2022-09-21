@@ -27,7 +27,7 @@ export declare class Layer {
     lineNumber: number;
     constructor(layer: number, commands: GCodeCommand[], lineNumber: number);
 }
-export declare class Parser {
+export declare class GCodeParser {
     lines: string[];
     preamble: Layer;
     layers: Layer[];
@@ -46,8 +46,5 @@ export declare class Parser {
     private parseParams;
     private groupIntoLayers;
     parseMetadata(metadata: GCodeCommand[]): Metadata;
-}
-export interface Parser {
-    parseGcode: typeof Parser.prototype.parseGCode;
 }
 export {};

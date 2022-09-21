@@ -40,7 +40,7 @@ export class Layer {
   ) {}
 }
 
-export class Parser {
+export class GCodeParser {
   lines: string[] = [];
   preamble = new Layer(-1, [], 0);
   layers: Layer[] = [];
@@ -191,10 +191,3 @@ export class Parser {
     return { thumbnails };
   }
 }
-
-// backwards compat;
-// eslint-disable-next-line no-redeclare
-export interface Parser {
-  parseGcode: typeof Parser.prototype.parseGCode;
-}
-Parser.prototype.parseGcode = Parser.prototype.parseGCode;

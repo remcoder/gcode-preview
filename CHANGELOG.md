@@ -1,3 +1,9 @@
+## next
+ - remove preview.parser.parseGcode in favor of parseGCode
+ - remove .init
+ - remove WebGLPreview. 
+ - expose GCodeParser
+
 ## 2.7.0
 - (experimental) Add drag 'n drop support
 - (experimental) Stream support (for both Fetch and drag n drop )
