@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "gcode-preview": "file:..",
-    "minimist": "^1.2.3",
+    "minimist": "^1.2.6",
     "vue": "^2.6.11"
   },
   "devDependencies": {
