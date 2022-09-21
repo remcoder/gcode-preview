@@ -1,9 +1,9 @@
 import { Parser, MoveCommand, Layer } from './gcode-parser';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { LineMaterial } from './three-line2/LineMaterial';
-import { LineGeometry } from './three-line2/LineGeometry';
-import { LineSegments2 } from './three-line2/LineSegments2';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
+import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
+import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
 

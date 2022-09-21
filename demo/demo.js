@@ -32,7 +32,7 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     canvas: document.querySelector('.gcode-previewer'),
     topLayerColor: topLayerColor,
     lastSegmentColor: lastSegmentColor,
-    // lineWidth: 4
+    // lineWidth: 4,
     buildVolume: settings?.buildVolume || {x: 150, y: 150, z: 150},
     initialCameraPosition: [0,400,450],
     // debug: true
