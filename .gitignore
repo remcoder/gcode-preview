@@ -1,4 +1,3 @@
-*.map
 src/demo/gcode-preview.js
 src/.rpt2_cache
 node_modules
