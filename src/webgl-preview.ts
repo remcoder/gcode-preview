@@ -1,6 +1,6 @@
 import { Parser, MoveCommand, Layer } from './gcode-parser';
 import * as THREE from 'three';
-import * as OrbitControls from 'three-orbitcontrols';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { LineMaterial } from './three-line2/LineMaterial';
 import { LineGeometry } from './three-line2/LineGeometry';
 import { LineSegments2 } from './three-line2/LineSegments2';
