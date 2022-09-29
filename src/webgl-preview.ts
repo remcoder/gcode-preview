@@ -53,6 +53,7 @@ export class WebGLPreview {
   initialCameraPosition = [-100, 400, 450];
   debug = false;
   allowDragNDrop = false;
+  controls: OrbitControls;
   private disposables: { dispose() : void }[] = [];
 
   constructor(opts: WebGLPreviewOptions) {
@@ -108,7 +109,7 @@ export class WebGLPreview {
     this.resize();
 
     /* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
-    const controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     /* eslint-enable no-unused-vars, @typescript-eslint/no-unused-vars */
     this.animate();
 

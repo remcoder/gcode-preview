@@ -1,5 +1,6 @@
 import { Parser, Layer } from './gcode-parser';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 declare type RenderLayer = {
     extrusion: number[];
     travel: number[];
@@ -49,6 +50,7 @@ export declare class WebGLPreview {
     initialCameraPosition: number[];
     debug: boolean;
     allowDragNDrop: boolean;
+    controls: OrbitControls;
     private disposables;
     constructor(opts: WebGLPreviewOptions);
     get layers(): Layer[];
