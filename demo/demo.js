@@ -41,6 +41,7 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
 
   preview.renderExtrusion = true;
   preview.renderTravel = false;
+  // preview.controls.autoRotate = true;
 
   startLayer.addEventListener('input', function() {
     preview.startLayer = +startLayer.value;
