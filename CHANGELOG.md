@@ -1,3 +1,5 @@
+## 2.8.0
+- expose .controls (OrbitControls) to allow setting autorotate etc.
 ## 2.7.0
 - (experimental) Add drag 'n drop support
 - (experimental) Stream support (for both Fetch and drag n drop )
