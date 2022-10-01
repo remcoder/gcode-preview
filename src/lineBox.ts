@@ -1,11 +1,11 @@
-import THREE from 'three';
+import { BufferGeometry, Color, Float32BufferAttribute, LineDashedMaterial, LineSegments } from 'three';
 
 function box( width : number, height: number, depth: number) {
     width = width * 0.5,
     height = height * 0.5,
     depth = depth * 0.5;
   
-    const geometry = new THREE.BufferGeometry();
+    const geometry = new BufferGeometry();
     const position = [];
   
     position.push(
@@ -45,15 +45,15 @@ function box( width : number, height: number, depth: number) {
       width, - height, - depth,
       width, - height, depth
      );
-    geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( position, 3 ) );
+    geometry.setAttribute( 'position', new Float32BufferAttribute( position, 3 ) );
   
     return geometry;
 }
   
-export function LineBox(x: number,y: number,z: number, color: THREE.Color | number | string) : THREE.LineSegments<THREE.BufferGeometry, THREE.LineDashedMaterial> {
+export function LineBox(x: number,y: number,z: number, color: Color | number | string) : LineSegments<BufferGeometry, LineDashedMaterial> {
     const geometryBox = box( x,y,z);
 
-    const lineSegments = new THREE.LineSegments( geometryBox, new THREE.LineDashedMaterial( { color: new THREE.Color(color), dashSize: 3, gapSize: 1 } ) );
+    const lineSegments = new LineSegments( geometryBox, new LineDashedMaterial( { color: new Color(color), dashSize: 3, gapSize: 1 } ) );
     lineSegments.computeLineDistances();
 
     return lineSegments;

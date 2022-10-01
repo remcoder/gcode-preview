@@ -1,11 +1,11 @@
 import { Parser, MoveCommand, Layer } from './gcode-parser';
-import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
+import { Scene, PerspectiveCamera, WebGLRenderer, Group, Color, REVISION, Fog, AxesHelper, Euler, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments } from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
 type Vector3 = { x: number; y: number; z: number };
@@ -32,10 +32,10 @@ export class WebGLPreview {
   parser = new Parser();
   // limit?: number;
   targetId: string;
-  scene: THREE.Scene;
-  camera: THREE.PerspectiveCamera;
-  renderer: THREE.WebGLRenderer;
-  group: THREE.Group;
+  scene: Scene;
+  camera: PerspectiveCamera;
+  renderer: WebGLRenderer;
+  group: Group;
   backgroundColor = 0xe0e0e0;
   travelColor = 0x990000;
   extrusionColor = 0x00ff00;
@@ -57,8 +57,8 @@ export class WebGLPreview {
   private disposables: { dispose() : void }[] = [];
 
   constructor(opts: WebGLPreviewOptions) {
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(this.backgroundColor);
+    this.scene = new Scene();
+    this.scene.background = new Color(this.backgroundColor);
     this.canvas = opts.canvas;
     this.targetId = opts.targetId;
     // this.endLayer = opts.limit;
@@ -72,7 +72,7 @@ export class WebGLPreview {
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
 
-    console.info('Using THREE r' + THREE.REVISION);
+    console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
 
     if (this.targetId) {
@@ -88,23 +88,23 @@ export class WebGLPreview {
       if (!container)
         throw new Error('Unable to find element ' + this.targetId);
 
-      this.renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true});
+      this.renderer = new WebGLRenderer({preserveDrawingBuffer: true});
       this.canvas = this.renderer.domElement;
       
       container.appendChild( this.canvas );
     }
     else {
-      this.renderer = new THREE.WebGLRenderer( {
+      this.renderer = new WebGLRenderer( {
         canvas: this.canvas,
         preserveDrawingBuffer: true
       });
     }
 
-    this.camera = new THREE.PerspectiveCamera( 25, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 5000 );
+    this.camera = new PerspectiveCamera( 25, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 5000 );
     this.camera.position.fromArray(this.initialCameraPosition);
-    const fogFar = (this.camera as THREE.PerspectiveCamera).far;
+    const fogFar = (this.camera as PerspectiveCamera).far;
     const fogNear = fogFar * 0.8;
-    this.scene.fog = new THREE.Fog( this.scene.background, fogNear, fogFar);
+    this.scene.fog = new Fog( this.scene.background, fogNear, fogFar);
 
     this.resize();
 
@@ -153,7 +153,7 @@ export class WebGLPreview {
 
     if (this.debug) {
       // show webgl axes 
-      const axesHelper = new THREE.AxesHelper( Math.max(this.buildVolume.x/2, this.buildVolume.y/2) + 20 );
+      const axesHelper = new AxesHelper( Math.max(this.buildVolume.x/2, this.buildVolume.y/2) + 20 );
       this.scene.add( axesHelper );
     }
 
@@ -161,7 +161,7 @@ export class WebGLPreview {
       this.drawBuildVolume();
     }
 
-    this.group = new THREE.Group();
+    this.group = new Group();
     this.group.name = 'gcode';
     const state = { x: 0, y: 0, z: 0, e: 0 };
 
@@ -205,7 +205,7 @@ export class WebGLPreview {
 
       if (this.renderExtrusion) {
         const brightness = Math.round((80 * index) / this.layers.length);
-        const extrusionColor = new THREE.Color(
+        const extrusionColor = new Color(
           `hsl(0, 0%, ${brightness}%)`
         ).getHex();
         
@@ -227,7 +227,7 @@ export class WebGLPreview {
       }
     }
 
-    this.group.quaternion.setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0));
+    this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
     
     if (this.buildVolume) {
       this.group.position.set(-this.buildVolume.x/2, 0, this.buildVolume.y/2);
@@ -280,15 +280,15 @@ export class WebGLPreview {
       return;
     }
 
-    const geometry = new THREE.BufferGeometry();
+    const geometry = new BufferGeometry();
     geometry.setAttribute(
       'position',
-      new THREE.Float32BufferAttribute(vertices, 3)
+      new Float32BufferAttribute(vertices, 3)
     );
     this.disposables.push(geometry);
-    const material = new THREE.LineBasicMaterial({ color: color });
+    const material = new LineBasicMaterial({ color: color });
     this.disposables.push(material);
-    const lineSegments = new THREE.LineSegments(geometry, material);
+    const lineSegments = new LineSegments(geometry, material);
     
     this.group.add(lineSegments);
   }
