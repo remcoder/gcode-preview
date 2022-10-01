@@ -1,4 +1,4 @@
-import { WebGLPreview } from './webgl-preview';
+import { GCodePreviewOptions, WebGLPreview,  } from './webgl-preview';
 
-const init = WebGLPreview;
+const init = function(opts: GCodePreviewOptions) { return new WebGLPreview(opts) };
 export { WebGLPreview, init }
