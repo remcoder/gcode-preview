@@ -3,6 +3,9 @@
  - remove .init
  - remove WebGLPreview. 
  - expose GCodeParser
+
+## 2.8.1
+- fix ES module 
 ## 2.8.0
 - expose .controls (OrbitControls) to allow setting autorotate etc.
 ## 2.7.0
