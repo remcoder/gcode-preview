@@ -1,6 +1,6 @@
 import { Parser, Layer } from './gcode-parser';
-import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { Scene, PerspectiveCamera, WebGLRenderer, Group } from 'three';
 declare type RenderLayer = {
     extrusion: number[];
     travel: number[];
@@ -29,10 +29,10 @@ export declare type GCodePreviewOptions = {
 export declare class WebGLPreview {
     parser: Parser;
     targetId: string;
-    scene: THREE.Scene;
-    camera: THREE.PerspectiveCamera;
-    renderer: THREE.WebGLRenderer;
-    group: THREE.Group;
+    scene: Scene;
+    camera: PerspectiveCamera;
+    renderer: WebGLRenderer;
+    group: Group;
     backgroundColor: number;
     travelColor: number;
     extrusionColor: number;
