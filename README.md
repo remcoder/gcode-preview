@@ -62,6 +62,8 @@ or
 
 #### Javascript
 ```  
+  import * as GCodePreview from 'gcode-preview';
+
   const preview = new GCodePreview.init({
       document.querySelector('canvas'),
   });
