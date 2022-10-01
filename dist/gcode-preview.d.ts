@@ -1,5 +1,6 @@
 import { GCodeParser, Layer } from './gcode-parser';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 declare type RenderLayer = {
     extrusion: number[];
     travel: number[];
@@ -49,6 +50,7 @@ export declare class GCodePreview {
     initialCameraPosition: number[];
     debug: boolean;
     allowDragNDrop: boolean;
+    controls: OrbitControls;
     private disposables;
     constructor(opts: GCodePreviewOptions);
     get layers(): Layer[];

@@ -53,6 +53,7 @@ export class GCodePreview {
   initialCameraPosition = [-100, 400, 450];
   debug = false;
   allowDragNDrop = false;
+  controls: OrbitControls;
   private disposables: { dispose() : void }[] = [];
 
   constructor(opts: GCodePreviewOptions) {
@@ -108,7 +109,7 @@ export class GCodePreview {
     this.resize();
 
     /* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
-    const controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     /* eslint-enable no-unused-vars, @typescript-eslint/no-unused-vars */
     this.animate();
 
@@ -132,6 +133,7 @@ export class GCodePreview {
 
   animate() : void{
     requestAnimationFrame(() => this.animate());
+    this.controls.update();
     this.renderer.render(this.scene, this.camera);
   }
 
