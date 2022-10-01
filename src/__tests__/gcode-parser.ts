@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-import { Parser } from "../gcode-parser";
+import { GCodeParser } from "../gcode-parser";
 
 test('a single extrusion cmd should result in 1 layer with 1 command', () => {
-  const parser = new Parser();
+  const parser = new GCodeParser();
   const gcode =`G1 X0 Y0 Z1 E1`;
   const parsed = parser.parseGCode(gcode);
   expect(parsed).not.toBeNull();
@@ -14,7 +14,7 @@ test('a single extrusion cmd should result in 1 layer with 1 command', () => {
 });
 
 test('a gcode cmd w/o extrusion should not result in a layer', () => {
-  const parser = new Parser();
+  const parser = new GCodeParser();
   const gcode =`G1 X0 Y0 Z1`;
   const parsed = parser.parseGCode(gcode);
   expect(parsed).not.toBeNull();
@@ -23,7 +23,7 @@ test('a gcode cmd w/o extrusion should not result in a layer', () => {
 });
 
 test('a gcode cmd with 0 extrusion should not result in a layer', () => {
-  const parser = new Parser();
+  const parser = new GCodeParser();
   const gcode =`G1 X0 Y0 Z1 E0`;
   const parsed = parser.parseGCode(gcode);
   expect(parsed).not.toBeNull();
@@ -32,7 +32,7 @@ test('a gcode cmd with 0 extrusion should not result in a layer', () => {
 });
 
 test('2 horizontal extrusion moves should result in 1 layer with 2 commands', () => {
-  const parser = new Parser();
+  const parser = new GCodeParser();
   const gcode =`G1 X0 Y0 Z1 E1
   G1 X10 Y10 Z1 E2`;
   const parsed = parser.parseGCode(gcode);
@@ -44,7 +44,7 @@ test('2 horizontal extrusion moves should result in 1 layer with 2 commands', ()
 });
 
 test('2 vertical extrusion moves should result in 2 layers with 1 command', () => {
-  const parser = new Parser();
+  const parser = new GCodeParser();
   const gcode =`G1 X0 Y0 Z1 E1
   G1 X0 Y0 Z2 E2`;
   const parsed = parser.parseGCode(gcode);
@@ -56,7 +56,7 @@ test('2 vertical extrusion moves should result in 2 layers with 1 command', () =
 });
 
 test('2 vertical extrusion moves in consecutive gcode chunks should result in 2 layers with 1 command', () => {
-  const parser = new Parser();
+  const parser = new GCodeParser();
   const gcode1 = 'G1 X0 Y0 Z1 E1';
   const gcode2 = 'G1 X0 Y0 Z2 E2';
   const parsed = parser.parseGCode(gcode1);
@@ -69,7 +69,7 @@ test('2 vertical extrusion moves in consecutive gcode chunks should result in 2 
 });
 
 test('2 vertical extrusion moves in consecutive gcode chunks as string arrays should result in 2 layers with 1 command', () => {
-  const parser = new Parser();
+  const parser = new GCodeParser();
   const gcode1 = ['G1 X0 Y0 Z1 E1'];
   const gcode2 = ['G1 X0 Y0 Z2 E2'];
   const parsed = parser.parseGCode(gcode1);
