@@ -9,6 +9,7 @@
   "dependencies": {
     "gcode-preview": "file:..",
     "minimist": "^1.2.3",
+    "three": "^0.145.0",
     "vue": "^2.6.11"
   },
   "devDependencies": {
