@@ -13,7 +13,7 @@ type Point = Vector3;
 type BuildVolume = Vector3;
 type State = { x: number; y: number; z: number; e: number }; // feedrate?
 
-type WebGLPreviewOptions = {
+export type GCodePreviewOptions = {
   canvas?: HTMLCanvasElement;
   endLayer?: number;
   startLayer?: number;
@@ -56,7 +56,7 @@ export class WebGLPreview {
   controls: OrbitControls;
   private disposables: { dispose() : void }[] = [];
 
-  constructor(opts: WebGLPreviewOptions) {
+  constructor(opts: GCodePreviewOptions) {
     this.scene = new Scene();
     this.scene.background = new Color(this.backgroundColor);
     this.canvas = opts.canvas;

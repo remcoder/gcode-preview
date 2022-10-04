@@ -13,7 +13,7 @@ declare type Vector3 = {
 };
 declare type Point = Vector3;
 declare type BuildVolume = Vector3;
-declare type WebGLPreviewOptions = {
+export declare type GCodePreviewOptions = {
     canvas?: HTMLCanvasElement;
     endLayer?: number;
     startLayer?: number;
@@ -24,7 +24,7 @@ declare type WebGLPreviewOptions = {
     buildVolume?: BuildVolume;
     initialCameraPosition?: number[];
     debug?: boolean;
-    allowDragNDrop: boolean;
+    allowDragNDrop?: boolean;
 };
 export declare class WebGLPreview {
     parser: Parser;
@@ -52,7 +52,7 @@ export declare class WebGLPreview {
     allowDragNDrop: boolean;
     controls: OrbitControls;
     private disposables;
-    constructor(opts: WebGLPreviewOptions);
+    constructor(opts: GCodePreviewOptions);
     get layers(): Layer[];
     get maxLayerIndex(): number;
     get minLayerIndex(): number;
