@@ -25,7 +25,7 @@ export type GCodePreviewOptions = {
   buildVolume?: BuildVolume;
   initialCameraPosition?: number[];
   debug?: boolean;
-  allowDragNDrop: boolean;
+  allowDragNDrop?: boolean;
 };
 
 export class WebGLPreview {
