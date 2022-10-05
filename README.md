@@ -64,7 +64,7 @@ or
 ```  
   import * as GCodePreview from 'gcode-preview';
 
-  const preview = new GCodePreview.init({
+  const preview = GCodePreview.init({
       document.querySelector('canvas'),
   });
   
