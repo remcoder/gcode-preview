@@ -108,9 +108,7 @@ export class WebGLPreview {
 
     this.resize();
 
-    /* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    /* eslint-enable no-unused-vars, @typescript-eslint/no-unused-vars */
     this.animate();
 
     if (this.allowDragNDrop)
