@@ -104,6 +104,9 @@ It would be great if you want to help out because I'm always short on time to do
    - unit tests
    - demos, especially in combination with frameworks like React, Svelte etc
 
+## Contributors
+Thank you @Zeng95 for providing a React & Typescript example
+
 ## Donate
 If you want to show gratitude you can always buy me beer/coffee/filament 
 [via a Paypal donation](https://www.paypal.com/paypalme/my/profile ) ^_^
