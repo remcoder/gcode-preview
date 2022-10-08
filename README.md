@@ -76,6 +76,9 @@ or
 ### Vue.js integration
 There's a [Vue.js example](https://github.com/remcoder/gcode-preview/tree/develop/vue-demo) that has a [Vue component](https://github.com/remcoder/gcode-preview/blob/develop/vue-demo/src/components/GCodePreview.vue) to wrap the library.
 
+### React integration
+@Zeng95 provided a [React & Typescript example](https://github.com/remcoder/gcode-preview/tree/develop/react-typescript-demo) that has a [React component](https://github.com/remcoder/gcode-preview/blob/develop/react-typescript-demo/src/components/GCodePreview.tsx) to wrap the library.
+
 ## Known issues
 ### Preview doesn't render in Brave
 This is caused by the device recognition shield in Brave. By changing the setting for "Device Recognition" in Shield settings to "Allow all device recognition attemps" or "Only block cross-site device recognition attemps" you should not get this error.
