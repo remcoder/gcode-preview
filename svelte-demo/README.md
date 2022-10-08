@@ -1,5 +1,13 @@
 # GCodePreview with Svelte + Vite
 
+Running the example
+
+```
+cd svelte-demo
+npm install
+npm run dev
+```
+
 ## Svelte component
 
 Using the example Svelte component is a simple as:
