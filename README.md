@@ -1,5 +1,47 @@
 # GCode Preview [![npm version](http://img.shields.io/npm/v/gcode-preview.svg?style=flat)](https://npmjs.org/package/gcode-preview "View this project on npm") [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
-A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D printing in mind. Written in Typescript. Try the [demo](https://gcode-preview.web.app/)
+A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D printing in mind. Written in Typescript.
+
+Try the [online demo](https://gcode-preview.web.app/)
+
+![Demo Animation](../assets/benchy.gif?raw=true)
+
+
+## Installation
+[![npm version](http://img.shields.io/npm/v/gcode-preview.svg?style=flat)](https://npmjs.org/package/gcode-preview "View this project on npm") 
+
+ `npm install gcode-preview`
+
+or
+
+`yarn add gcode-preview`
+
+
+### Quick start
+
+```  
+  import * as GCodePreview from 'gcode-preview';
+
+  const preview = GCodePreview.init({
+      document.querySelector('canvas'),
+  });
+  
+  // draw a diagonal line
+  const gcode = 'G0 X0 Y0 Z0.2\nG1 X42 Y42 E10';
+  preview.processGCode(gcode);
+```
+
+### Vue.js / React / Svelte integration
+<img src="https://vuejs.org/logo.svg" height="40px" />
+
+ There's a [Vue.js example](https://github.com/remcoder/gcode-preview/tree/develop/vue-demo) that has a [Vue component](https://github.com/remcoder/gcode-preview/blob/develop/vue-demo/src/components/GCodePreview.vue) to wrap the library.
+
+ <img src="https://reactjs.org/favicon.ico" height="42px"/>
+ 
+ @Zeng95 provided a [React & Typescript example](https://github.com/remcoder/gcode-preview/tree/develop/react-typescript-demo) that has a [React component](https://github.com/remcoder/gcode-preview/blob/develop/react-typescript-demo/src/components/GCodePreview.tsx) to wrap the library.
+ 
+ <img src='https://svelte.dev/favicon.png' height='42px' />
+ 
+ There is a [Svelte example](https://github.com/remcoder/gcode-preview/tree/develop/svelte-demo) with a [Svelte component](https://github.com/remcoder/gcode-preview/blob/develop/svelte-demo/src/lib/GCodePreview.svelte).
 
 ## Features
 
@@ -36,56 +78,24 @@ example:
 Go try the [interactive demo](https://gcode-preview.web.app/).
 
 
-## Installation
-[![npm version](http://img.shields.io/npm/v/gcode-preview.svg?style=flat)](https://npmjs.org/package/gcode-preview "View this project on npm") 
+## Contributing
+If you have found a bug or if have an idea for a feature, don't hesitate to [create an issue](https://github.com/remcoder/gcode-preview/issues/new).
 
- `npm install gcode-preview`
-
-or
-
-`yarn add gcode-preview`
-
-
-### Quick start
-
-#### Html
-```
-    <body>
-      <canvas class="gcode-preview"></canvas>
-      
-      <script src="three/build/three.min.js"></script>
-      <script src="three/examples/js/controls/OrbitControls.js"></script>
-      <script src="gcode-preview.js"></script>
-
-    </body>
-```
-
-#### Javascript
-```  
-  import * as GCodePreview from 'gcode-preview';
-
-  const preview = GCodePreview.init({
-      document.querySelector('canvas'),
-  });
-  
-  // draw a diagonal line
-  const gcode = 'G0 X0 Y0 Z0.2\nG1 X42 Y42 E10';
-  preview.processGCode(gcode);
-```
-
-### Vue.js / React / Svelte integration
-<img src="https://vuejs.org/logo.svg" height="40px" />
-
- There's a [Vue.js example](https://github.com/remcoder/gcode-preview/tree/develop/vue-demo) that has a [Vue component](https://github.com/remcoder/gcode-preview/blob/develop/vue-demo/src/components/GCodePreview.vue) to wrap the library.
-
- <img src="https://reactjs.org/favicon.ico" height="42px"/>
+It would be great if you want to help! Maybe you'd like to help out with:
  
- @Zeng95 provided a [React & Typescript example](https://github.com/remcoder/gcode-preview/tree/develop/react-typescript-demo) that has a [React component](https://github.com/remcoder/gcode-preview/blob/develop/react-typescript-demo/src/components/GCodePreview.tsx) to wrap the library.
- 
- <img src='https://svelte.dev/favicon.png' height='42px' />
- 
- There is a [Svelte example](https://github.com/remcoder/gcode-preview/tree/develop/svelte-demo) with a [Svelte component](https://github.com/remcoder/gcode-preview/blob/develop/svelte-demo/src/lib/GCodePreview.svelte).
+ - testing GCode Preview with a variety of gcode files, from different slicers
+ - making GCode Preview suitable for different printer types, like Deltas, Belt printers, IDEX, etc.
+ - reporting any bugs you find and add as much detail as possible, or even better, a screenshot
+ - even better yet: send in a pull request :-)
+ - apart from the main code, lots of improvements can still be made in:
+   - documentation
+   - unit tests
 
+## Contributors
+Thank you @Zeng95 for providing a React & Typescript example
+
+## Changelog
+Jump to the [CHANGELOG](CHANGELOG.md)
 ## Known issues
 ### Preview doesn't render in Brave
 This is caused by the device recognition shield in Brave. By changing the setting for "Device Recognition" in Shield settings to "Allow all device recognition attemps" or "Only block cross-site device recognition attemps" you should not get this error.
@@ -99,24 +109,8 @@ A big thanks to these sponsors for their contributions.
 
 [<img width=42 src="https://www.duet3d.com/image/catalog/logo/50_blue_wifi.png"> Duet3D](https://www.duet3d.com/)
 
-## Contributing
-If you have found a bug or if have an idea for a feature, don't hesitate to [create an issue](https://github.com/remcoder/gcode-preview/issues/new).
 
-It would be great if you want to help out because I'm always short on time to do more testing and improving. So for instance, maybe you'd like to help out with:
- - testing GCode Preview with a variety of gcode files, from different slicers
- - reporting any bugs you find and add as much detail as possible, or even better, a screenshot
- - even better yet: send in a pull request :-)
- - apart from the main code, lots of improvements can still be made in:
-   - documentation
-   - unit tests
-   - demos, especially in combination with frameworks like React, Svelte etc
-
-## Contributors
-Thank you @Zeng95 for providing a React & Typescript example
-
-## Donate
+### Donate
 If you want to show gratitude you can always buy me beer/coffee/filament 
 [via a Paypal donation](https://www.paypal.com/paypalme/my/profile ) ^_^
 
-## Changelog
-Jump to the [CHANGELOG](CHANGELOG.md)
