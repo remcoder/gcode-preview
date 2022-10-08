@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { default as GCodePreview } from './components/GCodePreview';
+import GCodePreview from './components/GCodePreview';
 import './styles.css';
 
 type GCodePreviewHandle = React.ElementRef<typeof GCodePreview>;
