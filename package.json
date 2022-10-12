@@ -36,6 +36,7 @@
   },
   "scripts": {
     "prebuild": "del-cli dist/**/*",
+    "typeCheck": "tsc --noEmit",
     "build": "rollup -c",
     "watch": "watch 'npm run build' src",
     "predemo": "npm run build && copyfiles -f node_modules/three/build/three.min.js dist/gcode-preview.js demo/js",
@@ -43,7 +44,7 @@
     "lint": "eslint . --fix",
     "test": "jest",
     "test:watch": "jest --watch",
-    "preversion": "npm run test && npm run lint",
+    "preversion": "npm run typeCheck && npm run test && npm run lint",
     "version:patch": "npm version patch",
     "version:minor": "npm version minor",
     "postversion": "npm publish && npm run deploy",
