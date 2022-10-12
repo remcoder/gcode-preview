@@ -1,3 +1,4 @@
+/*eslint prefer-const: "error"*/
 /* global THREE, GCodePreview, Canvas2Image */
 let gcodePreview;
 let favIcon;
@@ -261,8 +262,8 @@ function humanFileSize(size) {
 }
 
 function setFavicons(favImg){
-  let headTitle = document.querySelector('head');
-  let setFavicon = document.createElement('link');
+  const headTitle = document.querySelector('head');
+  const setFavicon = document.createElement('link');
   setFavicon.setAttribute('rel','shortcut icon');
   setFavicon.setAttribute('href',favImg);
   headTitle.appendChild(setFavicon);
