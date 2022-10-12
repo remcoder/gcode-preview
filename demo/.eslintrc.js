@@ -4,10 +4,9 @@ module.exports = {
     'eslint:recommended',
   ],
   ignorePatterns: [
-    "three.min.js", 
-    "OrbitControls.js",
-    "canvas2image.js",
-    "dist/**/*.js"
+    "js/three.min.js", 
+    "js/gcode-preview.js",
+    "js/canvas2image.js",
   ],
   env: {
     "browser": true

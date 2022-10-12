@@ -1,4 +1,5 @@
-src/demo/gcode-preview.js
+demo/js/gcode-preview.js
+demo/js/three.min.js
 src/.rpt2_cache
 node_modules
 dist/__tests__
