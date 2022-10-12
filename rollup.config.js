@@ -3,8 +3,9 @@ import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
 import {terser} from 'rollup-plugin-terser';
 import resolve from 'rollup-plugin-node-resolve';
+import dts  from 'rollup-plugin-dts';
 
-export default {
+export default [{
  input: 'src/gcode-preview.ts', // our source file
  output: [
   {
@@ -30,4 +31,9 @@ export default {
   }),
   terser() // minifies generated bundles
  ]
-};
+}, 
+{
+  input: 'src/gcode-preview.ts',
+  output: [{ file: 'dist/gcode-preview.d.ts', format: 'es' }],
+  plugins: [dts()],
+}];

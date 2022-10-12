@@ -1,9 +1,5 @@
 ## next
- - remove preview.parser.parseGcode in favor of parseGCode
- - remove .init
- - remove WebGLPreview. 
- - expose GCodeParser
-
+- .d.ts files are bundled into one: gcode-preview.d.ts
 ## 2.8.1
 - fix ES module 
 ## 2.8.0
