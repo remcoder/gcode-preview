@@ -2,9 +2,15 @@
 
 This example project demonstrates the use of my [gcode-preview](https://github.com/remcoder/gcode-previewer) in a React & TypeScript app.
 
+## Installation
+
+First, from inside the `react-typescript-demo` folder, run:
+
+### `npm install`
+
 ## Available Scripts
 
-In the project directory, you can run:
+Then, you can run:
 
 ### `npm start`
 
