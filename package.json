@@ -1,6 +1,6 @@
 {
   "name": "gcode-preview",
-  "version": "2.8.4",
+  "version": "2.8.5",
   "description": "Preview a 3d print from a gcode file",
   "author": "remcoder@gmail.com",
   "license": "MIT",
