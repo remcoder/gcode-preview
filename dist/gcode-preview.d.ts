@@ -118,6 +118,7 @@ declare class WebGLPreview {
     clear(): void;
     resize(): void;
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
+    addArcSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
     addLine(vertices: number[], color: number): void;
     addThickLine(vertices: number[], color: number): void;
     private _enableDropHandler;

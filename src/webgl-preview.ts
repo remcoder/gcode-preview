@@ -173,9 +173,8 @@ export class WebGLPreview {
       };
       const l = this.layers[index];
       for (const cmd of l.commands) {
-        if (cmd.gcode == 'g0' || cmd.gcode == 'g1') {
+        if (cmd.gcode == 'g0' || cmd.gcode == 'g1' || cmd.gcode == 'g2') {
           const g = cmd as MoveCommand;
-
           const next: State = {
             x: g.params.x !== undefined ? g.params.x : state.x,
             y: g.params.y !== undefined ? g.params.y : state.y,
@@ -189,7 +188,11 @@ export class WebGLPreview {
               (extrude && this.renderExtrusion) ||
               (!extrude && this.renderTravel)
             ) {
-              this.addLineSegment(currentLayer, state, next, extrude);
+              if(cmd.gcode == 'g2'){
+                this.addArcSegment(currentLayer, state, next, extrude);
+              }else{
+                this.addLineSegment(currentLayer, state, next, extrude);
+              }
             }
           }
 
@@ -268,6 +271,11 @@ export class WebGLPreview {
   }
 
   addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) : void {
+    const line = extrude ? layer.extrusion : layer.travel;
+    line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+  }
+
+  addArcSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) : void {
     const line = extrude ? layer.extrusion : layer.travel;
     line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
