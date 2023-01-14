@@ -374,7 +374,7 @@ export class WebGLPreview {
 
     //let arcSegmentLength = this.; //hard coding this to 1mm segment for now
 
-    let totalSegments = (arcRadius * totalArc) / arcSegLength + 0.8;
+    let totalSegments = (arcRadius * totalArc) / 1.8; //arcSegLength + 0.8;
     if (totalSegments < 1) {
       totalSegments = 1;
     }
