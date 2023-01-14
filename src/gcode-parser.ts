@@ -56,7 +56,7 @@ type singleLetter =
   | 'Z';
 type CommandParams = { [key in singleLetter]?: number };
 
-type MoveCommandParamName = 'x' | 'y' | 'z' | 'e' | 'f';
+type MoveCommandParamName = 'x' | 'y' | 'z' | 'r' | 'e' | 'f';
 type MoveCommandParams = {
   [key in MoveCommandParamName]?: number;
 };
@@ -154,7 +154,14 @@ export class Parser {
   private parseMove(params: string[]): MoveCommandParams {
     return params.reduce((acc: MoveCommandParams, cur: string) => {
       const key = cur.charAt(0).toLowerCase();
-      if (key == 'x' || key == 'y' || key == 'z' || key == 'e' || key == 'f')
+      if (
+        key == 'x' ||
+        key == 'y' ||
+        key == 'z' ||
+        key == 'e' ||
+        key == 'r' ||
+        key == 'f'
+      )
         acc[key] = parseFloat(cur.slice(1));
       return acc;
     }, {});

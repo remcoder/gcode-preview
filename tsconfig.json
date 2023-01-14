@@ -1,17 +1,17 @@
 {
-    "compilerOptions": {
-      "declaration": false,
-      "noImplicitAny": true,
-      "outDir": "./dist",
-      "target": "es2015",
-      "esModuleInterop": true,
-      "module": "es2015",
-      "sourceMap": true,
-      "baseUrl": ".",
-      "paths": {
-        "three": ["node_modules/three/src/Three"]
-      },
-      "typeRoots" : ["types","node_modules/@types"]
+  "compilerOptions": {
+    "declaration": false,
+    "noImplicitAny": true,
+    "outDir": "./dist",
+    "target": "es2015",
+    "esModuleInterop": true,
+    "module": "es2015",
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "three": ["node_modules/three/src/Three"]
     },
-    "files": ["src/gcode-preview.ts"]
+    "typeRoots": ["types", "node_modules/@types"]
+  },
+  "files": ["src/gcode-preview.ts"]
 }

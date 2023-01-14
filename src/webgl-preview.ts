@@ -22,10 +22,10 @@ import {
 } from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
-type Vector3 = { x: number; y: number; z: number };
+type Vector3 = { x: number; y: number; z: number; r: number };
 type Point = Vector3;
 type BuildVolume = Vector3;
-type State = { x: number; y: number; z: number; e: number }; // feedrate?
+type State = { x: number; y: number; z: number; e: number; r: number }; // feedrate?
 
 export type GCodePreviewOptions = {
   canvas?: HTMLCanvasElement;
@@ -185,7 +185,7 @@ export class WebGLPreview {
 
     this.group = new Group();
     this.group.name = 'gcode';
-    const state = { x: 0, y: 0, z: 0, e: 0 };
+    const state = { x: 0, y: 0, z: 0, r: 0, e: 0 };
 
     for (let index = 0; index < this.layers.length; index++) {
       if (index > this.maxLayerIndex) break;
@@ -333,9 +333,9 @@ export class WebGLPreview {
       let deltaY = y - currY;
       let dSquared = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
       let hSquared = Math.pow(r, 2) - dSquared / 4;
-      if (dSquared == 0 || hSquared < 0) {
-        return { position: { x: x, y: z, z: y }, points: [] }; //we'll abort the render and move te position to the new position.
-      }
+      // if (dSquared == 0 || hSquared < 0) {
+      //   return { position: { x: x, y: z, z: y }, points: [] }; //we'll abort the render and move te position to the new position.
+      // }
       let hDivD = Math.sqrt(hSquared / dSquared);
 
       // Ref RRF DoArcMove for details
