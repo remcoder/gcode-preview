@@ -34,7 +34,7 @@ export default {
 
   async mounted() {
     
-    const lines1 = await this.fetchGcode('/benchy.gcode');
+    const lines1 = await this.fetchGcode('/benchy arcs.gcode');
     this.loadPreviewChunked(this.$refs.gcodePreview1, lines1, 50);
 
     const lines2 = await this.fetchGcode('/duplo_tracks.gcode');

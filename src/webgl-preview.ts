@@ -5,27 +5,13 @@ import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
-import {
-  Scene,
-  PerspectiveCamera,
-  WebGLRenderer,
-  Group,
-  Color,
-  REVISION,
-  Fog,
-  AxesHelper,
-  Euler,
-  BufferGeometry,
-  Float32BufferAttribute,
-  LineBasicMaterial,
-  LineSegments,
-} from 'three';
+import { Scene, PerspectiveCamera, WebGLRenderer, Group, Color, REVISION, Fog, AxesHelper, Euler, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments } from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
-type Vector3 = { x: number; y: number; z: number; r: number, i: number, j: number};
+type Vector3 = { x: number; y: number; z: number; r: number; i: number; j: number };
 type Point = Vector3;
 type BuildVolume = Vector3;
-type State = { x: number; y: number; z: number; e: number; r: number, i: number, j: number }; // feedrate?
+type State = { x: number; y: number; z: number; r: number; e: number; i: number; j: number; }; // feedrate?
 
 export type GCodePreviewOptions = {
   canvas?: HTMLCanvasElement;
@@ -68,7 +54,6 @@ export class WebGLPreview {
   debug = false;
   allowDragNDrop = false;
   controls: OrbitControls;
-
   private disposables: { dispose(): void }[] = [];
 
   constructor(opts: GCodePreviewOptions) {
@@ -83,8 +68,7 @@ export class WebGLPreview {
     this.lastSegmentColor = opts.lastSegmentColor;
     this.lineWidth = opts.lineWidth;
     this.buildVolume = opts.buildVolume;
-    this.initialCameraPosition =
-      opts.initialCameraPosition ?? this.initialCameraPosition;
+    this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
 
@@ -92,9 +76,7 @@ export class WebGLPreview {
     console.debug('opts', opts);
 
     if (this.targetId) {
-      console.warn(
-        '`targetId` is deprecated and will removed in the future. Use `canvas` instead.'
-      );
+      console.warn('`targetId` is deprecated and will removed in the future. Use `canvas` instead.')
     }
 
     if (!this.canvas && !this.targetId) {
@@ -110,19 +92,15 @@ export class WebGLPreview {
       this.canvas = this.renderer.domElement;
 
       container.appendChild(this.canvas);
-    } else {
+    }
+    else {
       this.renderer = new WebGLRenderer({
         canvas: this.canvas,
-        preserveDrawingBuffer: true,
+        preserveDrawingBuffer: true
       });
     }
 
-    this.camera = new PerspectiveCamera(
-      25,
-      this.canvas.offsetWidth / this.canvas.offsetHeight,
-      10,
-      5000
-    );
+    this.camera = new PerspectiveCamera( 25, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 5000 );
     this.camera.position.fromArray(this.initialCameraPosition);
     const fogFar = (this.camera as PerspectiveCamera).far;
     const fogNear = fogFar * 0.8;
@@ -133,7 +111,8 @@ export class WebGLPreview {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.animate();
 
-    if (this.allowDragNDrop) this._enableDropHandler();
+    if (this.allowDragNDrop)
+      this._enableDropHandler();
   }
 
   get layers(): Layer[] {
@@ -147,9 +126,7 @@ export class WebGLPreview {
 
   // convert from 1-based to 0-based
   get minLayerIndex(): number {
-    return this.singleLayerMode
-      ? this.maxLayerIndex
-      : (this.startLayer ?? 0) - 1;
+    return this.singleLayerMode ? this.maxLayerIndex : (this.startLayer ?? 0) - 1;
   }
 
   animate(): void {
@@ -174,9 +151,7 @@ export class WebGLPreview {
 
     if (this.debug) {
       // show webgl axes
-      const axesHelper = new AxesHelper(
-        Math.max(this.buildVolume.x / 2, this.buildVolume.y / 2) + 20
-      );
+      const axesHelper = new AxesHelper( Math.max(this.buildVolume.x/2, this.buildVolume.y/2) + 20 );
       this.scene.add(axesHelper);
     }
 
@@ -239,7 +214,9 @@ export class WebGLPreview {
 
       if (this.renderExtrusion) {
         const brightness = Math.round((80 * index) / this.layers.length);
-        const extrusionColor = new Color(`hsl(0, 0%, ${brightness}%)`).getHex();
+        const extrusionColor = new Color(
+          `hsl(0, 0%, ${brightness}%)`
+        ).getHex();
 
         if (index == this.layers.length - 1) {
           const layerColor = this.topLayerColor ?? extrusionColor;
@@ -262,12 +239,9 @@ export class WebGLPreview {
     this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
 
     if (this.buildVolume) {
-      this.group.position.set(
-        -this.buildVolume.x / 2,
-        0,
-        this.buildVolume.y / 2
-      );
-    } else {
+      this.group.position.set(-this.buildVolume.x/2, 0, this.buildVolume.y/2);
+    }
+    else {
       // FIXME: this is just a very crude approximation for centering
       this.group.position.set(-100, 0, 100);
     }
@@ -277,16 +251,13 @@ export class WebGLPreview {
   }
 
   drawBuildVolume(): void {
-    this.scene.add(
-      new GridHelper(this.buildVolume.x, 10, this.buildVolume.y, 10)
-    );
+    this.scene.add( new GridHelper( this.buildVolume.x, 10, this.buildVolume.y, 10 ));
 
     const geometryBox = LineBox(
       this.buildVolume.x,
       this.buildVolume.z,
       this.buildVolume.y,
-      0x888888
-    );
+      0x888888);
 
     geometryBox.position.setY(this.buildVolume.z / 2);
     this.scene.add(geometryBox);
@@ -307,17 +278,10 @@ export class WebGLPreview {
     this.renderer.setSize(w, h, false);
   }
 
-  addLineSegment(
-    layer: RenderLayer,
-    p1: Point,
-    p2: Point,
-    extrude: boolean
-  ): void {
+  addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) : void {
     const line = extrude ? layer.extrusion : layer.travel;
     line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
-
-  
 
   addArcSegment(
     layer: RenderLayer,
@@ -328,21 +292,22 @@ export class WebGLPreview {
   ): void {
     const line = extrude ? layer.extrusion : layer.travel;
 
-    let currX = p1.x,
+    const currX = p1.x,
       currY = p1.y,
       currZ = p1.z,
       x = p2.x,
       y = p2.y,
       z = p2.z,
-      r = p2.r,
-      i = p2.i,
+      r = p2.r;
+    
+    let i = p2.i,
       j = p2.j;
     
     if (r) {
-      let deltaX = x - currX;
-      let deltaY = y - currY;
-      let dSquared = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
-      let hSquared = Math.pow(r, 2) - dSquared / 4;
+      const deltaX = x - currX;
+      const deltaY = y - currY;
+      const dSquared = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
+      const hSquared = Math.pow(r, 2) - dSquared / 4;
       // if (dSquared == 0 || hSquared < 0) {
       //   return { position: { x: x, y: z, z: y }, points: [] }; //we'll abort the render and move te position to the new position.
       // }
@@ -362,13 +327,13 @@ export class WebGLPreview {
       //     }
     }
 
-    let wholeCircle = currX == i && currY == y;
-    let centerX = currX + i;
-    let centerY = currY + j;
+    const wholeCircle = currX == i && currY == y;
+    const centerX = currX + i;
+    const centerY = currY + j;
 
-    let arcRadius = Math.sqrt(i * i + j * j);
-    let arcCurrentAngle = Math.atan2(-j, -i);
-    let finalTheta = Math.atan2(y - centerY, x - centerX);
+    const arcRadius = Math.sqrt(i * i + j * j);
+    const arcCurrentAngle = Math.atan2(-j, -i);
+    const finalTheta = Math.atan2(y - centerY, x - centerX);
     
     let totalArc;
     if (wholeCircle) {
@@ -390,12 +355,12 @@ export class WebGLPreview {
     let arcAngleIncrement = totalArc / totalSegments;
     arcAngleIncrement *= cw ? -1 : 1;
 
-    let points = new Array();
+    const points = [];
 
     points.push({ x: currX, y: currY, z: currZ });
 
-    let zDist = currZ - z;
-    let zStep = zDist / totalSegments;
+    const zDist = currZ - z;
+    const zStep = zDist / totalSegments;
 
     //get points for the arc
     let px = currX;
@@ -427,7 +392,10 @@ export class WebGLPreview {
     }
 
     const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+    geometry.setAttribute(
+      'position',
+      new Float32BufferAttribute(vertices, 3)
+    );
     this.disposables.push(geometry);
     const material = new LineBasicMaterial({ color: color });
     this.disposables.push(material);
@@ -440,13 +408,13 @@ export class WebGLPreview {
     if (!vertices.length) return;
 
     const geometry = new LineGeometry();
-    this.disposables.push(geometry);
+    this.disposables.push(geometry)
 
     const matLine = new LineMaterial({
       color: color,
-      linewidth: this.lineWidth / (1000 * window.devicePixelRatio),
+      linewidth: this.lineWidth / (1000 * window.devicePixelRatio)
     });
-    this.disposables.push(matLine);
+    this.disposables.push(matLine)
 
     geometry.setPositions(vertices);
     const line = new LineSegments2(geometry, matLine);
@@ -479,9 +447,7 @@ export class WebGLPreview {
       this.clear();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await this._readFromStream(
-        file.stream() as unknown as ReadableStream<any>
-      );
+      await this._readFromStream(file.stream()as unknown as ReadableStream<any>);
       this.render();
     });
   }
