@@ -379,7 +379,7 @@ export class WebGLPreview {
     
     points.push({ x: p2.x, y: p2.y, z: p2.z })
 
-    for (let idx = 0; idx < points.length - 2; idx++) { 
+    for (let idx = 0; idx < points.length - 1; idx++) { 
       line.push(points[idx].x, points[idx].y , points[idx].z, points[idx+1].x, points[idx+1].y, points[idx + 1].z);
     }
         
