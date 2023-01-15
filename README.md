@@ -45,6 +45,10 @@ or
 
 ## Features
 
+### G2/G3 arc support
+Thanks to @Sindarius arc commands are now supported, which means gcode processed by ArcWelder should be rendered correctly.
+
+
 ### 3D WebGL + pan/zoom/rotate controls
 ![Demo Animation](../assets/benchy.gif?raw=true)
 
@@ -91,8 +95,9 @@ It would be great if you want to help! Maybe you'd like to help out with:
    - documentation
    - unit tests
 
-## Contributors
-Thank you @Zeng95 for providing a React & Typescript example
+## Contributors 
+- ❤️ Thank you @Zeng95 for providing a React & Typescript example
+- ❤️ Thanks to @Sindarius for implementing G2/G3 arc support
 
 ## Changelog
 Jump to the [CHANGELOG](CHANGELOG.md)
