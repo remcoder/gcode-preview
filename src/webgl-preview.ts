@@ -22,10 +22,10 @@ import {
 } from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
-type Vector3 = { x: number; y: number; z: number; r: number };
+type Vector3 = { x: number; y: number; z: number; r: number, i: number, j: number};
 type Point = Vector3;
 type BuildVolume = Vector3;
-type State = { x: number; y: number; z: number; e: number; r: number }; // feedrate?
+type State = { x: number; y: number; z: number; e: number; r: number, i: number, j: number }; // feedrate?
 
 export type GCodePreviewOptions = {
   canvas?: HTMLCanvasElement;
@@ -68,6 +68,7 @@ export class WebGLPreview {
   debug = false;
   allowDragNDrop = false;
   controls: OrbitControls;
+
   private disposables: { dispose(): void }[] = [];
 
   constructor(opts: GCodePreviewOptions) {
@@ -185,7 +186,7 @@ export class WebGLPreview {
 
     this.group = new Group();
     this.group.name = 'gcode';
-    const state = { x: 0, y: 0, z: 0, r: 0, e: 0 };
+    const state = { x: 0, y: 0, z: 0, r: 0, e: 0, i:0, j:0 };
 
     for (let index = 0; index < this.layers.length; index++) {
       if (index > this.maxLayerIndex) break;
@@ -197,7 +198,7 @@ export class WebGLPreview {
       };
       const l = this.layers[index];
       for (const cmd of l.commands) {
-        if (cmd.gcode == 'g0' || cmd.gcode == 'g1' || cmd.gcode == 'g2') {
+        if (cmd.gcode == 'g0' || cmd.gcode == 'g1' || cmd.gcode == 'g2' || cmd.gcode == 'g3') {
           const g = cmd as MoveCommand;
           const next: State = {
             x: g.params.x !== undefined ? g.params.x : state.x,
@@ -205,6 +206,8 @@ export class WebGLPreview {
             z: g.params.z !== undefined ? g.params.z : state.z,
             r: g.params.r !== undefined ? g.params.r : state.r,
             e: g.params.e !== undefined ? g.params.e : state.e,
+            i: g.params.i !== undefined ? g.params.i : state.i,
+            j: g.params.j !== undefined ? g.params.j : state.j,
           };
 
           if (index >= this.minLayerIndex) {
@@ -213,8 +216,9 @@ export class WebGLPreview {
               (extrude && this.renderExtrusion) ||
               (!extrude && this.renderTravel)
             ) {
-              if (cmd.gcode == 'g2') {
-                this.addArcSegment(currentLayer, state, next, extrude);
+              if (cmd.gcode == 'g2' || cmd.gcode == 'g3') {
+                
+                this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2');
               } else {
                 this.addLineSegment(currentLayer, state, next, extrude);
               }
@@ -227,6 +231,9 @@ export class WebGLPreview {
           if (g.params.z) state.z = g.params.z;
           if (g.params.r) state.r = g.params.r;
           if (g.params.e) state.e = g.params.e;
+          state.i = 0;
+          state.j = 0;
+
         }
       }
 
@@ -310,24 +317,27 @@ export class WebGLPreview {
     line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
 
+  
+
   addArcSegment(
     layer: RenderLayer,
     p1: Point,
     p2: Point,
-    extrude: boolean
+    extrude: boolean,
+    cw: boolean
   ): void {
     const line = extrude ? layer.extrusion : layer.travel;
 
     let currX = p1.x,
       currY = p1.y,
       currZ = p1.z,
-      x = p1.x,
-      y = p1.y,
-      z = p1.z,
+      x = p2.x,
+      y = p2.y,
+      z = p2.z,
       r = p2.r,
-      i = 0,
-      j = 0,
-      cw = true;
+      i = p2.i,
+      j = p2.j;
+    
     if (r) {
       let deltaX = x - currX;
       let deltaY = y - currY;
@@ -359,7 +369,7 @@ export class WebGLPreview {
     let arcRadius = Math.sqrt(i * i + j * j);
     let arcCurrentAngle = Math.atan2(-j, -i);
     let finalTheta = Math.atan2(y - centerY, x - centerX);
-
+    
     let totalArc;
     if (wholeCircle) {
       totalArc = 2 * Math.PI;
@@ -372,8 +382,6 @@ export class WebGLPreview {
       }
     }
 
-    //let arcSegmentLength = this.; //hard coding this to 1mm segment for now
-
     let totalSegments = (arcRadius * totalArc) / 1.8; //arcSegLength + 0.8;
     if (totalSegments < 1) {
       totalSegments = 1;
@@ -384,6 +392,8 @@ export class WebGLPreview {
 
     let points = new Array();
 
+    points.push({ x: currX, y: currY, z: currZ });
+
     let zDist = currZ - z;
     let zStep = zDist / totalSegments;
 
@@ -393,15 +403,21 @@ export class WebGLPreview {
     let pz = currZ;
     //calculate segments
     let currentAngle = arcCurrentAngle;
+
     for (let moveIdx = 0; moveIdx < totalSegments - 1; moveIdx++) {
       currentAngle += arcAngleIncrement;
       px = centerX + arcRadius * Math.cos(currentAngle);
       py = centerY + arcRadius * Math.sin(currentAngle);
       pz += zStep;
-      line.push(x, y, z, px, py, pz);
+      points.push({ x: px, y: py, z: pz })
     }
-    line.push(x, y, z, p2.x, p2.y, p2.z);
-    points.push({ x: x, y: z, z: y });
+    
+    points.push({ x: p2.x, y: p2.y, z: p2.z })
+
+    for (let idx = 0; idx < points.length - 2; idx++) { 
+      line.push(points[idx].x, points[idx].y , points[idx].z, points[idx+1].x, points[idx+1].y, points[idx + 1].z);
+    }
+        
   }
 
   addLine(vertices: number[], color: number): void {

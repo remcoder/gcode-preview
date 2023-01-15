@@ -56,7 +56,7 @@ type singleLetter =
   | 'Z';
 type CommandParams = { [key in singleLetter]?: number };
 
-type MoveCommandParamName = 'x' | 'y' | 'z' | 'r' | 'e' | 'f';
+type MoveCommandParamName = 'x' | 'y' | 'z' | 'r' | 'e' | 'f' | 'i' | 'j';
 type MoveCommandParams = {
   [key in MoveCommandParamName]?: number;
 };
@@ -141,6 +141,7 @@ export class Parser {
       case 'g0':
       case 'g1':
       case 'g2':
+      case 'g3':
         params = this.parseMove(parts.slice(1));
         return new MoveCommand(line, gcode, params, comment);
       default:
@@ -160,7 +161,9 @@ export class Parser {
         key == 'z' ||
         key == 'e' ||
         key == 'r' ||
-        key == 'f'
+        key == 'f' ||
+        key == 'i' || 
+        key == 'j'
       )
         acc[key] = parseFloat(cur.slice(1));
       return acc;
