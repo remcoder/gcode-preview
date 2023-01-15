@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */ 
+/* eslint-disable no-unused-vars */
 import { Thumbnail } from './thumbnail';
 
 type singleLetter = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' 
@@ -8,14 +8,14 @@ type singleLetter = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 
 | 'Y' | 'Z';
 type CommandParams = { [key in singleLetter]?: number };
 
-type MoveCommandParamName = 'x' | 'y' | 'z' | 'e' | 'f';
+type MoveCommandParamName = 'x' | 'y' | 'z' | 'r' | 'e' | 'f' | 'i' | 'j';
 type MoveCommandParams = {
   [key in MoveCommandParamName]?: number;
 };
 export class GCodeCommand {
   constructor(public src: string, 
-    public gcode: string, 
-    public params: CommandParams, 
+    public gcode: string,
+    public params: CommandParams,
     public comment?: string) {}
 }
 
@@ -30,11 +30,11 @@ export class MoveCommand extends GCodeCommand {
   }
 }
 
-type Metadata = { thumbnails :  Record<string, Thumbnail> };
+type Metadata = { thumbnails: Record<string, Thumbnail> };
 
 export class Layer {
   constructor(
-    public layer: number, 
+    public layer: number,
     public commands: GCodeCommand[],
     public lineNumber: number
   ) {}
@@ -47,7 +47,7 @@ export class Parser {
   currentLayer: Layer;
   curZ = 0;
   maxZ = 0;
-  metadata : Metadata = { thumbnails : {} };
+  metadata: Metadata = { thumbnails: {} };
 
   parseGCode(input: string | string[]) : { layers : Layer[], metadata: Metadata } {
     const lines = Array.isArray(input)
@@ -57,15 +57,15 @@ export class Parser {
     this.lines = this.lines.concat(lines);
 
     const commands = this.lines2commands(lines);
-    
+
     this.groupIntoLayers(commands.filter(cmd=>cmd instanceof MoveCommand) as MoveCommand[]);
-    
+
     // merge thumbs
     const thumbs = this.parseMetadata(commands.filter(cmd=>cmd.comment)).thumbnails;
     for (const [key, value] of Object.entries(thumbs)) {
       this.metadata.thumbnails[key] = value
     }
-    
+
     return { layers: this.layers, metadata: this.metadata };
   }
 
@@ -86,10 +86,12 @@ export class Parser {
     switch (gcode) {
       case 'g0':
       case 'g1':
+      case 'g2':
+      case 'g3':
         params = this.parseMove(parts.slice(1));
         return new MoveCommand(line, gcode, params, comment);
       default:
-        params = this.parseParams (parts.slice(1));
+        params = this.parseParams(parts.slice(1));
         // console.warn(`non-move code: ${gcode} ${params}`);
         return new GCodeCommand(line, gcode, params, comment);
     }
@@ -100,13 +102,22 @@ export class Parser {
   private parseMove(params: string[]): MoveCommandParams {
     return params.reduce((acc: MoveCommandParams, cur: string) => {
       const key = cur.charAt(0).toLowerCase();
-      if (key == 'x' || key == 'y' || key == 'z' || key == 'e' || key == 'f')
+      if (
+        key == 'x' ||
+        key == 'y' ||
+        key == 'z' ||
+        key == 'e' ||
+        key == 'r' ||
+        key == 'f' ||
+        key == 'i' || 
+        key == 'j'
+      )
         acc[key] = parseFloat(cur.slice(1));
       return acc;
     }, {});
   }
 
-  private  isAlpha(char : string | singleLetter) : char is singleLetter {
+  private isAlpha(char: string | singleLetter): char is singleLetter {
     const code = char.charCodeAt(0);
     return (code >= 97 && code <= 122) || (code >= 65 && code <= 90);
   }
@@ -114,8 +125,7 @@ export class Parser {
   private parseParams(params: string[]): CommandParams {
     return params.reduce((acc: CommandParams, cur: string) => {
       const key = cur.charAt(0).toLowerCase();
-      if (this.isAlpha(key))
-        acc[key] = parseFloat(cur.slice(1));
+      if (this.isAlpha(key)) acc[key] = parseFloat(cur.slice(1));
       return acc;
     }, {});
   }
@@ -124,7 +134,7 @@ export class Parser {
     for (let lineNumber = 0; lineNumber < commands.length; lineNumber++) {
       const cmd = commands[lineNumber];
 
-      if (! (cmd instanceof MoveCommand)) {
+      if (!(cmd instanceof MoveCommand)) {
         if (this.currentLayer) 
           this.currentLayer.commands.push(cmd);
         else  
@@ -147,7 +157,7 @@ export class Parser {
         this.layers.push(this.currentLayer);
         continue;
       }
-        
+
       if (this.currentLayer) 
         this.currentLayer.commands.push(cmd);
       else  
@@ -157,16 +167,16 @@ export class Parser {
     return this.layers;
   }
 
-  parseMetadata(metadata: GCodeCommand[]) : Metadata {
-    const thumbnails : Record<string,Thumbnail> = {};
-    
-    let thumb : Thumbnail = null;
+  parseMetadata(metadata: GCodeCommand[]): Metadata {
+    const thumbnails: Record<string, Thumbnail> = {};
 
-    for(const cmd of metadata) {
+    let thumb: Thumbnail = null;
+
+    for (const cmd of metadata) {
       const comment = cmd.comment;
       const idxThumbBegin = comment.indexOf('thumbnail begin');
       const idxThumbEnd = comment.indexOf('thumbnail end');
-      
+
       if (idxThumbBegin > -1) {
         thumb = Thumbnail.parse(comment.slice(idxThumbBegin + 15).trim());
       }
@@ -177,7 +187,7 @@ export class Parser {
         else  {
           if (thumb.isValid) {
             thumbnails[thumb.size] = thumb;
-            console.debug('thumb found' , thumb.size);
+            console.debug('thumb found', thumb.size);
             console.debug('declared length', thumb.charLength, 'actual length', thumb.chars.length);
           }
           else {

@@ -2,8 +2,6 @@
   <div id="app">
     <h1>GCode Preview Vue Demo</h1>
     <GCodePreview ref="gcodePreview1" class="gcode-preview"
-      :startLayer=20
-      :endLayer=150
       :topLayerColor="'lime'"
       :lastSegmentColor="'red'"
     />
@@ -34,7 +32,7 @@ export default {
 
   async mounted() {
     
-    const lines1 = await this.fetchGcode('/benchy.gcode');
+    const lines1 = await this.fetchGcode('/benchy arcs.gcode');
     this.loadPreviewChunked(this.$refs.gcodePreview1, lines1, 50);
 
     const lines2 = await this.fetchGcode('/duplo_tracks.gcode');

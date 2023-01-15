@@ -65,6 +65,9 @@ declare type Vector3 = {
     x: number;
     y: number;
     z: number;
+    r: number;
+    i: number;
+    j: number;
 };
 declare type Point = Vector3;
 declare type BuildVolume = Vector3;
@@ -118,6 +121,7 @@ declare class WebGLPreview {
     clear(): void;
     resize(): void;
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
+    addArcSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean, cw: boolean): void;
     addLine(vertices: number[], color: number): void;
     addThickLine(vertices: number[], color: number): void;
     private _enableDropHandler;
