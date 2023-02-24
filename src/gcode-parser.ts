@@ -58,7 +58,7 @@ export class Parser {
 
     const commands = this.lines2commands(lines);
 
-    this.groupIntoLayers(commands.filter(cmd=>cmd instanceof MoveCommand) as MoveCommand[]);
+    this.groupIntoLayers(commands);
 
     // merge thumbs
     const thumbs = this.parseMetadata(commands.filter(cmd=>cmd.comment)).thumbnails;

@@ -109,6 +109,8 @@ declare class WebGLPreview {
     debug: boolean;
     allowDragNDrop: boolean;
     controls: OrbitControls;
+    beyondFirstMove: boolean;
+    inches: boolean;
     private disposables;
     constructor(opts: GCodePreviewOptions);
     get layers(): Layer[];
@@ -117,6 +119,7 @@ declare class WebGLPreview {
     animate(): void;
     processGCode(gcode: string | string[]): void;
     render(): void;
+    setInches(): void;
     drawBuildVolume(): void;
     clear(): void;
     resize(): void;

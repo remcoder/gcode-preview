@@ -54,6 +54,8 @@ export class WebGLPreview {
   debug = false;
   allowDragNDrop = false;
   controls: OrbitControls;
+  beyondFirstMove = false;
+  inches = false;
   private disposables: { dispose(): void }[] = [];
 
   constructor(opts: GCodePreviewOptions) {
@@ -173,7 +175,10 @@ export class WebGLPreview {
       };
       const l = this.layers[index];
       for (const cmd of l.commands) {
-        if ( ['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
+        if (cmd.gcode == 'g20') {
+          this.setInches();
+        }
+        else if ( ['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
           const g = cmd as MoveCommand;
           const next: State = {
             x: g.params.x ?? state.x,
@@ -207,7 +212,8 @@ export class WebGLPreview {
           if (next.e) state.e = next.e;
           state.i = 0;
           state.j = 0;
-
+          if (!this.beyondFirstMove)
+            this.beyondFirstMove = true;
         }
       }
 
@@ -248,6 +254,15 @@ export class WebGLPreview {
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
   }
+
+  setInches():  void {
+    if (this.beyondFirstMove) {
+      console.warn('Switching units after movement is already made is discouraged and is not supported.');
+      return;
+    }
+    this.inches = true;
+    console.log('Units set to inches');
+  } 
 
   drawBuildVolume(): void {
     this.scene.add( new GridHelper( this.buildVolume.x, 10, this.buildVolume.y, 10 ));
@@ -350,12 +365,13 @@ export class WebGLPreview {
         totalArc += 2 * Math.PI;
       }
     }
-
-    let totalSegments = (arcRadius * totalArc) / 1.8; //arcSegLength + 0.8;
+    let totalSegments = (arcRadius * totalArc) / 1.8  //arcSegLength + 0.8;
+    if (this.inches) {
+      totalSegments  *= 25;
+    }
     if (totalSegments < 1) {
       totalSegments = 1;
     }
-    
     let arcAngleIncrement = totalArc / totalSegments;
     arcAngleIncrement *= cw ? -1 : 1;
 

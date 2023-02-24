@@ -91,7 +91,7 @@
                 : input.split('\n');
             this.lines = this.lines.concat(lines);
             const commands = this.lines2commands(lines);
-            this.groupIntoLayers(commands.filter(cmd => cmd instanceof MoveCommand));
+            this.groupIntoLayers(commands);
             // merge thumbs
             const thumbs = this.parseMetadata(commands.filter(cmd => cmd.comment)).thumbnails;
             for (const [key, value] of Object.entries(thumbs)) {
@@ -2888,6 +2888,8 @@
             this.initialCameraPosition = [-100, 400, 450];
             this.debug = false;
             this.allowDragNDrop = false;
+            this.beyondFirstMove = false;
+            this.inches = false;
             this.disposables = [];
             this.scene = new three.Scene();
             this.scene.background = new three.Color(this.backgroundColor);
@@ -2987,7 +2989,10 @@
                 };
                 const l = this.layers[index];
                 for (const cmd of l.commands) {
-                    if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
+                    if (cmd.gcode == 'g20') {
+                        this.setInches();
+                    }
+                    else if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
                         const g = cmd;
                         const next = {
                             x: (_a = g.params.x) !== null && _a !== void 0 ? _a : state.x,
@@ -3023,6 +3028,8 @@
                             state.e = next.e;
                         state.i = 0;
                         state.j = 0;
+                        if (!this.beyondFirstMove)
+                            this.beyondFirstMove = true;
                     }
                 }
                 if (this.renderExtrusion) {
@@ -3054,6 +3061,14 @@
             }
             this.scene.add(this.group);
             this.renderer.render(this.scene, this.camera);
+        }
+        setInches() {
+            if (this.beyondFirstMove) {
+                console.warn('Switching units after movement is already made is discouraged and is not supported.');
+                return;
+            }
+            this.inches = true;
+            console.log('Units set to inches');
         }
         drawBuildVolume() {
             this.scene.add(new GridHelper(this.buildVolume.x, 10, this.buildVolume.y, 10));
@@ -3127,6 +3142,9 @@
                 }
             }
             let totalSegments = (arcRadius * totalArc) / 1.8; //arcSegLength + 0.8;
+            if (this.inches) {
+                totalSegments *= 25;
+            }
             if (totalSegments < 1) {
                 totalSegments = 1;
             }
