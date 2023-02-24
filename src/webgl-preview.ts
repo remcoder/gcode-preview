@@ -176,13 +176,13 @@ export class WebGLPreview {
         if ( ['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
           const g = cmd as MoveCommand;
           const next: State = {
-            x: g.params.x !== undefined ? g.params.x : state.x,
-            y: g.params.y !== undefined ? g.params.y : state.y,
-            z: g.params.z !== undefined ? g.params.z : state.z,
-            r: g.params.r !== undefined ? g.params.r : state.r,
-            e: g.params.e !== undefined ? g.params.e : state.e,
-            i: g.params.i !== undefined ? g.params.i : state.i,
-            j: g.params.j !== undefined ? g.params.j : state.j,
+            x: g.params.x ?? state.x,
+            y: g.params.y ?? state.y,
+            z: g.params.z ?? state.z,
+            r: g.params.r ?? state.r,
+            e: g.params.e ?? state.e,
+            i: g.params.i ?? state.i,
+            j: g.params.j ?? state.j,
           };
 
           if (index >= this.minLayerIndex) {
@@ -200,11 +200,11 @@ export class WebGLPreview {
           }
 
           // update state
-          if (g.params.x) state.x = g.params.x;
-          if (g.params.y) state.y = g.params.y;
-          if (g.params.z) state.z = g.params.z;
-          if (g.params.r) state.r = g.params.r;
-          if (g.params.e) state.e = g.params.e;
+          if (next.x) state.x = next.x;
+          if (next.y) state.y = next.y;
+          if (next.z) state.z = next.z;
+          if (next.r) state.r = next.r;
+          if (next.e) state.e = next.e;
           state.i = 0;
           state.j = 0;
 
@@ -355,7 +355,7 @@ export class WebGLPreview {
     if (totalSegments < 1) {
       totalSegments = 1;
     }
-
+    
     let arcAngleIncrement = totalArc / totalSegments;
     arcAngleIncrement *= cw ? -1 : 1;
 
