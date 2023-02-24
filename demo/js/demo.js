@@ -3,7 +3,7 @@
 let gcodePreview;
 let favIcon;
 let thumb;
-let chunkSize = 1000;
+const chunkSize = 1000;
 
 const startLayer = document.getElementById('start-layer');
 const endLayer = document.getElementById('end-layer');
