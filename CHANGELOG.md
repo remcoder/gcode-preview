@@ -1,4 +1,12 @@
 ## next
+## 2.9.1
+- Some Mach3 compatibility changes:
+     - allow g00,g01,g02,g03
+     - when g2/g3 are given an r too small to bridge the gap, the radius is automatically set to the minimum needed.
+- Rudimentary support for G20 (inches). It is basically ignored after any movement is done.
+
+## 2.9.0
+- G2/G3 arcs are supported thanks to @Sindarius
 - .d.ts files are bundled into one: gcode-preview.d.ts
 ## 2.8.1
 - fix ES module 
