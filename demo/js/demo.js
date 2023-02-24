@@ -210,7 +210,7 @@ async function loadGCodeFromServer(file) { // eslint-disable-line no-unused-vars
 }
 
 function _handleGCode(filename, gcode) {
-  chunkSize = gcode.length / 1000;
+  // chunkSize = gcode.length / 1000;
   fileName.innerText = filename;
   fileSize.innerText = humanFileSize(gcode.length);
 
