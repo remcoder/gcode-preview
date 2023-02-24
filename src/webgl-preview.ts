@@ -116,7 +116,7 @@ export class WebGLPreview {
   }
 
   get layers(): Layer[] {
-    return this.parser.layers;
+    return this.parser.layers.concat(this.parser.preamble) ;
   }
 
   // convert from 1-based to 0-based

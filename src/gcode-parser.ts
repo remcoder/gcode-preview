@@ -42,7 +42,7 @@ export class Layer {
 
 export class Parser {
   lines: string[] = [];
-  preamble = new Layer(-1, [], 0);
+  preamble = new Layer(-1, [], 0); // TODO: remove preamble and treat as a regular layer? Unsure of the benefit
   layers: Layer[] = [];
   currentLayer: Layer;
   curZ = 0;
