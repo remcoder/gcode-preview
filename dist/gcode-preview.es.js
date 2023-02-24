@@ -1,1 +1,3232 @@
-import{EventDispatcher as t,Vector3 as e,MOUSE as n,TOUCH as i,Quaternion as a,Spherical as s,Vector2 as o,UniformsLib as r,ShaderLib as l,UniformsUtils as c,ShaderMaterial as d,Box3 as u,InstancedBufferGeometry as h,Float32BufferAttribute as p,InstancedInterleavedBuffer as m,InterleavedBufferAttribute as f,WireframeGeometry as g,Sphere as v,Vector4 as y,Matrix4 as b,Line3 as w,Mesh as x,MathUtils as S,LineSegments as E,Color as L,BufferGeometry as A,LineBasicMaterial as z,LineDashedMaterial as P,Scene as O,REVISION as M,WebGLRenderer as T,PerspectiveCamera as _,Fog as D,AxesHelper as C,Group as j,Euler as U}from"three";function N(t,e,n,i){return new(n||(n=Promise))((function(a,s){function o(t){try{l(i.next(t))}catch(t){s(t)}}function r(t){try{l(i.throw(t))}catch(t){s(t)}}function l(t){var e;t.done?a(t.value):(e=t.value,e instanceof n?e:new n((function(t){t(e)}))).then(o,r)}l((i=i.apply(t,e||[])).next())}))}class I{constructor(){this.chars=""}static parse(t){const e=new I,n=t.split(" ");e.size=n[0];const i=e.size.split("x");return e.width=+i[0],e.height=+i[1],e.charLength=+n[1],e}get src(){return"data:image/jpeg;base64,"+this.chars}get isValid(){return this.chars.length==this.charLength&&/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(this.chars)}}class R{constructor(t,e,n,i){this.src=t,this.gcode=e,this.params=n,this.comment=i}}class B extends R{constructor(t,e,n,i){super(t,e,n,i),this.params=n}}class H{constructor(t,e,n){this.layer=t,this.commands=e,this.lineNumber=n}}class k{constructor(){this.lines=[],this.preamble=new H(-1,[],0),this.layers=[],this.curZ=0,this.maxZ=0,this.metadata={thumbnails:{}}}parseGCode(t){const e=Array.isArray(t)?t:t.split("\n");this.lines=this.lines.concat(e);const n=this.lines2commands(e);this.groupIntoLayers(n.filter((t=>t instanceof B)));const i=this.parseMetadata(n.filter((t=>t.comment))).thumbnails;for(const[t,e]of Object.entries(i))this.metadata.thumbnails[t]=e;return{layers:this.layers,metadata:this.metadata}}lines2commands(t){return t.map((t=>this.parseCommand(t)))}parseCommand(t,e=!0){const n=t.trim().split(";"),i=n[0],a=e&&n[1]||null,s=i.split(/ +/g),o=s[0].toLowerCase();let r;switch(o){case"g0":case"g1":case"g2":case"g3":return r=this.parseMove(s.slice(1)),new B(t,o,r,a);default:return r=this.parseParams(s.slice(1)),new R(t,o,r,a)}}parseMove(t){return t.reduce(((t,e)=>{const n=e.charAt(0).toLowerCase();return"x"!=n&&"y"!=n&&"z"!=n&&"e"!=n&&"r"!=n&&"f"!=n&&"i"!=n&&"j"!=n||(t[n]=parseFloat(e.slice(1))),t}),{})}isAlpha(t){const e=t.charCodeAt(0);return e>=97&&e<=122||e>=65&&e<=90}parseParams(t){return t.reduce(((t,e)=>{const n=e.charAt(0).toLowerCase();return this.isAlpha(n)&&(t[n]=parseFloat(e.slice(1))),t}),{})}groupIntoLayers(t){for(let e=0;e<t.length;e++){const n=t[e];if(!(n instanceof B)){this.currentLayer?this.currentLayer.commands.push(n):this.preamble.commands.push(n);continue}const i=n.params;i.z&&(this.curZ=i.z),i.e>0&&(null!=i.x||null!=i.y)&&this.curZ>this.maxZ?(this.maxZ=this.curZ,this.currentLayer=new H(this.layers.length,[n],e),this.layers.push(this.currentLayer)):this.currentLayer?this.currentLayer.commands.push(n):this.preamble.commands.push(n)}return this.layers}parseMetadata(t){const e={};let n=null;for(const i of t){const t=i.comment,a=t.indexOf("thumbnail begin"),s=t.indexOf("thumbnail end");a>-1?n=I.parse(t.slice(a+15).trim()):n&&(-1==s?n.chars+=t.trim():(n.isValid?(e[n.size]=n,console.debug("thumb found",n.size),console.debug("declared length",n.charLength,"actual length",n.chars.length)):console.warn("thumb found but seems to be invalid"),n=null))}return{thumbnails:e}}}k.prototype.parseGcode=k.prototype.parseGCode;const F={type:"change"},Y={type:"start"},V={type:"end"};class Z extends t{constructor(t,r){super(),this.object=t,this.domElement=r,this.domElement.style.touchAction="none",this.enabled=!0,this.target=new e,this.minDistance=0,this.maxDistance=1/0,this.minZoom=0,this.maxZoom=1/0,this.minPolarAngle=0,this.maxPolarAngle=Math.PI,this.minAzimuthAngle=-1/0,this.maxAzimuthAngle=1/0,this.enableDamping=!1,this.dampingFactor=.05,this.enableZoom=!0,this.zoomSpeed=1,this.enableRotate=!0,this.rotateSpeed=1,this.enablePan=!0,this.panSpeed=1,this.screenSpacePanning=!0,this.keyPanSpeed=7,this.autoRotate=!1,this.autoRotateSpeed=2,this.keys={LEFT:"ArrowLeft",UP:"ArrowUp",RIGHT:"ArrowRight",BOTTOM:"ArrowDown"},this.mouseButtons={LEFT:n.ROTATE,MIDDLE:n.DOLLY,RIGHT:n.PAN},this.touches={ONE:i.ROTATE,TWO:i.DOLLY_PAN},this.target0=this.target.clone(),this.position0=this.object.position.clone(),this.zoom0=this.object.zoom,this._domElementKeyEvents=null,this.getPolarAngle=function(){return h.phi},this.getAzimuthalAngle=function(){return h.theta},this.getDistance=function(){return this.object.position.distanceTo(this.target)},this.listenToKeyEvents=function(t){t.addEventListener("keydown",$),this._domElementKeyEvents=t},this.saveState=function(){l.target0.copy(l.target),l.position0.copy(l.object.position),l.zoom0=l.object.zoom},this.reset=function(){l.target.copy(l.target0),l.object.position.copy(l.position0),l.object.zoom=l.zoom0,l.object.updateProjectionMatrix(),l.dispatchEvent(F),l.update(),d=c.NONE},this.update=function(){const n=new e,i=(new a).setFromUnitVectors(t.up,new e(0,1,0)),s=i.clone().invert(),o=new e,r=new a,v=2*Math.PI;return function(){const t=l.object.position;n.copy(t).sub(l.target),n.applyQuaternion(i),h.setFromVector3(n),l.autoRotate&&d===c.NONE&&M(2*Math.PI/60/60*l.autoRotateSpeed),l.enableDamping?(h.theta+=p.theta*l.dampingFactor,h.phi+=p.phi*l.dampingFactor):(h.theta+=p.theta,h.phi+=p.phi);let e=l.minAzimuthAngle,a=l.maxAzimuthAngle;return isFinite(e)&&isFinite(a)&&(e<-Math.PI?e+=v:e>Math.PI&&(e-=v),a<-Math.PI?a+=v:a>Math.PI&&(a-=v),h.theta=e<=a?Math.max(e,Math.min(a,h.theta)):h.theta>(e+a)/2?Math.max(e,h.theta):Math.min(a,h.theta)),h.phi=Math.max(l.minPolarAngle,Math.min(l.maxPolarAngle,h.phi)),h.makeSafe(),h.radius*=m,h.radius=Math.max(l.minDistance,Math.min(l.maxDistance,h.radius)),!0===l.enableDamping?l.target.addScaledVector(f,l.dampingFactor):l.target.add(f),n.setFromSpherical(h),n.applyQuaternion(s),t.copy(l.target).add(n),l.object.lookAt(l.target),!0===l.enableDamping?(p.theta*=1-l.dampingFactor,p.phi*=1-l.dampingFactor,f.multiplyScalar(1-l.dampingFactor)):(p.set(0,0,0),f.set(0,0,0)),m=1,!!(g||o.distanceToSquared(l.object.position)>u||8*(1-r.dot(l.object.quaternion))>u)&&(l.dispatchEvent(F),o.copy(l.object.position),r.copy(l.object.quaternion),g=!1,!0)}}(),this.dispose=function(){l.domElement.removeEventListener("contextmenu",J),l.domElement.removeEventListener("pointerdown",W),l.domElement.removeEventListener("pointercancel",K),l.domElement.removeEventListener("wheel",Q),l.domElement.removeEventListener("pointermove",X),l.domElement.removeEventListener("pointerup",q),null!==l._domElementKeyEvents&&l._domElementKeyEvents.removeEventListener("keydown",$)};const l=this,c={NONE:-1,ROTATE:0,DOLLY:1,PAN:2,TOUCH_ROTATE:3,TOUCH_PAN:4,TOUCH_DOLLY_PAN:5,TOUCH_DOLLY_ROTATE:6};let d=c.NONE;const u=1e-6,h=new s,p=new s;let m=1;const f=new e;let g=!1;const v=new o,y=new o,b=new o,w=new o,x=new o,S=new o,E=new o,L=new o,A=new o,z=[],P={};function O(){return Math.pow(.95,l.zoomSpeed)}function M(t){p.theta-=t}function T(t){p.phi-=t}const _=function(){const t=new e;return function(e,n){t.setFromMatrixColumn(n,0),t.multiplyScalar(-e),f.add(t)}}(),D=function(){const t=new e;return function(e,n){!0===l.screenSpacePanning?t.setFromMatrixColumn(n,1):(t.setFromMatrixColumn(n,0),t.crossVectors(l.object.up,t)),t.multiplyScalar(e),f.add(t)}}(),C=function(){const t=new e;return function(e,n){const i=l.domElement;if(l.object.isPerspectiveCamera){const a=l.object.position;t.copy(a).sub(l.target);let s=t.length();s*=Math.tan(l.object.fov/2*Math.PI/180),_(2*e*s/i.clientHeight,l.object.matrix),D(2*n*s/i.clientHeight,l.object.matrix)}else l.object.isOrthographicCamera?(_(e*(l.object.right-l.object.left)/l.object.zoom/i.clientWidth,l.object.matrix),D(n*(l.object.top-l.object.bottom)/l.object.zoom/i.clientHeight,l.object.matrix)):(console.warn("WARNING: OrbitControls.js encountered an unknown camera type - pan disabled."),l.enablePan=!1)}}();function j(t){l.object.isPerspectiveCamera?m/=t:l.object.isOrthographicCamera?(l.object.zoom=Math.max(l.minZoom,Math.min(l.maxZoom,l.object.zoom*t)),l.object.updateProjectionMatrix(),g=!0):(console.warn("WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled."),l.enableZoom=!1)}function U(t){l.object.isPerspectiveCamera?m*=t:l.object.isOrthographicCamera?(l.object.zoom=Math.max(l.minZoom,Math.min(l.maxZoom,l.object.zoom/t)),l.object.updateProjectionMatrix(),g=!0):(console.warn("WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled."),l.enableZoom=!1)}function N(t){v.set(t.clientX,t.clientY)}function I(t){w.set(t.clientX,t.clientY)}function R(){if(1===z.length)v.set(z[0].pageX,z[0].pageY);else{const t=.5*(z[0].pageX+z[1].pageX),e=.5*(z[0].pageY+z[1].pageY);v.set(t,e)}}function B(){if(1===z.length)w.set(z[0].pageX,z[0].pageY);else{const t=.5*(z[0].pageX+z[1].pageX),e=.5*(z[0].pageY+z[1].pageY);w.set(t,e)}}function H(){const t=z[0].pageX-z[1].pageX,e=z[0].pageY-z[1].pageY,n=Math.sqrt(t*t+e*e);E.set(0,n)}function k(t){if(1==z.length)y.set(t.pageX,t.pageY);else{const e=nt(t),n=.5*(t.pageX+e.x),i=.5*(t.pageY+e.y);y.set(n,i)}b.subVectors(y,v).multiplyScalar(l.rotateSpeed);const e=l.domElement;M(2*Math.PI*b.x/e.clientHeight),T(2*Math.PI*b.y/e.clientHeight),v.copy(y)}function Z(t){if(1===z.length)x.set(t.pageX,t.pageY);else{const e=nt(t),n=.5*(t.pageX+e.x),i=.5*(t.pageY+e.y);x.set(n,i)}S.subVectors(x,w).multiplyScalar(l.panSpeed),C(S.x,S.y),w.copy(x)}function G(t){const e=nt(t),n=t.pageX-e.x,i=t.pageY-e.y,a=Math.sqrt(n*n+i*i);L.set(0,a),A.set(0,Math.pow(L.y/E.y,l.zoomSpeed)),j(A.y),E.copy(L)}function W(t){!1!==l.enabled&&(0===z.length&&(l.domElement.setPointerCapture(t.pointerId),l.domElement.addEventListener("pointermove",X),l.domElement.addEventListener("pointerup",q)),function(t){z.push(t)}(t),"touch"===t.pointerType?function(t){switch(et(t),z.length){case 1:switch(l.touches.ONE){case i.ROTATE:if(!1===l.enableRotate)return;R(),d=c.TOUCH_ROTATE;break;case i.PAN:if(!1===l.enablePan)return;B(),d=c.TOUCH_PAN;break;default:d=c.NONE}break;case 2:switch(l.touches.TWO){case i.DOLLY_PAN:if(!1===l.enableZoom&&!1===l.enablePan)return;l.enableZoom&&H(),l.enablePan&&B(),d=c.TOUCH_DOLLY_PAN;break;case i.DOLLY_ROTATE:if(!1===l.enableZoom&&!1===l.enableRotate)return;l.enableZoom&&H(),l.enableRotate&&R(),d=c.TOUCH_DOLLY_ROTATE;break;default:d=c.NONE}break;default:d=c.NONE}d!==c.NONE&&l.dispatchEvent(Y)}(t):function(t){let e;switch(t.button){case 0:e=l.mouseButtons.LEFT;break;case 1:e=l.mouseButtons.MIDDLE;break;case 2:e=l.mouseButtons.RIGHT;break;default:e=-1}switch(e){case n.DOLLY:if(!1===l.enableZoom)return;!function(t){E.set(t.clientX,t.clientY)}(t),d=c.DOLLY;break;case n.ROTATE:if(t.ctrlKey||t.metaKey||t.shiftKey){if(!1===l.enablePan)return;I(t),d=c.PAN}else{if(!1===l.enableRotate)return;N(t),d=c.ROTATE}break;case n.PAN:if(t.ctrlKey||t.metaKey||t.shiftKey){if(!1===l.enableRotate)return;N(t),d=c.ROTATE}else{if(!1===l.enablePan)return;I(t),d=c.PAN}break;default:d=c.NONE}d!==c.NONE&&l.dispatchEvent(Y)}(t))}function X(t){!1!==l.enabled&&("touch"===t.pointerType?function(t){switch(et(t),d){case c.TOUCH_ROTATE:if(!1===l.enableRotate)return;k(t),l.update();break;case c.TOUCH_PAN:if(!1===l.enablePan)return;Z(t),l.update();break;case c.TOUCH_DOLLY_PAN:if(!1===l.enableZoom&&!1===l.enablePan)return;!function(t){l.enableZoom&&G(t),l.enablePan&&Z(t)}(t),l.update();break;case c.TOUCH_DOLLY_ROTATE:if(!1===l.enableZoom&&!1===l.enableRotate)return;!function(t){l.enableZoom&&G(t),l.enableRotate&&k(t)}(t),l.update();break;default:d=c.NONE}}(t):function(t){switch(d){case c.ROTATE:if(!1===l.enableRotate)return;!function(t){y.set(t.clientX,t.clientY),b.subVectors(y,v).multiplyScalar(l.rotateSpeed);const e=l.domElement;M(2*Math.PI*b.x/e.clientHeight),T(2*Math.PI*b.y/e.clientHeight),v.copy(y),l.update()}(t);break;case c.DOLLY:if(!1===l.enableZoom)return;!function(t){L.set(t.clientX,t.clientY),A.subVectors(L,E),A.y>0?j(O()):A.y<0&&U(O()),E.copy(L),l.update()}(t);break;case c.PAN:if(!1===l.enablePan)return;!function(t){x.set(t.clientX,t.clientY),S.subVectors(x,w).multiplyScalar(l.panSpeed),C(S.x,S.y),w.copy(x),l.update()}(t)}}(t))}function q(t){tt(t),0===z.length&&(l.domElement.releasePointerCapture(t.pointerId),l.domElement.removeEventListener("pointermove",X),l.domElement.removeEventListener("pointerup",q)),l.dispatchEvent(V),d=c.NONE}function K(t){tt(t)}function Q(t){!1!==l.enabled&&!1!==l.enableZoom&&d===c.NONE&&(t.preventDefault(),l.dispatchEvent(Y),function(t){t.deltaY<0?U(O()):t.deltaY>0&&j(O()),l.update()}(t),l.dispatchEvent(V))}function $(t){!1!==l.enabled&&!1!==l.enablePan&&function(t){let e=!1;switch(t.code){case l.keys.UP:C(0,l.keyPanSpeed),e=!0;break;case l.keys.BOTTOM:C(0,-l.keyPanSpeed),e=!0;break;case l.keys.LEFT:C(l.keyPanSpeed,0),e=!0;break;case l.keys.RIGHT:C(-l.keyPanSpeed,0),e=!0}e&&(t.preventDefault(),l.update())}(t)}function J(t){!1!==l.enabled&&t.preventDefault()}function tt(t){delete P[t.pointerId];for(let e=0;e<z.length;e++)if(z[e].pointerId==t.pointerId)return void z.splice(e,1)}function et(t){let e=P[t.pointerId];void 0===e&&(e=new o,P[t.pointerId]=e),e.set(t.pageX,t.pageY)}function nt(t){const e=t.pointerId===z[0].pointerId?z[1]:z[0];return P[e.pointerId]}l.domElement.addEventListener("contextmenu",J),l.domElement.addEventListener("pointerdown",W),l.domElement.addEventListener("pointercancel",K),l.domElement.addEventListener("wheel",Q,{passive:!1}),this.update()}}r.line={worldUnits:{value:1},linewidth:{value:1},resolution:{value:new o(1,1)},dashOffset:{value:0},dashScale:{value:1},dashSize:{value:1},gapSize:{value:1}},l.line={uniforms:c.merge([r.common,r.fog,r.line]),vertexShader:"\n\t\t#include <common>\n\t\t#include <color_pars_vertex>\n\t\t#include <fog_pars_vertex>\n\t\t#include <logdepthbuf_pars_vertex>\n\t\t#include <clipping_planes_pars_vertex>\n\n\t\tuniform float linewidth;\n\t\tuniform vec2 resolution;\n\n\t\tattribute vec3 instanceStart;\n\t\tattribute vec3 instanceEnd;\n\n\t\tattribute vec3 instanceColorStart;\n\t\tattribute vec3 instanceColorEnd;\n\n\t\t#ifdef WORLD_UNITS\n\n\t\t\tvarying vec4 worldPos;\n\t\t\tvarying vec3 worldStart;\n\t\t\tvarying vec3 worldEnd;\n\n\t\t\t#ifdef USE_DASH\n\n\t\t\t\tvarying vec2 vUv;\n\n\t\t\t#endif\n\n\t\t#else\n\n\t\t\tvarying vec2 vUv;\n\n\t\t#endif\n\n\t\t#ifdef USE_DASH\n\n\t\t\tuniform float dashScale;\n\t\t\tattribute float instanceDistanceStart;\n\t\t\tattribute float instanceDistanceEnd;\n\t\t\tvarying float vLineDistance;\n\n\t\t#endif\n\n\t\tvoid trimSegment( const in vec4 start, inout vec4 end ) {\n\n\t\t\t// trim end segment so it terminates between the camera plane and the near plane\n\n\t\t\t// conservative estimate of the near plane\n\t\t\tfloat a = projectionMatrix[ 2 ][ 2 ]; // 3nd entry in 3th column\n\t\t\tfloat b = projectionMatrix[ 3 ][ 2 ]; // 3nd entry in 4th column\n\t\t\tfloat nearEstimate = - 0.5 * b / a;\n\n\t\t\tfloat alpha = ( nearEstimate - start.z ) / ( end.z - start.z );\n\n\t\t\tend.xyz = mix( start.xyz, end.xyz, alpha );\n\n\t\t}\n\n\t\tvoid main() {\n\n\t\t\t#ifdef USE_COLOR\n\n\t\t\t\tvColor.xyz = ( position.y < 0.5 ) ? instanceColorStart : instanceColorEnd;\n\n\t\t\t#endif\n\n\t\t\t#ifdef USE_DASH\n\n\t\t\t\tvLineDistance = ( position.y < 0.5 ) ? dashScale * instanceDistanceStart : dashScale * instanceDistanceEnd;\n\t\t\t\tvUv = uv;\n\n\t\t\t#endif\n\n\t\t\tfloat aspect = resolution.x / resolution.y;\n\n\t\t\t// camera space\n\t\t\tvec4 start = modelViewMatrix * vec4( instanceStart, 1.0 );\n\t\t\tvec4 end = modelViewMatrix * vec4( instanceEnd, 1.0 );\n\n\t\t\t#ifdef WORLD_UNITS\n\n\t\t\t\tworldStart = start.xyz;\n\t\t\t\tworldEnd = end.xyz;\n\n\t\t\t#else\n\n\t\t\t\tvUv = uv;\n\n\t\t\t#endif\n\n\t\t\t// special case for perspective projection, and segments that terminate either in, or behind, the camera plane\n\t\t\t// clearly the gpu firmware has a way of addressing this issue when projecting into ndc space\n\t\t\t// but we need to perform ndc-space calculations in the shader, so we must address this issue directly\n\t\t\t// perhaps there is a more elegant solution -- WestLangley\n\n\t\t\tbool perspective = ( projectionMatrix[ 2 ][ 3 ] == - 1.0 ); // 4th entry in the 3rd column\n\n\t\t\tif ( perspective ) {\n\n\t\t\t\tif ( start.z < 0.0 && end.z >= 0.0 ) {\n\n\t\t\t\t\ttrimSegment( start, end );\n\n\t\t\t\t} else if ( end.z < 0.0 && start.z >= 0.0 ) {\n\n\t\t\t\t\ttrimSegment( end, start );\n\n\t\t\t\t}\n\n\t\t\t}\n\n\t\t\t// clip space\n\t\t\tvec4 clipStart = projectionMatrix * start;\n\t\t\tvec4 clipEnd = projectionMatrix * end;\n\n\t\t\t// ndc space\n\t\t\tvec3 ndcStart = clipStart.xyz / clipStart.w;\n\t\t\tvec3 ndcEnd = clipEnd.xyz / clipEnd.w;\n\n\t\t\t// direction\n\t\t\tvec2 dir = ndcEnd.xy - ndcStart.xy;\n\n\t\t\t// account for clip-space aspect ratio\n\t\t\tdir.x *= aspect;\n\t\t\tdir = normalize( dir );\n\n\t\t\t#ifdef WORLD_UNITS\n\n\t\t\t\t// get the offset direction as perpendicular to the view vector\n\t\t\t\tvec3 worldDir = normalize( end.xyz - start.xyz );\n\t\t\t\tvec3 offset;\n\t\t\t\tif ( position.y < 0.5 ) {\n\n\t\t\t\t\toffset = normalize( cross( start.xyz, worldDir ) );\n\n\t\t\t\t} else {\n\n\t\t\t\t\toffset = normalize( cross( end.xyz, worldDir ) );\n\n\t\t\t\t}\n\n\t\t\t\t// sign flip\n\t\t\t\tif ( position.x < 0.0 ) offset *= - 1.0;\n\n\t\t\t\tfloat forwardOffset = dot( worldDir, vec3( 0.0, 0.0, 1.0 ) );\n\n\t\t\t\t// don't extend the line if we're rendering dashes because we\n\t\t\t\t// won't be rendering the endcaps\n\t\t\t\t#ifndef USE_DASH\n\n\t\t\t\t\t// extend the line bounds to encompass  endcaps\n\t\t\t\t\tstart.xyz += - worldDir * linewidth * 0.5;\n\t\t\t\t\tend.xyz += worldDir * linewidth * 0.5;\n\n\t\t\t\t\t// shift the position of the quad so it hugs the forward edge of the line\n\t\t\t\t\toffset.xy -= dir * forwardOffset;\n\t\t\t\t\toffset.z += 0.5;\n\n\t\t\t\t#endif\n\n\t\t\t\t// endcaps\n\t\t\t\tif ( position.y > 1.0 || position.y < 0.0 ) {\n\n\t\t\t\t\toffset.xy += dir * 2.0 * forwardOffset;\n\n\t\t\t\t}\n\n\t\t\t\t// adjust for linewidth\n\t\t\t\toffset *= linewidth * 0.5;\n\n\t\t\t\t// set the world position\n\t\t\t\tworldPos = ( position.y < 0.5 ) ? start : end;\n\t\t\t\tworldPos.xyz += offset;\n\n\t\t\t\t// project the worldpos\n\t\t\t\tvec4 clip = projectionMatrix * worldPos;\n\n\t\t\t\t// shift the depth of the projected points so the line\n\t\t\t\t// segments overlap neatly\n\t\t\t\tvec3 clipPose = ( position.y < 0.5 ) ? ndcStart : ndcEnd;\n\t\t\t\tclip.z = clipPose.z * clip.w;\n\n\t\t\t#else\n\n\t\t\t\tvec2 offset = vec2( dir.y, - dir.x );\n\t\t\t\t// undo aspect ratio adjustment\n\t\t\t\tdir.x /= aspect;\n\t\t\t\toffset.x /= aspect;\n\n\t\t\t\t// sign flip\n\t\t\t\tif ( position.x < 0.0 ) offset *= - 1.0;\n\n\t\t\t\t// endcaps\n\t\t\t\tif ( position.y < 0.0 ) {\n\n\t\t\t\t\toffset += - dir;\n\n\t\t\t\t} else if ( position.y > 1.0 ) {\n\n\t\t\t\t\toffset += dir;\n\n\t\t\t\t}\n\n\t\t\t\t// adjust for linewidth\n\t\t\t\toffset *= linewidth;\n\n\t\t\t\t// adjust for clip-space to screen-space conversion // maybe resolution should be based on viewport ...\n\t\t\t\toffset /= resolution.y;\n\n\t\t\t\t// select end\n\t\t\t\tvec4 clip = ( position.y < 0.5 ) ? clipStart : clipEnd;\n\n\t\t\t\t// back to clip space\n\t\t\t\toffset *= clip.w;\n\n\t\t\t\tclip.xy += offset;\n\n\t\t\t#endif\n\n\t\t\tgl_Position = clip;\n\n\t\t\tvec4 mvPosition = ( position.y < 0.5 ) ? start : end; // this is an approximation\n\n\t\t\t#include <logdepthbuf_vertex>\n\t\t\t#include <clipping_planes_vertex>\n\t\t\t#include <fog_vertex>\n\n\t\t}\n\t\t",fragmentShader:"\n\t\tuniform vec3 diffuse;\n\t\tuniform float opacity;\n\t\tuniform float linewidth;\n\n\t\t#ifdef USE_DASH\n\n\t\t\tuniform float dashOffset;\n\t\t\tuniform float dashSize;\n\t\t\tuniform float gapSize;\n\n\t\t#endif\n\n\t\tvarying float vLineDistance;\n\n\t\t#ifdef WORLD_UNITS\n\n\t\t\tvarying vec4 worldPos;\n\t\t\tvarying vec3 worldStart;\n\t\t\tvarying vec3 worldEnd;\n\n\t\t\t#ifdef USE_DASH\n\n\t\t\t\tvarying vec2 vUv;\n\n\t\t\t#endif\n\n\t\t#else\n\n\t\t\tvarying vec2 vUv;\n\n\t\t#endif\n\n\t\t#include <common>\n\t\t#include <color_pars_fragment>\n\t\t#include <fog_pars_fragment>\n\t\t#include <logdepthbuf_pars_fragment>\n\t\t#include <clipping_planes_pars_fragment>\n\n\t\tvec2 closestLineToLine(vec3 p1, vec3 p2, vec3 p3, vec3 p4) {\n\n\t\t\tfloat mua;\n\t\t\tfloat mub;\n\n\t\t\tvec3 p13 = p1 - p3;\n\t\t\tvec3 p43 = p4 - p3;\n\n\t\t\tvec3 p21 = p2 - p1;\n\n\t\t\tfloat d1343 = dot( p13, p43 );\n\t\t\tfloat d4321 = dot( p43, p21 );\n\t\t\tfloat d1321 = dot( p13, p21 );\n\t\t\tfloat d4343 = dot( p43, p43 );\n\t\t\tfloat d2121 = dot( p21, p21 );\n\n\t\t\tfloat denom = d2121 * d4343 - d4321 * d4321;\n\n\t\t\tfloat numer = d1343 * d4321 - d1321 * d4343;\n\n\t\t\tmua = numer / denom;\n\t\t\tmua = clamp( mua, 0.0, 1.0 );\n\t\t\tmub = ( d1343 + d4321 * ( mua ) ) / d4343;\n\t\t\tmub = clamp( mub, 0.0, 1.0 );\n\n\t\t\treturn vec2( mua, mub );\n\n\t\t}\n\n\t\tvoid main() {\n\n\t\t\t#include <clipping_planes_fragment>\n\n\t\t\t#ifdef USE_DASH\n\n\t\t\t\tif ( vUv.y < - 1.0 || vUv.y > 1.0 ) discard; // discard endcaps\n\n\t\t\t\tif ( mod( vLineDistance + dashOffset, dashSize + gapSize ) > dashSize ) discard; // todo - FIX\n\n\t\t\t#endif\n\n\t\t\tfloat alpha = opacity;\n\n\t\t\t#ifdef WORLD_UNITS\n\n\t\t\t\t// Find the closest points on the view ray and the line segment\n\t\t\t\tvec3 rayEnd = normalize( worldPos.xyz ) * 1e5;\n\t\t\t\tvec3 lineDir = worldEnd - worldStart;\n\t\t\t\tvec2 params = closestLineToLine( worldStart, worldEnd, vec3( 0.0, 0.0, 0.0 ), rayEnd );\n\n\t\t\t\tvec3 p1 = worldStart + lineDir * params.x;\n\t\t\t\tvec3 p2 = rayEnd * params.y;\n\t\t\t\tvec3 delta = p1 - p2;\n\t\t\t\tfloat len = length( delta );\n\t\t\t\tfloat norm = len / linewidth;\n\n\t\t\t\t#ifndef USE_DASH\n\n\t\t\t\t\t#ifdef USE_ALPHA_TO_COVERAGE\n\n\t\t\t\t\t\tfloat dnorm = fwidth( norm );\n\t\t\t\t\t\talpha = 1.0 - smoothstep( 0.5 - dnorm, 0.5 + dnorm, norm );\n\n\t\t\t\t\t#else\n\n\t\t\t\t\t\tif ( norm > 0.5 ) {\n\n\t\t\t\t\t\t\tdiscard;\n\n\t\t\t\t\t\t}\n\n\t\t\t\t\t#endif\n\n\t\t\t\t#endif\n\n\t\t\t#else\n\n\t\t\t\t#ifdef USE_ALPHA_TO_COVERAGE\n\n\t\t\t\t\t// artifacts appear on some hardware if a derivative is taken within a conditional\n\t\t\t\t\tfloat a = vUv.x;\n\t\t\t\t\tfloat b = ( vUv.y > 0.0 ) ? vUv.y - 1.0 : vUv.y + 1.0;\n\t\t\t\t\tfloat len2 = a * a + b * b;\n\t\t\t\t\tfloat dlen = fwidth( len2 );\n\n\t\t\t\t\tif ( abs( vUv.y ) > 1.0 ) {\n\n\t\t\t\t\t\talpha = 1.0 - smoothstep( 1.0 - dlen, 1.0 + dlen, len2 );\n\n\t\t\t\t\t}\n\n\t\t\t\t#else\n\n\t\t\t\t\tif ( abs( vUv.y ) > 1.0 ) {\n\n\t\t\t\t\t\tfloat a = vUv.x;\n\t\t\t\t\t\tfloat b = ( vUv.y > 0.0 ) ? vUv.y - 1.0 : vUv.y + 1.0;\n\t\t\t\t\t\tfloat len2 = a * a + b * b;\n\n\t\t\t\t\t\tif ( len2 > 1.0 ) discard;\n\n\t\t\t\t\t}\n\n\t\t\t\t#endif\n\n\t\t\t#endif\n\n\t\t\tvec4 diffuseColor = vec4( diffuse, alpha );\n\n\t\t\t#include <logdepthbuf_fragment>\n\t\t\t#include <color_fragment>\n\n\t\t\tgl_FragColor = vec4( diffuseColor.rgb, alpha );\n\n\t\t\t#include <tonemapping_fragment>\n\t\t\t#include <encodings_fragment>\n\t\t\t#include <fog_fragment>\n\t\t\t#include <premultiplied_alpha_fragment>\n\n\t\t}\n\t\t"};class G extends d{constructor(t){super({type:"LineMaterial",uniforms:c.clone(l.line.uniforms),vertexShader:l.line.vertexShader,fragmentShader:l.line.fragmentShader,clipping:!0}),this.isLineMaterial=!0,Object.defineProperties(this,{color:{enumerable:!0,get:function(){return this.uniforms.diffuse.value},set:function(t){this.uniforms.diffuse.value=t}},worldUnits:{enumerable:!0,get:function(){return"WORLD_UNITS"in this.defines},set:function(t){!0===t?this.defines.WORLD_UNITS="":delete this.defines.WORLD_UNITS}},linewidth:{enumerable:!0,get:function(){return this.uniforms.linewidth.value},set:function(t){this.uniforms.linewidth.value=t}},dashed:{enumerable:!0,get:function(){return Boolean("USE_DASH"in this.defines)},set(t){Boolean(t)!==Boolean("USE_DASH"in this.defines)&&(this.needsUpdate=!0),!0===t?this.defines.USE_DASH="":delete this.defines.USE_DASH}},dashScale:{enumerable:!0,get:function(){return this.uniforms.dashScale.value},set:function(t){this.uniforms.dashScale.value=t}},dashSize:{enumerable:!0,get:function(){return this.uniforms.dashSize.value},set:function(t){this.uniforms.dashSize.value=t}},dashOffset:{enumerable:!0,get:function(){return this.uniforms.dashOffset.value},set:function(t){this.uniforms.dashOffset.value=t}},gapSize:{enumerable:!0,get:function(){return this.uniforms.gapSize.value},set:function(t){this.uniforms.gapSize.value=t}},opacity:{enumerable:!0,get:function(){return this.uniforms.opacity.value},set:function(t){this.uniforms.opacity.value=t}},resolution:{enumerable:!0,get:function(){return this.uniforms.resolution.value},set:function(t){this.uniforms.resolution.value.copy(t)}},alphaToCoverage:{enumerable:!0,get:function(){return Boolean("USE_ALPHA_TO_COVERAGE"in this.defines)},set:function(t){Boolean(t)!==Boolean("USE_ALPHA_TO_COVERAGE"in this.defines)&&(this.needsUpdate=!0),!0===t?(this.defines.USE_ALPHA_TO_COVERAGE="",this.extensions.derivatives=!0):(delete this.defines.USE_ALPHA_TO_COVERAGE,this.extensions.derivatives=!1)}}}),this.setValues(t)}}const W=new u,X=new e;class q extends h{constructor(){super(),this.isLineSegmentsGeometry=!0,this.type="LineSegmentsGeometry";this.setIndex([0,2,1,2,3,1,2,4,3,4,5,3,4,6,5,6,7,5]),this.setAttribute("position",new p([-1,2,0,1,2,0,-1,1,0,1,1,0,-1,0,0,1,0,0,-1,-1,0,1,-1,0],3)),this.setAttribute("uv",new p([-1,2,1,2,-1,1,1,1,-1,-1,1,-1,-1,-2,1,-2],2))}applyMatrix4(t){const e=this.attributes.instanceStart,n=this.attributes.instanceEnd;return void 0!==e&&(e.applyMatrix4(t),n.applyMatrix4(t),e.needsUpdate=!0),null!==this.boundingBox&&this.computeBoundingBox(),null!==this.boundingSphere&&this.computeBoundingSphere(),this}setPositions(t){let e;t instanceof Float32Array?e=t:Array.isArray(t)&&(e=new Float32Array(t));const n=new m(e,6,1);return this.setAttribute("instanceStart",new f(n,3,0)),this.setAttribute("instanceEnd",new f(n,3,3)),this.computeBoundingBox(),this.computeBoundingSphere(),this}setColors(t){let e;t instanceof Float32Array?e=t:Array.isArray(t)&&(e=new Float32Array(t));const n=new m(e,6,1);return this.setAttribute("instanceColorStart",new f(n,3,0)),this.setAttribute("instanceColorEnd",new f(n,3,3)),this}fromWireframeGeometry(t){return this.setPositions(t.attributes.position.array),this}fromEdgesGeometry(t){return this.setPositions(t.attributes.position.array),this}fromMesh(t){return this.fromWireframeGeometry(new g(t.geometry)),this}fromLineSegments(t){const e=t.geometry;return this.setPositions(e.attributes.position.array),this}computeBoundingBox(){null===this.boundingBox&&(this.boundingBox=new u);const t=this.attributes.instanceStart,e=this.attributes.instanceEnd;void 0!==t&&void 0!==e&&(this.boundingBox.setFromBufferAttribute(t),W.setFromBufferAttribute(e),this.boundingBox.union(W))}computeBoundingSphere(){null===this.boundingSphere&&(this.boundingSphere=new v),null===this.boundingBox&&this.computeBoundingBox();const t=this.attributes.instanceStart,e=this.attributes.instanceEnd;if(void 0!==t&&void 0!==e){const n=this.boundingSphere.center;this.boundingBox.getCenter(n);let i=0;for(let a=0,s=t.count;a<s;a++)X.fromBufferAttribute(t,a),i=Math.max(i,n.distanceToSquared(X)),X.fromBufferAttribute(e,a),i=Math.max(i,n.distanceToSquared(X));this.boundingSphere.radius=Math.sqrt(i),isNaN(this.boundingSphere.radius)&&console.error("THREE.LineSegmentsGeometry.computeBoundingSphere(): Computed radius is NaN. The instanced position data is likely to have NaN values.",this)}}toJSON(){}applyMatrix(t){return console.warn("THREE.LineSegmentsGeometry: applyMatrix() has been renamed to applyMatrix4()."),this.applyMatrix4(t)}}class K extends q{constructor(){super(),this.isLineGeometry=!0,this.type="LineGeometry"}setPositions(t){const e=t.length-3,n=new Float32Array(2*e);for(let i=0;i<e;i+=3)n[2*i]=t[i],n[2*i+1]=t[i+1],n[2*i+2]=t[i+2],n[2*i+3]=t[i+3],n[2*i+4]=t[i+4],n[2*i+5]=t[i+5];return super.setPositions(n),this}setColors(t){const e=t.length-3,n=new Float32Array(2*e);for(let i=0;i<e;i+=3)n[2*i]=t[i],n[2*i+1]=t[i+1],n[2*i+2]=t[i+2],n[2*i+3]=t[i+3],n[2*i+4]=t[i+4],n[2*i+5]=t[i+5];return super.setColors(n),this}fromLine(t){const e=t.geometry;return this.setPositions(e.attributes.position.array),this}}const Q=new e,$=new e,J=new y,tt=new y,et=new y,nt=new e,it=new b,at=new w,st=new e,ot=new u,rt=new v,lt=new y;let ct,dt,ut,ht;function pt(t,e,n){return lt.set(0,0,-e,1).applyMatrix4(t.projectionMatrix),lt.multiplyScalar(1/lt.w),lt.x=ht/n.width,lt.y=ht/n.height,lt.applyMatrix4(t.projectionMatrixInverse),lt.multiplyScalar(1/lt.w),Math.abs(Math.max(lt.x,lt.y))}class mt extends x{constructor(t=new q,e=new G({color:16777215*Math.random()})){super(t,e),this.isLineSegments2=!0,this.type="LineSegments2"}computeLineDistances(){const t=this.geometry,e=t.attributes.instanceStart,n=t.attributes.instanceEnd,i=new Float32Array(2*e.count);for(let t=0,a=0,s=e.count;t<s;t++,a+=2)Q.fromBufferAttribute(e,t),$.fromBufferAttribute(n,t),i[a]=0===a?0:i[a-1],i[a+1]=i[a]+Q.distanceTo($);const a=new m(i,2,1);return t.setAttribute("instanceDistanceStart",new f(a,1,0)),t.setAttribute("instanceDistanceEnd",new f(a,1,1)),this}raycast(t,n){const i=this.material.worldUnits,a=t.camera;null!==a||i||console.error('LineSegments2: "Raycaster.camera" needs to be set in order to raycast against LineSegments2 while worldUnits is set to false.');const s=void 0!==t.params.Line2&&t.params.Line2.threshold||0;ct=t.ray;const o=this.matrixWorld,r=this.geometry,l=this.material;let c,d;if(ht=l.linewidth+s,dt=r.attributes.instanceStart,ut=r.attributes.instanceEnd,null===r.boundingSphere&&r.computeBoundingSphere(),rt.copy(r.boundingSphere).applyMatrix4(o),i)c=.5*ht;else{c=pt(a,Math.max(a.near,rt.distanceToPoint(ct.origin)),l.resolution)}if(rt.radius+=c,!1!==ct.intersectsSphere(rt)){if(null===r.boundingBox&&r.computeBoundingBox(),ot.copy(r.boundingBox).applyMatrix4(o),i)d=.5*ht;else{d=pt(a,Math.max(a.near,ot.distanceToPoint(ct.origin)),l.resolution)}ot.expandByScalar(d),!1!==ct.intersectsBox(ot)&&(i?function(t,n){for(let i=0,a=dt.count;i<a;i++){at.start.fromBufferAttribute(dt,i),at.end.fromBufferAttribute(ut,i);const a=new e,s=new e;ct.distanceSqToSegment(at.start,at.end,s,a),s.distanceTo(a)<.5*ht&&n.push({point:s,pointOnLine:a,distance:ct.origin.distanceTo(s),object:t,face:null,faceIndex:i,uv:null,uv2:null})}}(this,n):function(t,n,i){const a=n.projectionMatrix,s=t.material.resolution,o=t.matrixWorld,r=t.geometry,l=r.attributes.instanceStart,c=r.attributes.instanceEnd,d=-n.near;ct.at(1,et),et.w=1,et.applyMatrix4(n.matrixWorldInverse),et.applyMatrix4(a),et.multiplyScalar(1/et.w),et.x*=s.x/2,et.y*=s.y/2,et.z=0,nt.copy(et),it.multiplyMatrices(n.matrixWorldInverse,o);for(let n=0,r=l.count;n<r;n++){if(J.fromBufferAttribute(l,n),tt.fromBufferAttribute(c,n),J.w=1,tt.w=1,J.applyMatrix4(it),tt.applyMatrix4(it),J.z>d&&tt.z>d)continue;if(J.z>d){const t=J.z-tt.z,e=(J.z-d)/t;J.lerp(tt,e)}else if(tt.z>d){const t=tt.z-J.z,e=(tt.z-d)/t;tt.lerp(J,e)}J.applyMatrix4(a),tt.applyMatrix4(a),J.multiplyScalar(1/J.w),tt.multiplyScalar(1/tt.w),J.x*=s.x/2,J.y*=s.y/2,tt.x*=s.x/2,tt.y*=s.y/2,at.start.copy(J),at.start.z=0,at.end.copy(tt),at.end.z=0;const r=at.closestPointToPointParameter(nt,!0);at.at(r,st);const u=S.lerp(J.z,tt.z,r),h=u>=-1&&u<=1,p=nt.distanceTo(st)<.5*ht;if(h&&p){at.start.fromBufferAttribute(l,n),at.end.fromBufferAttribute(c,n),at.start.applyMatrix4(o),at.end.applyMatrix4(o);const a=new e,s=new e;ct.distanceSqToSegment(at.start,at.end,s,a),i.push({point:s,pointOnLine:a,distance:ct.origin.distanceTo(s),object:t,face:null,faceIndex:n,uv:null,uv2:null})}}}(this,a,n))}}}class ft extends E{constructor(t,e,n,i,a=4473924,s=8947848){a=new L(a),s=new L(s);const o=Math.round(t/e);n=Math.round(n/i)*i/2;const r=[],l=[];let c=0;for(let i=-1*(t=o*e/2);i<=t;i+=e){r.push(i,0,-1*n,i,0,n);const t=0===i?a:s;t.toArray(l,c),c+=3,t.toArray(l,c),c+=3,t.toArray(l,c),c+=3,t.toArray(l,c),c+=3}for(let e=-1*n;e<=n;e+=i){r.push(-1*t,0,e,t,0,e);const n=0===e?a:s;n.toArray(l,c),c+=3,n.toArray(l,c),c+=3,n.toArray(l,c),c+=3,n.toArray(l,c),c+=3}const d=new A;d.setAttribute("position",new p(r,3)),d.setAttribute("color",new p(l,3));super(d,new z({vertexColors:!0,toneMapped:!1}))}}function gt(t,e,n,i){const a=function(t,e,n){t*=.5,e*=.5,n*=.5;const i=new A,a=[];return a.push(-t,-e,-n,-t,e,-n,-t,e,-n,t,e,-n,t,e,-n,t,-e,-n,t,-e,-n,-t,-e,-n,-t,-e,n,-t,e,n,-t,e,n,t,e,n,t,e,n,t,-e,n,t,-e,n,-t,-e,n,-t,-e,-n,-t,-e,n,-t,e,-n,-t,e,n,t,e,-n,t,e,n,t,-e,-n,t,-e,n),i.setAttribute("position",new p(a,3)),i}(t,e,n),s=new E(a,new P({color:new L(i),dashSize:3,gapSize:1}));return s.computeLineDistances(),s}class vt{constructor(t){var e,n,i;if(this.parser=new k,this.backgroundColor=14737632,this.travelColor=10027008,this.extrusionColor=65280,this.renderExtrusion=!0,this.renderTravel=!1,this.singleLayerMode=!1,this.initialCameraPosition=[-100,400,450],this.debug=!1,this.allowDragNDrop=!1,this.disposables=[],this.scene=new O,this.scene.background=new L(this.backgroundColor),this.canvas=t.canvas,this.targetId=t.targetId,this.endLayer=t.endLayer,this.startLayer=t.startLayer,this.topLayerColor=t.topLayerColor,this.lastSegmentColor=t.lastSegmentColor,this.lineWidth=t.lineWidth,this.buildVolume=t.buildVolume,this.initialCameraPosition=null!==(e=t.initialCameraPosition)&&void 0!==e?e:this.initialCameraPosition,this.debug=null!==(n=t.debug)&&void 0!==n?n:this.debug,this.allowDragNDrop=null!==(i=t.allowDragNDrop)&&void 0!==i?i:this.allowDragNDrop,console.info("Using THREE r"+M),console.debug("opts",t),this.targetId&&console.warn("`targetId` is deprecated and will removed in the future. Use `canvas` instead."),!this.canvas&&!this.targetId)throw Error("Set either opts.canvas or opts.targetId");if(this.canvas)this.renderer=new T({canvas:this.canvas,preserveDrawingBuffer:!0});else{const t=document.getElementById(this.targetId);if(!t)throw new Error("Unable to find element "+this.targetId);this.renderer=new T({preserveDrawingBuffer:!0}),this.canvas=this.renderer.domElement,t.appendChild(this.canvas)}this.camera=new _(25,this.canvas.offsetWidth/this.canvas.offsetHeight,10,5e3),this.camera.position.fromArray(this.initialCameraPosition);const a=this.camera.far,s=.8*a;this.scene.fog=new D(this.scene.background,s,a),this.resize(),this.controls=new Z(this.camera,this.renderer.domElement),this.animate(),this.allowDragNDrop&&this._enableDropHandler()}get layers(){return this.parser.layers}get maxLayerIndex(){var t;return(null!==(t=this.endLayer)&&void 0!==t?t:this.layers.length)-1}get minLayerIndex(){var t;return this.singleLayerMode?this.maxLayerIndex:(null!==(t=this.startLayer)&&void 0!==t?t:0)-1}animate(){requestAnimationFrame((()=>this.animate())),this.controls.update(),this.renderer.render(this.scene,this.camera)}processGCode(t){this.parser.parseGCode(t),this.render()}render(){for(var t,e;this.scene.children.length>0;)this.scene.remove(this.scene.children[0]);for(;this.disposables.length>0;)this.disposables.pop().dispose();if(this.debug){const t=new C(Math.max(this.buildVolume.x/2,this.buildVolume.y/2)+20);this.scene.add(t)}this.buildVolume&&this.drawBuildVolume(),this.group=new j,this.group.name="gcode";const n={x:0,y:0,z:0,r:0,e:0,i:0,j:0};for(let i=0;i<this.layers.length&&!(i>this.maxLayerIndex);i++){const a={extrusion:[],travel:[],z:n.z},s=this.layers[i];for(const t of s.commands)if("g0"==t.gcode||"g1"==t.gcode||"g2"==t.gcode||"g3"==t.gcode){const e=t,s={x:void 0!==e.params.x?e.params.x:n.x,y:void 0!==e.params.y?e.params.y:n.y,z:void 0!==e.params.z?e.params.z:n.z,r:void 0!==e.params.r?e.params.r:n.r,e:void 0!==e.params.e?e.params.e:n.e,i:void 0!==e.params.i?e.params.i:n.i,j:void 0!==e.params.j?e.params.j:n.j};if(i>=this.minLayerIndex){const i=e.params.e>0;(i&&this.renderExtrusion||!i&&this.renderTravel)&&("g2"==t.gcode||"g3"==t.gcode?this.addArcSegment(a,n,s,i,"g2"==t.gcode):this.addLineSegment(a,n,s,i))}e.params.x&&(n.x=e.params.x),e.params.y&&(n.y=e.params.y),e.params.z&&(n.z=e.params.z),e.params.r&&(n.r=e.params.r),e.params.e&&(n.e=e.params.e),n.i=0,n.j=0}if(this.renderExtrusion){const n=Math.round(80*i/this.layers.length),s=new L(`hsl(0, 0%, ${n}%)`).getHex();if(i==this.layers.length-1){const n=null!==(t=this.topLayerColor)&&void 0!==t?t:s,i=null!==(e=this.lastSegmentColor)&&void 0!==e?e:n,o=a.extrusion.splice(-3);this.addLine(a.extrusion,n);const r=a.extrusion.splice(-3);this.addLine([...r,...o],i)}else this.addLine(a.extrusion,s)}this.renderTravel&&this.addLine(a.travel,this.travelColor)}this.group.quaternion.setFromEuler(new U(-Math.PI/2,0,0)),this.buildVolume?this.group.position.set(-this.buildVolume.x/2,0,this.buildVolume.y/2):this.group.position.set(-100,0,100),this.scene.add(this.group),this.renderer.render(this.scene,this.camera)}drawBuildVolume(){this.scene.add(new ft(this.buildVolume.x,10,this.buildVolume.y,10));const t=gt(this.buildVolume.x,this.buildVolume.z,this.buildVolume.y,8947848);t.position.setY(this.buildVolume.z/2),this.scene.add(t)}clear(){this.startLayer=1,this.endLayer=1/0,this.singleLayerMode=!1,this.parser=new k}resize(){const[t,e]=[this.canvas.offsetWidth,this.canvas.offsetHeight];this.camera.aspect=t/e,this.camera.updateProjectionMatrix(),this.renderer.setPixelRatio(window.devicePixelRatio),this.renderer.setSize(t,e,!1)}addLineSegment(t,e,n,i){(i?t.extrusion:t.travel).push(e.x,e.y,e.z,n.x,n.y,n.z)}addArcSegment(t,e,n,i,a){const s=i?t.extrusion:t.travel,o=e.x,r=e.y,l=e.z,c=n.x,d=n.y,u=n.z,h=n.r;let p=n.i,m=n.j;if(h){const t=c-o,e=d-r,n=Math.pow(t,2)+Math.pow(e,2),i=Math.pow(h,2)-n/4;let s=Math.sqrt(i/n);(a&&h<0||!a&&h>0)&&(s=-s),p=t/2+e*s,m=e/2-t*s}const f=o==p&&r==d,g=o+p,v=r+m,y=Math.sqrt(p*p+m*m),b=Math.atan2(-m,-p),w=Math.atan2(d-v,c-g);let x;f?x=2*Math.PI:(x=a?b-w:w-b,x<0&&(x+=2*Math.PI));let S=y*x/1.8;S<1&&(S=1);let E=x/S;E*=a?-1:1;const L=[];L.push({x:o,y:r,z:l});const A=(l-u)/S;let z=o,P=r,O=l,M=b;for(let t=0;t<S-1;t++)M+=E,z=g+y*Math.cos(M),P=v+y*Math.sin(M),O+=A,L.push({x:z,y:P,z:O});L.push({x:n.x,y:n.y,z:n.z});for(let t=0;t<L.length-1;t++)s.push(L[t].x,L[t].y,L[t].z,L[t+1].x,L[t+1].y,L[t+1].z)}addLine(t,e){if("number"==typeof this.lineWidth&&this.lineWidth>0)return void this.addThickLine(t,e);const n=new A;n.setAttribute("position",new p(t,3)),this.disposables.push(n);const i=new z({color:e});this.disposables.push(i);const a=new E(n,i);this.group.add(a)}addThickLine(t,e){if(!t.length)return;const n=new K;this.disposables.push(n);const i=new G({color:e,linewidth:this.lineWidth/(1e3*window.devicePixelRatio)});this.disposables.push(i),n.setPositions(t);const a=new mt(n,i);this.group.add(a)}_enableDropHandler(){this.canvas.addEventListener("dragover",(t=>{t.stopPropagation(),t.preventDefault(),t.dataTransfer.dropEffect="copy",this.canvas.classList.add("dragging")})),this.canvas.addEventListener("dragleave",(t=>{t.stopPropagation(),t.preventDefault(),this.canvas.classList.remove("dragging")})),this.canvas.addEventListener("drop",(t=>N(this,void 0,void 0,(function*(){t.stopPropagation(),t.preventDefault(),this.canvas.classList.remove("dragging");const e=t.dataTransfer.files[0];this.clear(),yield this._readFromStream(e.stream()),this.render()}))))}_readFromStream(t){var e,n;return N(this,void 0,void 0,(function*(){const i=t.getReader();let a,s="",o=0;do{a=yield i.read(),o+=null!==(n=null===(e=a.value)||void 0===e?void 0:e.length)&&void 0!==n?n:0;const t=(r=a.value,new TextDecoder("utf-8").decode(r)),l=t.lastIndexOf("\n"),c=t.slice(0,l);this.parser.parseGCode(s+c),s=t.slice(l)}while(!a.done);var r;console.debug("read from stream",o)}))}}const yt=function(t){return new vt(t)};export{vt as WebGLPreview,yt as init};
+import { EventDispatcher, Vector3, MOUSE, TOUCH, Quaternion, Spherical, Vector2, UniformsLib, ShaderLib, UniformsUtils, ShaderMaterial, Box3, InstancedBufferGeometry, Float32BufferAttribute, InstancedInterleavedBuffer, InterleavedBufferAttribute, WireframeGeometry, Sphere, Vector4, Matrix4, Line3, Mesh, MathUtils, LineSegments, Color, BufferGeometry, LineBasicMaterial, LineDashedMaterial, Scene, REVISION, WebGLRenderer, PerspectiveCamera, Fog, AxesHelper, Group, Euler } from 'three';
+
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+}
+
+const prefix = 'data:image/jpeg;base64,';
+class Thumbnail {
+    constructor() {
+        this.chars = '';
+    }
+    static parse(thumbInfo) {
+        const thumb = new Thumbnail();
+        const infoParts = thumbInfo.split(' ');
+        thumb.size = infoParts[0];
+        const sizeParts = thumb.size.split('x');
+        thumb.width = +sizeParts[0];
+        thumb.height = +sizeParts[1];
+        thumb.charLength = +infoParts[1];
+        return thumb;
+    }
+    get src() {
+        return prefix + this.chars;
+    }
+    get isValid() {
+        // https://stackoverflow.com/questions/475074/regex-to-parse-or-validate-base64-data/475217#475217
+        const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+        return this.chars.length == this.charLength && base64regex.test(this.chars);
+    }
+}
+
+/* eslint-disable no-unused-vars */
+class GCodeCommand {
+    constructor(src, gcode, params, comment) {
+        this.src = src;
+        this.gcode = gcode;
+        this.params = params;
+        this.comment = comment;
+    }
+}
+class MoveCommand extends GCodeCommand {
+    constructor(src, gcode, params, comment) {
+        super(src, gcode, params, comment);
+        this.params = params;
+    }
+}
+class Layer {
+    constructor(layer, commands, lineNumber) {
+        this.layer = layer;
+        this.commands = commands;
+        this.lineNumber = lineNumber;
+    }
+}
+class Parser {
+    constructor() {
+        this.lines = [];
+        this.preamble = new Layer(-1, [], 0); // TODO: remove preamble and treat as a regular layer? Unsure of the benefit
+        this.layers = [];
+        this.curZ = 0;
+        this.maxZ = 0;
+        this.metadata = { thumbnails: {} };
+    }
+    parseGCode(input) {
+        const lines = Array.isArray(input)
+            ? input
+            : input.split('\n');
+        this.lines = this.lines.concat(lines);
+        const commands = this.lines2commands(lines);
+        this.groupIntoLayers(commands.filter(cmd => cmd instanceof MoveCommand));
+        // merge thumbs
+        const thumbs = this.parseMetadata(commands.filter(cmd => cmd.comment)).thumbnails;
+        for (const [key, value] of Object.entries(thumbs)) {
+            this.metadata.thumbnails[key] = value;
+        }
+        return { layers: this.layers, metadata: this.metadata };
+    }
+    lines2commands(lines) {
+        return lines
+            .map(l => this.parseCommand(l));
+    }
+    parseCommand(line, keepComments = true) {
+        const input = line.trim();
+        const splitted = input.split(';');
+        const cmd = splitted[0];
+        const comment = (keepComments && splitted[1]) || null;
+        const parts = cmd.split(/ +/g);
+        const gcode = parts[0].toLowerCase();
+        let params;
+        switch (gcode) {
+            case 'g0':
+            case 'g00':
+            case 'g1':
+            case 'g01':
+            case 'g2':
+            case 'g02':
+            case 'g3':
+            case 'g03':
+                params = this.parseMove(parts.slice(1));
+                return new MoveCommand(line, gcode, params, comment);
+            default:
+                params = this.parseParams(parts.slice(1));
+                // console.warn(`non-move code: ${gcode} ${params}`);
+                return new GCodeCommand(line, gcode, params, comment);
+        }
+    }
+    // G0 & G1
+    parseMove(params) {
+        return params.reduce((acc, cur) => {
+            const key = cur.charAt(0).toLowerCase();
+            if (key == 'x' ||
+                key == 'y' ||
+                key == 'z' ||
+                key == 'e' ||
+                key == 'r' ||
+                key == 'f' ||
+                key == 'i' ||
+                key == 'j')
+                acc[key] = parseFloat(cur.slice(1));
+            return acc;
+        }, {});
+    }
+    isAlpha(char) {
+        const code = char.charCodeAt(0);
+        return (code >= 97 && code <= 122) || (code >= 65 && code <= 90);
+    }
+    parseParams(params) {
+        return params.reduce((acc, cur) => {
+            const key = cur.charAt(0).toLowerCase();
+            if (this.isAlpha(key))
+                acc[key] = parseFloat(cur.slice(1));
+            return acc;
+        }, {});
+    }
+    groupIntoLayers(commands) {
+        for (let lineNumber = 0; lineNumber < commands.length; lineNumber++) {
+            const cmd = commands[lineNumber];
+            if (!(cmd instanceof MoveCommand)) {
+                if (this.currentLayer)
+                    this.currentLayer.commands.push(cmd);
+                else
+                    this.preamble.commands.push(cmd);
+                continue;
+            }
+            const params = cmd.params;
+            if (params.z) {
+                // abs mode
+                this.curZ = params.z;
+            }
+            if (params.e > 0 &&
+                (params.x != undefined || params.y != undefined) &&
+                this.curZ > this.maxZ) {
+                this.maxZ = this.curZ;
+                this.currentLayer = new Layer(this.layers.length, [cmd], lineNumber);
+                this.layers.push(this.currentLayer);
+                continue;
+            }
+            if (this.currentLayer)
+                this.currentLayer.commands.push(cmd);
+            else
+                this.preamble.commands.push(cmd);
+        }
+        return this.layers;
+    }
+    parseMetadata(metadata) {
+        const thumbnails = {};
+        let thumb = null;
+        for (const cmd of metadata) {
+            const comment = cmd.comment;
+            const idxThumbBegin = comment.indexOf('thumbnail begin');
+            const idxThumbEnd = comment.indexOf('thumbnail end');
+            if (idxThumbBegin > -1) {
+                thumb = Thumbnail.parse(comment.slice(idxThumbBegin + 15).trim());
+            }
+            else if (thumb) {
+                if (idxThumbEnd == -1) {
+                    thumb.chars += comment.trim();
+                }
+                else {
+                    if (thumb.isValid) {
+                        thumbnails[thumb.size] = thumb;
+                        console.debug('thumb found', thumb.size);
+                        console.debug('declared length', thumb.charLength, 'actual length', thumb.chars.length);
+                    }
+                    else {
+                        console.warn('thumb found but seems to be invalid');
+                    }
+                    thumb = null;
+                }
+            }
+        }
+        return { thumbnails };
+    }
+}
+Parser.prototype.parseGcode = Parser.prototype.parseGCode;
+
+// This set of controls performs orbiting, dollying (zooming), and panning.
+// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
+//
+//    Orbit - left mouse / touch: one-finger move
+//    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
+//    Pan - right mouse, or left mouse + ctrl/meta/shiftKey, or arrow keys / touch: two-finger move
+
+const _changeEvent = { type: 'change' };
+const _startEvent = { type: 'start' };
+const _endEvent = { type: 'end' };
+
+class OrbitControls extends EventDispatcher {
+
+	constructor( object, domElement ) {
+
+		super();
+
+		this.object = object;
+		this.domElement = domElement;
+		this.domElement.style.touchAction = 'none'; // disable touch scroll
+
+		// Set to false to disable this control
+		this.enabled = true;
+
+		// "target" sets the location of focus, where the object orbits around
+		this.target = new Vector3();
+
+		// How far you can dolly in and out ( PerspectiveCamera only )
+		this.minDistance = 0;
+		this.maxDistance = Infinity;
+
+		// How far you can zoom in and out ( OrthographicCamera only )
+		this.minZoom = 0;
+		this.maxZoom = Infinity;
+
+		// How far you can orbit vertically, upper and lower limits.
+		// Range is 0 to Math.PI radians.
+		this.minPolarAngle = 0; // radians
+		this.maxPolarAngle = Math.PI; // radians
+
+		// How far you can orbit horizontally, upper and lower limits.
+		// If set, the interval [ min, max ] must be a sub-interval of [ - 2 PI, 2 PI ], with ( max - min < 2 PI )
+		this.minAzimuthAngle = - Infinity; // radians
+		this.maxAzimuthAngle = Infinity; // radians
+
+		// Set to true to enable damping (inertia)
+		// If damping is enabled, you must call controls.update() in your animation loop
+		this.enableDamping = false;
+		this.dampingFactor = 0.05;
+
+		// This option actually enables dollying in and out; left as "zoom" for backwards compatibility.
+		// Set to false to disable zooming
+		this.enableZoom = true;
+		this.zoomSpeed = 1.0;
+
+		// Set to false to disable rotating
+		this.enableRotate = true;
+		this.rotateSpeed = 1.0;
+
+		// Set to false to disable panning
+		this.enablePan = true;
+		this.panSpeed = 1.0;
+		this.screenSpacePanning = true; // if false, pan orthogonal to world-space direction camera.up
+		this.keyPanSpeed = 7.0;	// pixels moved per arrow key push
+
+		// Set to true to automatically rotate around the target
+		// If auto-rotate is enabled, you must call controls.update() in your animation loop
+		this.autoRotate = false;
+		this.autoRotateSpeed = 2.0; // 30 seconds per orbit when fps is 60
+
+		// The four arrow keys
+		this.keys = { LEFT: 'ArrowLeft', UP: 'ArrowUp', RIGHT: 'ArrowRight', BOTTOM: 'ArrowDown' };
+
+		// Mouse buttons
+		this.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.PAN };
+
+		// Touch fingers
+		this.touches = { ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN };
+
+		// for reset
+		this.target0 = this.target.clone();
+		this.position0 = this.object.position.clone();
+		this.zoom0 = this.object.zoom;
+
+		// the target DOM element for key events
+		this._domElementKeyEvents = null;
+
+		//
+		// public methods
+		//
+
+		this.getPolarAngle = function () {
+
+			return spherical.phi;
+
+		};
+
+		this.getAzimuthalAngle = function () {
+
+			return spherical.theta;
+
+		};
+
+		this.getDistance = function () {
+
+			return this.object.position.distanceTo( this.target );
+
+		};
+
+		this.listenToKeyEvents = function ( domElement ) {
+
+			domElement.addEventListener( 'keydown', onKeyDown );
+			this._domElementKeyEvents = domElement;
+
+		};
+
+		this.saveState = function () {
+
+			scope.target0.copy( scope.target );
+			scope.position0.copy( scope.object.position );
+			scope.zoom0 = scope.object.zoom;
+
+		};
+
+		this.reset = function () {
+
+			scope.target.copy( scope.target0 );
+			scope.object.position.copy( scope.position0 );
+			scope.object.zoom = scope.zoom0;
+
+			scope.object.updateProjectionMatrix();
+			scope.dispatchEvent( _changeEvent );
+
+			scope.update();
+
+			state = STATE.NONE;
+
+		};
+
+		// this method is exposed, but perhaps it would be better if we can make it private...
+		this.update = function () {
+
+			const offset = new Vector3();
+
+			// so camera.up is the orbit axis
+			const quat = new Quaternion().setFromUnitVectors( object.up, new Vector3( 0, 1, 0 ) );
+			const quatInverse = quat.clone().invert();
+
+			const lastPosition = new Vector3();
+			const lastQuaternion = new Quaternion();
+
+			const twoPI = 2 * Math.PI;
+
+			return function update() {
+
+				const position = scope.object.position;
+
+				offset.copy( position ).sub( scope.target );
+
+				// rotate offset to "y-axis-is-up" space
+				offset.applyQuaternion( quat );
+
+				// angle from z-axis around y-axis
+				spherical.setFromVector3( offset );
+
+				if ( scope.autoRotate && state === STATE.NONE ) {
+
+					rotateLeft( getAutoRotationAngle() );
+
+				}
+
+				if ( scope.enableDamping ) {
+
+					spherical.theta += sphericalDelta.theta * scope.dampingFactor;
+					spherical.phi += sphericalDelta.phi * scope.dampingFactor;
+
+				} else {
+
+					spherical.theta += sphericalDelta.theta;
+					spherical.phi += sphericalDelta.phi;
+
+				}
+
+				// restrict theta to be between desired limits
+
+				let min = scope.minAzimuthAngle;
+				let max = scope.maxAzimuthAngle;
+
+				if ( isFinite( min ) && isFinite( max ) ) {
+
+					if ( min < - Math.PI ) min += twoPI; else if ( min > Math.PI ) min -= twoPI;
+
+					if ( max < - Math.PI ) max += twoPI; else if ( max > Math.PI ) max -= twoPI;
+
+					if ( min <= max ) {
+
+						spherical.theta = Math.max( min, Math.min( max, spherical.theta ) );
+
+					} else {
+
+						spherical.theta = ( spherical.theta > ( min + max ) / 2 ) ?
+							Math.max( min, spherical.theta ) :
+							Math.min( max, spherical.theta );
+
+					}
+
+				}
+
+				// restrict phi to be between desired limits
+				spherical.phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, spherical.phi ) );
+
+				spherical.makeSafe();
+
+
+				spherical.radius *= scale;
+
+				// restrict radius to be between desired limits
+				spherical.radius = Math.max( scope.minDistance, Math.min( scope.maxDistance, spherical.radius ) );
+
+				// move target to panned location
+
+				if ( scope.enableDamping === true ) {
+
+					scope.target.addScaledVector( panOffset, scope.dampingFactor );
+
+				} else {
+
+					scope.target.add( panOffset );
+
+				}
+
+				offset.setFromSpherical( spherical );
+
+				// rotate offset back to "camera-up-vector-is-up" space
+				offset.applyQuaternion( quatInverse );
+
+				position.copy( scope.target ).add( offset );
+
+				scope.object.lookAt( scope.target );
+
+				if ( scope.enableDamping === true ) {
+
+					sphericalDelta.theta *= ( 1 - scope.dampingFactor );
+					sphericalDelta.phi *= ( 1 - scope.dampingFactor );
+
+					panOffset.multiplyScalar( 1 - scope.dampingFactor );
+
+				} else {
+
+					sphericalDelta.set( 0, 0, 0 );
+
+					panOffset.set( 0, 0, 0 );
+
+				}
+
+				scale = 1;
+
+				// update condition is:
+				// min(camera displacement, camera rotation in radians)^2 > EPS
+				// using small-angle approximation cos(x/2) = 1 - x^2 / 8
+
+				if ( zoomChanged ||
+					lastPosition.distanceToSquared( scope.object.position ) > EPS ||
+					8 * ( 1 - lastQuaternion.dot( scope.object.quaternion ) ) > EPS ) {
+
+					scope.dispatchEvent( _changeEvent );
+
+					lastPosition.copy( scope.object.position );
+					lastQuaternion.copy( scope.object.quaternion );
+					zoomChanged = false;
+
+					return true;
+
+				}
+
+				return false;
+
+			};
+
+		}();
+
+		this.dispose = function () {
+
+			scope.domElement.removeEventListener( 'contextmenu', onContextMenu );
+
+			scope.domElement.removeEventListener( 'pointerdown', onPointerDown );
+			scope.domElement.removeEventListener( 'pointercancel', onPointerCancel );
+			scope.domElement.removeEventListener( 'wheel', onMouseWheel );
+
+			scope.domElement.removeEventListener( 'pointermove', onPointerMove );
+			scope.domElement.removeEventListener( 'pointerup', onPointerUp );
+
+
+			if ( scope._domElementKeyEvents !== null ) {
+
+				scope._domElementKeyEvents.removeEventListener( 'keydown', onKeyDown );
+
+			}
+
+			//scope.dispatchEvent( { type: 'dispose' } ); // should this be added here?
+
+		};
+
+		//
+		// internals
+		//
+
+		const scope = this;
+
+		const STATE = {
+			NONE: - 1,
+			ROTATE: 0,
+			DOLLY: 1,
+			PAN: 2,
+			TOUCH_ROTATE: 3,
+			TOUCH_PAN: 4,
+			TOUCH_DOLLY_PAN: 5,
+			TOUCH_DOLLY_ROTATE: 6
+		};
+
+		let state = STATE.NONE;
+
+		const EPS = 0.000001;
+
+		// current position in spherical coordinates
+		const spherical = new Spherical();
+		const sphericalDelta = new Spherical();
+
+		let scale = 1;
+		const panOffset = new Vector3();
+		let zoomChanged = false;
+
+		const rotateStart = new Vector2();
+		const rotateEnd = new Vector2();
+		const rotateDelta = new Vector2();
+
+		const panStart = new Vector2();
+		const panEnd = new Vector2();
+		const panDelta = new Vector2();
+
+		const dollyStart = new Vector2();
+		const dollyEnd = new Vector2();
+		const dollyDelta = new Vector2();
+
+		const pointers = [];
+		const pointerPositions = {};
+
+		function getAutoRotationAngle() {
+
+			return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
+
+		}
+
+		function getZoomScale() {
+
+			return Math.pow( 0.95, scope.zoomSpeed );
+
+		}
+
+		function rotateLeft( angle ) {
+
+			sphericalDelta.theta -= angle;
+
+		}
+
+		function rotateUp( angle ) {
+
+			sphericalDelta.phi -= angle;
+
+		}
+
+		const panLeft = function () {
+
+			const v = new Vector3();
+
+			return function panLeft( distance, objectMatrix ) {
+
+				v.setFromMatrixColumn( objectMatrix, 0 ); // get X column of objectMatrix
+				v.multiplyScalar( - distance );
+
+				panOffset.add( v );
+
+			};
+
+		}();
+
+		const panUp = function () {
+
+			const v = new Vector3();
+
+			return function panUp( distance, objectMatrix ) {
+
+				if ( scope.screenSpacePanning === true ) {
+
+					v.setFromMatrixColumn( objectMatrix, 1 );
+
+				} else {
+
+					v.setFromMatrixColumn( objectMatrix, 0 );
+					v.crossVectors( scope.object.up, v );
+
+				}
+
+				v.multiplyScalar( distance );
+
+				panOffset.add( v );
+
+			};
+
+		}();
+
+		// deltaX and deltaY are in pixels; right and down are positive
+		const pan = function () {
+
+			const offset = new Vector3();
+
+			return function pan( deltaX, deltaY ) {
+
+				const element = scope.domElement;
+
+				if ( scope.object.isPerspectiveCamera ) {
+
+					// perspective
+					const position = scope.object.position;
+					offset.copy( position ).sub( scope.target );
+					let targetDistance = offset.length();
+
+					// half of the fov is center to top of screen
+					targetDistance *= Math.tan( ( scope.object.fov / 2 ) * Math.PI / 180.0 );
+
+					// we use only clientHeight here so aspect ratio does not distort speed
+					panLeft( 2 * deltaX * targetDistance / element.clientHeight, scope.object.matrix );
+					panUp( 2 * deltaY * targetDistance / element.clientHeight, scope.object.matrix );
+
+				} else if ( scope.object.isOrthographicCamera ) {
+
+					// orthographic
+					panLeft( deltaX * ( scope.object.right - scope.object.left ) / scope.object.zoom / element.clientWidth, scope.object.matrix );
+					panUp( deltaY * ( scope.object.top - scope.object.bottom ) / scope.object.zoom / element.clientHeight, scope.object.matrix );
+
+				} else {
+
+					// camera neither orthographic nor perspective
+					console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.' );
+					scope.enablePan = false;
+
+				}
+
+			};
+
+		}();
+
+		function dollyOut( dollyScale ) {
+
+			if ( scope.object.isPerspectiveCamera ) {
+
+				scale /= dollyScale;
+
+			} else if ( scope.object.isOrthographicCamera ) {
+
+				scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom * dollyScale ) );
+				scope.object.updateProjectionMatrix();
+				zoomChanged = true;
+
+			} else {
+
+				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
+				scope.enableZoom = false;
+
+			}
+
+		}
+
+		function dollyIn( dollyScale ) {
+
+			if ( scope.object.isPerspectiveCamera ) {
+
+				scale *= dollyScale;
+
+			} else if ( scope.object.isOrthographicCamera ) {
+
+				scope.object.zoom = Math.max( scope.minZoom, Math.min( scope.maxZoom, scope.object.zoom / dollyScale ) );
+				scope.object.updateProjectionMatrix();
+				zoomChanged = true;
+
+			} else {
+
+				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
+				scope.enableZoom = false;
+
+			}
+
+		}
+
+		//
+		// event callbacks - update the object state
+		//
+
+		function handleMouseDownRotate( event ) {
+
+			rotateStart.set( event.clientX, event.clientY );
+
+		}
+
+		function handleMouseDownDolly( event ) {
+
+			dollyStart.set( event.clientX, event.clientY );
+
+		}
+
+		function handleMouseDownPan( event ) {
+
+			panStart.set( event.clientX, event.clientY );
+
+		}
+
+		function handleMouseMoveRotate( event ) {
+
+			rotateEnd.set( event.clientX, event.clientY );
+
+			rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
+
+			const element = scope.domElement;
+
+			rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
+
+			rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
+
+			rotateStart.copy( rotateEnd );
+
+			scope.update();
+
+		}
+
+		function handleMouseMoveDolly( event ) {
+
+			dollyEnd.set( event.clientX, event.clientY );
+
+			dollyDelta.subVectors( dollyEnd, dollyStart );
+
+			if ( dollyDelta.y > 0 ) {
+
+				dollyOut( getZoomScale() );
+
+			} else if ( dollyDelta.y < 0 ) {
+
+				dollyIn( getZoomScale() );
+
+			}
+
+			dollyStart.copy( dollyEnd );
+
+			scope.update();
+
+		}
+
+		function handleMouseMovePan( event ) {
+
+			panEnd.set( event.clientX, event.clientY );
+
+			panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
+
+			pan( panDelta.x, panDelta.y );
+
+			panStart.copy( panEnd );
+
+			scope.update();
+
+		}
+
+		function handleMouseWheel( event ) {
+
+			if ( event.deltaY < 0 ) {
+
+				dollyIn( getZoomScale() );
+
+			} else if ( event.deltaY > 0 ) {
+
+				dollyOut( getZoomScale() );
+
+			}
+
+			scope.update();
+
+		}
+
+		function handleKeyDown( event ) {
+
+			let needsUpdate = false;
+
+			switch ( event.code ) {
+
+				case scope.keys.UP:
+
+					if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
+
+						rotateUp( 2 * Math.PI * scope.rotateSpeed / scope.domElement.clientHeight );
+
+					} else {
+
+						pan( 0, scope.keyPanSpeed );
+
+					}
+
+					needsUpdate = true;
+					break;
+
+				case scope.keys.BOTTOM:
+
+					if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
+
+						rotateUp( - 2 * Math.PI * scope.rotateSpeed / scope.domElement.clientHeight );
+
+					} else {
+
+						pan( 0, - scope.keyPanSpeed );
+
+					}
+
+					needsUpdate = true;
+					break;
+
+				case scope.keys.LEFT:
+
+					if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
+
+						rotateLeft( 2 * Math.PI * scope.rotateSpeed / scope.domElement.clientHeight );
+
+					} else {
+
+						pan( scope.keyPanSpeed, 0 );
+
+					}
+
+					needsUpdate = true;
+					break;
+
+				case scope.keys.RIGHT:
+
+					if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
+
+						rotateLeft( - 2 * Math.PI * scope.rotateSpeed / scope.domElement.clientHeight );
+
+					} else {
+
+						pan( - scope.keyPanSpeed, 0 );
+
+					}
+
+					needsUpdate = true;
+					break;
+
+			}
+
+			if ( needsUpdate ) {
+
+				// prevent the browser from scrolling on cursor keys
+				event.preventDefault();
+
+				scope.update();
+
+			}
+
+
+		}
+
+		function handleTouchStartRotate() {
+
+			if ( pointers.length === 1 ) {
+
+				rotateStart.set( pointers[ 0 ].pageX, pointers[ 0 ].pageY );
+
+			} else {
+
+				const x = 0.5 * ( pointers[ 0 ].pageX + pointers[ 1 ].pageX );
+				const y = 0.5 * ( pointers[ 0 ].pageY + pointers[ 1 ].pageY );
+
+				rotateStart.set( x, y );
+
+			}
+
+		}
+
+		function handleTouchStartPan() {
+
+			if ( pointers.length === 1 ) {
+
+				panStart.set( pointers[ 0 ].pageX, pointers[ 0 ].pageY );
+
+			} else {
+
+				const x = 0.5 * ( pointers[ 0 ].pageX + pointers[ 1 ].pageX );
+				const y = 0.5 * ( pointers[ 0 ].pageY + pointers[ 1 ].pageY );
+
+				panStart.set( x, y );
+
+			}
+
+		}
+
+		function handleTouchStartDolly() {
+
+			const dx = pointers[ 0 ].pageX - pointers[ 1 ].pageX;
+			const dy = pointers[ 0 ].pageY - pointers[ 1 ].pageY;
+
+			const distance = Math.sqrt( dx * dx + dy * dy );
+
+			dollyStart.set( 0, distance );
+
+		}
+
+		function handleTouchStartDollyPan() {
+
+			if ( scope.enableZoom ) handleTouchStartDolly();
+
+			if ( scope.enablePan ) handleTouchStartPan();
+
+		}
+
+		function handleTouchStartDollyRotate() {
+
+			if ( scope.enableZoom ) handleTouchStartDolly();
+
+			if ( scope.enableRotate ) handleTouchStartRotate();
+
+		}
+
+		function handleTouchMoveRotate( event ) {
+
+			if ( pointers.length == 1 ) {
+
+				rotateEnd.set( event.pageX, event.pageY );
+
+			} else {
+
+				const position = getSecondPointerPosition( event );
+
+				const x = 0.5 * ( event.pageX + position.x );
+				const y = 0.5 * ( event.pageY + position.y );
+
+				rotateEnd.set( x, y );
+
+			}
+
+			rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
+
+			const element = scope.domElement;
+
+			rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
+
+			rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
+
+			rotateStart.copy( rotateEnd );
+
+		}
+
+		function handleTouchMovePan( event ) {
+
+			if ( pointers.length === 1 ) {
+
+				panEnd.set( event.pageX, event.pageY );
+
+			} else {
+
+				const position = getSecondPointerPosition( event );
+
+				const x = 0.5 * ( event.pageX + position.x );
+				const y = 0.5 * ( event.pageY + position.y );
+
+				panEnd.set( x, y );
+
+			}
+
+			panDelta.subVectors( panEnd, panStart ).multiplyScalar( scope.panSpeed );
+
+			pan( panDelta.x, panDelta.y );
+
+			panStart.copy( panEnd );
+
+		}
+
+		function handleTouchMoveDolly( event ) {
+
+			const position = getSecondPointerPosition( event );
+
+			const dx = event.pageX - position.x;
+			const dy = event.pageY - position.y;
+
+			const distance = Math.sqrt( dx * dx + dy * dy );
+
+			dollyEnd.set( 0, distance );
+
+			dollyDelta.set( 0, Math.pow( dollyEnd.y / dollyStart.y, scope.zoomSpeed ) );
+
+			dollyOut( dollyDelta.y );
+
+			dollyStart.copy( dollyEnd );
+
+		}
+
+		function handleTouchMoveDollyPan( event ) {
+
+			if ( scope.enableZoom ) handleTouchMoveDolly( event );
+
+			if ( scope.enablePan ) handleTouchMovePan( event );
+
+		}
+
+		function handleTouchMoveDollyRotate( event ) {
+
+			if ( scope.enableZoom ) handleTouchMoveDolly( event );
+
+			if ( scope.enableRotate ) handleTouchMoveRotate( event );
+
+		}
+
+		//
+		// event handlers - FSM: listen for events and reset state
+		//
+
+		function onPointerDown( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			if ( pointers.length === 0 ) {
+
+				scope.domElement.setPointerCapture( event.pointerId );
+
+				scope.domElement.addEventListener( 'pointermove', onPointerMove );
+				scope.domElement.addEventListener( 'pointerup', onPointerUp );
+
+			}
+
+			//
+
+			addPointer( event );
+
+			if ( event.pointerType === 'touch' ) {
+
+				onTouchStart( event );
+
+			} else {
+
+				onMouseDown( event );
+
+			}
+
+		}
+
+		function onPointerMove( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			if ( event.pointerType === 'touch' ) {
+
+				onTouchMove( event );
+
+			} else {
+
+				onMouseMove( event );
+
+			}
+
+		}
+
+		function onPointerUp( event ) {
+
+		    removePointer( event );
+
+		    if ( pointers.length === 0 ) {
+
+		        scope.domElement.releasePointerCapture( event.pointerId );
+
+		        scope.domElement.removeEventListener( 'pointermove', onPointerMove );
+		        scope.domElement.removeEventListener( 'pointerup', onPointerUp );
+
+		    }
+
+		    scope.dispatchEvent( _endEvent );
+
+		    state = STATE.NONE;
+
+		}
+
+		function onPointerCancel( event ) {
+
+			removePointer( event );
+
+		}
+
+		function onMouseDown( event ) {
+
+			let mouseAction;
+
+			switch ( event.button ) {
+
+				case 0:
+
+					mouseAction = scope.mouseButtons.LEFT;
+					break;
+
+				case 1:
+
+					mouseAction = scope.mouseButtons.MIDDLE;
+					break;
+
+				case 2:
+
+					mouseAction = scope.mouseButtons.RIGHT;
+					break;
+
+				default:
+
+					mouseAction = - 1;
+
+			}
+
+			switch ( mouseAction ) {
+
+				case MOUSE.DOLLY:
+
+					if ( scope.enableZoom === false ) return;
+
+					handleMouseDownDolly( event );
+
+					state = STATE.DOLLY;
+
+					break;
+
+				case MOUSE.ROTATE:
+
+					if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
+
+						if ( scope.enablePan === false ) return;
+
+						handleMouseDownPan( event );
+
+						state = STATE.PAN;
+
+					} else {
+
+						if ( scope.enableRotate === false ) return;
+
+						handleMouseDownRotate( event );
+
+						state = STATE.ROTATE;
+
+					}
+
+					break;
+
+				case MOUSE.PAN:
+
+					if ( event.ctrlKey || event.metaKey || event.shiftKey ) {
+
+						if ( scope.enableRotate === false ) return;
+
+						handleMouseDownRotate( event );
+
+						state = STATE.ROTATE;
+
+					} else {
+
+						if ( scope.enablePan === false ) return;
+
+						handleMouseDownPan( event );
+
+						state = STATE.PAN;
+
+					}
+
+					break;
+
+				default:
+
+					state = STATE.NONE;
+
+			}
+
+			if ( state !== STATE.NONE ) {
+
+				scope.dispatchEvent( _startEvent );
+
+			}
+
+		}
+
+		function onMouseMove( event ) {
+
+			switch ( state ) {
+
+				case STATE.ROTATE:
+
+					if ( scope.enableRotate === false ) return;
+
+					handleMouseMoveRotate( event );
+
+					break;
+
+				case STATE.DOLLY:
+
+					if ( scope.enableZoom === false ) return;
+
+					handleMouseMoveDolly( event );
+
+					break;
+
+				case STATE.PAN:
+
+					if ( scope.enablePan === false ) return;
+
+					handleMouseMovePan( event );
+
+					break;
+
+			}
+
+		}
+
+		function onMouseWheel( event ) {
+
+			if ( scope.enabled === false || scope.enableZoom === false || state !== STATE.NONE ) return;
+
+			event.preventDefault();
+
+			scope.dispatchEvent( _startEvent );
+
+			handleMouseWheel( event );
+
+			scope.dispatchEvent( _endEvent );
+
+		}
+
+		function onKeyDown( event ) {
+
+			if ( scope.enabled === false || scope.enablePan === false ) return;
+
+			handleKeyDown( event );
+
+		}
+
+		function onTouchStart( event ) {
+
+			trackPointer( event );
+
+			switch ( pointers.length ) {
+
+				case 1:
+
+					switch ( scope.touches.ONE ) {
+
+						case TOUCH.ROTATE:
+
+							if ( scope.enableRotate === false ) return;
+
+							handleTouchStartRotate();
+
+							state = STATE.TOUCH_ROTATE;
+
+							break;
+
+						case TOUCH.PAN:
+
+							if ( scope.enablePan === false ) return;
+
+							handleTouchStartPan();
+
+							state = STATE.TOUCH_PAN;
+
+							break;
+
+						default:
+
+							state = STATE.NONE;
+
+					}
+
+					break;
+
+				case 2:
+
+					switch ( scope.touches.TWO ) {
+
+						case TOUCH.DOLLY_PAN:
+
+							if ( scope.enableZoom === false && scope.enablePan === false ) return;
+
+							handleTouchStartDollyPan();
+
+							state = STATE.TOUCH_DOLLY_PAN;
+
+							break;
+
+						case TOUCH.DOLLY_ROTATE:
+
+							if ( scope.enableZoom === false && scope.enableRotate === false ) return;
+
+							handleTouchStartDollyRotate();
+
+							state = STATE.TOUCH_DOLLY_ROTATE;
+
+							break;
+
+						default:
+
+							state = STATE.NONE;
+
+					}
+
+					break;
+
+				default:
+
+					state = STATE.NONE;
+
+			}
+
+			if ( state !== STATE.NONE ) {
+
+				scope.dispatchEvent( _startEvent );
+
+			}
+
+		}
+
+		function onTouchMove( event ) {
+
+			trackPointer( event );
+
+			switch ( state ) {
+
+				case STATE.TOUCH_ROTATE:
+
+					if ( scope.enableRotate === false ) return;
+
+					handleTouchMoveRotate( event );
+
+					scope.update();
+
+					break;
+
+				case STATE.TOUCH_PAN:
+
+					if ( scope.enablePan === false ) return;
+
+					handleTouchMovePan( event );
+
+					scope.update();
+
+					break;
+
+				case STATE.TOUCH_DOLLY_PAN:
+
+					if ( scope.enableZoom === false && scope.enablePan === false ) return;
+
+					handleTouchMoveDollyPan( event );
+
+					scope.update();
+
+					break;
+
+				case STATE.TOUCH_DOLLY_ROTATE:
+
+					if ( scope.enableZoom === false && scope.enableRotate === false ) return;
+
+					handleTouchMoveDollyRotate( event );
+
+					scope.update();
+
+					break;
+
+				default:
+
+					state = STATE.NONE;
+
+			}
+
+		}
+
+		function onContextMenu( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			event.preventDefault();
+
+		}
+
+		function addPointer( event ) {
+
+			pointers.push( event );
+
+		}
+
+		function removePointer( event ) {
+
+			delete pointerPositions[ event.pointerId ];
+
+			for ( let i = 0; i < pointers.length; i ++ ) {
+
+				if ( pointers[ i ].pointerId == event.pointerId ) {
+
+					pointers.splice( i, 1 );
+					return;
+
+				}
+
+			}
+
+		}
+
+		function trackPointer( event ) {
+
+			let position = pointerPositions[ event.pointerId ];
+
+			if ( position === undefined ) {
+
+				position = new Vector2();
+				pointerPositions[ event.pointerId ] = position;
+
+			}
+
+			position.set( event.pageX, event.pageY );
+
+		}
+
+		function getSecondPointerPosition( event ) {
+
+			const pointer = ( event.pointerId === pointers[ 0 ].pointerId ) ? pointers[ 1 ] : pointers[ 0 ];
+
+			return pointerPositions[ pointer.pointerId ];
+
+		}
+
+		//
+
+		scope.domElement.addEventListener( 'contextmenu', onContextMenu );
+
+		scope.domElement.addEventListener( 'pointerdown', onPointerDown );
+		scope.domElement.addEventListener( 'pointercancel', onPointerCancel );
+		scope.domElement.addEventListener( 'wheel', onMouseWheel, { passive: false } );
+
+		// force an update at start
+
+		this.update();
+
+	}
+
+}
+
+/**
+ * parameters = {
+ *  color: <hex>,
+ *  linewidth: <float>,
+ *  dashed: <boolean>,
+ *  dashScale: <float>,
+ *  dashSize: <float>,
+ *  dashOffset: <float>,
+ *  gapSize: <float>,
+ *  resolution: <Vector2>, // to be set by renderer
+ * }
+ */
+
+
+UniformsLib.line = {
+
+	worldUnits: { value: 1 },
+	linewidth: { value: 1 },
+	resolution: { value: new Vector2( 1, 1 ) },
+	dashOffset: { value: 0 },
+	dashScale: { value: 1 },
+	dashSize: { value: 1 },
+	gapSize: { value: 1 } // todo FIX - maybe change to totalSize
+
+};
+
+ShaderLib[ 'line' ] = {
+
+	uniforms: UniformsUtils.merge( [
+		UniformsLib.common,
+		UniformsLib.fog,
+		UniformsLib.line
+	] ),
+
+	vertexShader:
+	/* glsl */`
+		#include <common>
+		#include <color_pars_vertex>
+		#include <fog_pars_vertex>
+		#include <logdepthbuf_pars_vertex>
+		#include <clipping_planes_pars_vertex>
+
+		uniform float linewidth;
+		uniform vec2 resolution;
+
+		attribute vec3 instanceStart;
+		attribute vec3 instanceEnd;
+
+		attribute vec3 instanceColorStart;
+		attribute vec3 instanceColorEnd;
+
+		#ifdef WORLD_UNITS
+
+			varying vec4 worldPos;
+			varying vec3 worldStart;
+			varying vec3 worldEnd;
+
+			#ifdef USE_DASH
+
+				varying vec2 vUv;
+
+			#endif
+
+		#else
+
+			varying vec2 vUv;
+
+		#endif
+
+		#ifdef USE_DASH
+
+			uniform float dashScale;
+			attribute float instanceDistanceStart;
+			attribute float instanceDistanceEnd;
+			varying float vLineDistance;
+
+		#endif
+
+		void trimSegment( const in vec4 start, inout vec4 end ) {
+
+			// trim end segment so it terminates between the camera plane and the near plane
+
+			// conservative estimate of the near plane
+			float a = projectionMatrix[ 2 ][ 2 ]; // 3nd entry in 3th column
+			float b = projectionMatrix[ 3 ][ 2 ]; // 3nd entry in 4th column
+			float nearEstimate = - 0.5 * b / a;
+
+			float alpha = ( nearEstimate - start.z ) / ( end.z - start.z );
+
+			end.xyz = mix( start.xyz, end.xyz, alpha );
+
+		}
+
+		void main() {
+
+			#ifdef USE_COLOR
+
+				vColor.xyz = ( position.y < 0.5 ) ? instanceColorStart : instanceColorEnd;
+
+			#endif
+
+			#ifdef USE_DASH
+
+				vLineDistance = ( position.y < 0.5 ) ? dashScale * instanceDistanceStart : dashScale * instanceDistanceEnd;
+				vUv = uv;
+
+			#endif
+
+			float aspect = resolution.x / resolution.y;
+
+			// camera space
+			vec4 start = modelViewMatrix * vec4( instanceStart, 1.0 );
+			vec4 end = modelViewMatrix * vec4( instanceEnd, 1.0 );
+
+			#ifdef WORLD_UNITS
+
+				worldStart = start.xyz;
+				worldEnd = end.xyz;
+
+			#else
+
+				vUv = uv;
+
+			#endif
+
+			// special case for perspective projection, and segments that terminate either in, or behind, the camera plane
+			// clearly the gpu firmware has a way of addressing this issue when projecting into ndc space
+			// but we need to perform ndc-space calculations in the shader, so we must address this issue directly
+			// perhaps there is a more elegant solution -- WestLangley
+
+			bool perspective = ( projectionMatrix[ 2 ][ 3 ] == - 1.0 ); // 4th entry in the 3rd column
+
+			if ( perspective ) {
+
+				if ( start.z < 0.0 && end.z >= 0.0 ) {
+
+					trimSegment( start, end );
+
+				} else if ( end.z < 0.0 && start.z >= 0.0 ) {
+
+					trimSegment( end, start );
+
+				}
+
+			}
+
+			// clip space
+			vec4 clipStart = projectionMatrix * start;
+			vec4 clipEnd = projectionMatrix * end;
+
+			// ndc space
+			vec3 ndcStart = clipStart.xyz / clipStart.w;
+			vec3 ndcEnd = clipEnd.xyz / clipEnd.w;
+
+			// direction
+			vec2 dir = ndcEnd.xy - ndcStart.xy;
+
+			// account for clip-space aspect ratio
+			dir.x *= aspect;
+			dir = normalize( dir );
+
+			#ifdef WORLD_UNITS
+
+				// get the offset direction as perpendicular to the view vector
+				vec3 worldDir = normalize( end.xyz - start.xyz );
+				vec3 offset;
+				if ( position.y < 0.5 ) {
+
+					offset = normalize( cross( start.xyz, worldDir ) );
+
+				} else {
+
+					offset = normalize( cross( end.xyz, worldDir ) );
+
+				}
+
+				// sign flip
+				if ( position.x < 0.0 ) offset *= - 1.0;
+
+				float forwardOffset = dot( worldDir, vec3( 0.0, 0.0, 1.0 ) );
+
+				// don't extend the line if we're rendering dashes because we
+				// won't be rendering the endcaps
+				#ifndef USE_DASH
+
+					// extend the line bounds to encompass  endcaps
+					start.xyz += - worldDir * linewidth * 0.5;
+					end.xyz += worldDir * linewidth * 0.5;
+
+					// shift the position of the quad so it hugs the forward edge of the line
+					offset.xy -= dir * forwardOffset;
+					offset.z += 0.5;
+
+				#endif
+
+				// endcaps
+				if ( position.y > 1.0 || position.y < 0.0 ) {
+
+					offset.xy += dir * 2.0 * forwardOffset;
+
+				}
+
+				// adjust for linewidth
+				offset *= linewidth * 0.5;
+
+				// set the world position
+				worldPos = ( position.y < 0.5 ) ? start : end;
+				worldPos.xyz += offset;
+
+				// project the worldpos
+				vec4 clip = projectionMatrix * worldPos;
+
+				// shift the depth of the projected points so the line
+				// segments overlap neatly
+				vec3 clipPose = ( position.y < 0.5 ) ? ndcStart : ndcEnd;
+				clip.z = clipPose.z * clip.w;
+
+			#else
+
+				vec2 offset = vec2( dir.y, - dir.x );
+				// undo aspect ratio adjustment
+				dir.x /= aspect;
+				offset.x /= aspect;
+
+				// sign flip
+				if ( position.x < 0.0 ) offset *= - 1.0;
+
+				// endcaps
+				if ( position.y < 0.0 ) {
+
+					offset += - dir;
+
+				} else if ( position.y > 1.0 ) {
+
+					offset += dir;
+
+				}
+
+				// adjust for linewidth
+				offset *= linewidth;
+
+				// adjust for clip-space to screen-space conversion // maybe resolution should be based on viewport ...
+				offset /= resolution.y;
+
+				// select end
+				vec4 clip = ( position.y < 0.5 ) ? clipStart : clipEnd;
+
+				// back to clip space
+				offset *= clip.w;
+
+				clip.xy += offset;
+
+			#endif
+
+			gl_Position = clip;
+
+			vec4 mvPosition = ( position.y < 0.5 ) ? start : end; // this is an approximation
+
+			#include <logdepthbuf_vertex>
+			#include <clipping_planes_vertex>
+			#include <fog_vertex>
+
+		}
+		`,
+
+	fragmentShader:
+	/* glsl */`
+		uniform vec3 diffuse;
+		uniform float opacity;
+		uniform float linewidth;
+
+		#ifdef USE_DASH
+
+			uniform float dashOffset;
+			uniform float dashSize;
+			uniform float gapSize;
+
+		#endif
+
+		varying float vLineDistance;
+
+		#ifdef WORLD_UNITS
+
+			varying vec4 worldPos;
+			varying vec3 worldStart;
+			varying vec3 worldEnd;
+
+			#ifdef USE_DASH
+
+				varying vec2 vUv;
+
+			#endif
+
+		#else
+
+			varying vec2 vUv;
+
+		#endif
+
+		#include <common>
+		#include <color_pars_fragment>
+		#include <fog_pars_fragment>
+		#include <logdepthbuf_pars_fragment>
+		#include <clipping_planes_pars_fragment>
+
+		vec2 closestLineToLine(vec3 p1, vec3 p2, vec3 p3, vec3 p4) {
+
+			float mua;
+			float mub;
+
+			vec3 p13 = p1 - p3;
+			vec3 p43 = p4 - p3;
+
+			vec3 p21 = p2 - p1;
+
+			float d1343 = dot( p13, p43 );
+			float d4321 = dot( p43, p21 );
+			float d1321 = dot( p13, p21 );
+			float d4343 = dot( p43, p43 );
+			float d2121 = dot( p21, p21 );
+
+			float denom = d2121 * d4343 - d4321 * d4321;
+
+			float numer = d1343 * d4321 - d1321 * d4343;
+
+			mua = numer / denom;
+			mua = clamp( mua, 0.0, 1.0 );
+			mub = ( d1343 + d4321 * ( mua ) ) / d4343;
+			mub = clamp( mub, 0.0, 1.0 );
+
+			return vec2( mua, mub );
+
+		}
+
+		void main() {
+
+			#include <clipping_planes_fragment>
+
+			#ifdef USE_DASH
+
+				if ( vUv.y < - 1.0 || vUv.y > 1.0 ) discard; // discard endcaps
+
+				if ( mod( vLineDistance + dashOffset, dashSize + gapSize ) > dashSize ) discard; // todo - FIX
+
+			#endif
+
+			float alpha = opacity;
+
+			#ifdef WORLD_UNITS
+
+				// Find the closest points on the view ray and the line segment
+				vec3 rayEnd = normalize( worldPos.xyz ) * 1e5;
+				vec3 lineDir = worldEnd - worldStart;
+				vec2 params = closestLineToLine( worldStart, worldEnd, vec3( 0.0, 0.0, 0.0 ), rayEnd );
+
+				vec3 p1 = worldStart + lineDir * params.x;
+				vec3 p2 = rayEnd * params.y;
+				vec3 delta = p1 - p2;
+				float len = length( delta );
+				float norm = len / linewidth;
+
+				#ifndef USE_DASH
+
+					#ifdef USE_ALPHA_TO_COVERAGE
+
+						float dnorm = fwidth( norm );
+						alpha = 1.0 - smoothstep( 0.5 - dnorm, 0.5 + dnorm, norm );
+
+					#else
+
+						if ( norm > 0.5 ) {
+
+							discard;
+
+						}
+
+					#endif
+
+				#endif
+
+			#else
+
+				#ifdef USE_ALPHA_TO_COVERAGE
+
+					// artifacts appear on some hardware if a derivative is taken within a conditional
+					float a = vUv.x;
+					float b = ( vUv.y > 0.0 ) ? vUv.y - 1.0 : vUv.y + 1.0;
+					float len2 = a * a + b * b;
+					float dlen = fwidth( len2 );
+
+					if ( abs( vUv.y ) > 1.0 ) {
+
+						alpha = 1.0 - smoothstep( 1.0 - dlen, 1.0 + dlen, len2 );
+
+					}
+
+				#else
+
+					if ( abs( vUv.y ) > 1.0 ) {
+
+						float a = vUv.x;
+						float b = ( vUv.y > 0.0 ) ? vUv.y - 1.0 : vUv.y + 1.0;
+						float len2 = a * a + b * b;
+
+						if ( len2 > 1.0 ) discard;
+
+					}
+
+				#endif
+
+			#endif
+
+			vec4 diffuseColor = vec4( diffuse, alpha );
+
+			#include <logdepthbuf_fragment>
+			#include <color_fragment>
+
+			gl_FragColor = vec4( diffuseColor.rgb, alpha );
+
+			#include <tonemapping_fragment>
+			#include <encodings_fragment>
+			#include <fog_fragment>
+			#include <premultiplied_alpha_fragment>
+
+		}
+		`
+};
+
+class LineMaterial extends ShaderMaterial {
+
+	constructor( parameters ) {
+
+		super( {
+
+			type: 'LineMaterial',
+
+			uniforms: UniformsUtils.clone( ShaderLib[ 'line' ].uniforms ),
+
+			vertexShader: ShaderLib[ 'line' ].vertexShader,
+			fragmentShader: ShaderLib[ 'line' ].fragmentShader,
+
+			clipping: true // required for clipping support
+
+		} );
+
+		this.isLineMaterial = true;
+
+		Object.defineProperties( this, {
+
+			color: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return this.uniforms.diffuse.value;
+
+				},
+
+				set: function ( value ) {
+
+					this.uniforms.diffuse.value = value;
+
+				}
+
+			},
+
+			worldUnits: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return 'WORLD_UNITS' in this.defines;
+
+				},
+
+				set: function ( value ) {
+
+					if ( value === true ) {
+
+						this.defines.WORLD_UNITS = '';
+
+					} else {
+
+						delete this.defines.WORLD_UNITS;
+
+					}
+
+				}
+
+			},
+
+			linewidth: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return this.uniforms.linewidth.value;
+
+				},
+
+				set: function ( value ) {
+
+					this.uniforms.linewidth.value = value;
+
+				}
+
+			},
+
+			dashed: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return Boolean( 'USE_DASH' in this.defines );
+
+				},
+
+				set( value ) {
+
+					if ( Boolean( value ) !== Boolean( 'USE_DASH' in this.defines ) ) {
+
+						this.needsUpdate = true;
+
+					}
+
+					if ( value === true ) {
+
+						this.defines.USE_DASH = '';
+
+					} else {
+
+						delete this.defines.USE_DASH;
+
+					}
+
+				}
+
+			},
+
+			dashScale: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return this.uniforms.dashScale.value;
+
+				},
+
+				set: function ( value ) {
+
+					this.uniforms.dashScale.value = value;
+
+				}
+
+			},
+
+			dashSize: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return this.uniforms.dashSize.value;
+
+				},
+
+				set: function ( value ) {
+
+					this.uniforms.dashSize.value = value;
+
+				}
+
+			},
+
+			dashOffset: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return this.uniforms.dashOffset.value;
+
+				},
+
+				set: function ( value ) {
+
+					this.uniforms.dashOffset.value = value;
+
+				}
+
+			},
+
+			gapSize: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return this.uniforms.gapSize.value;
+
+				},
+
+				set: function ( value ) {
+
+					this.uniforms.gapSize.value = value;
+
+				}
+
+			},
+
+			opacity: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return this.uniforms.opacity.value;
+
+				},
+
+				set: function ( value ) {
+
+					this.uniforms.opacity.value = value;
+
+				}
+
+			},
+
+			resolution: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return this.uniforms.resolution.value;
+
+				},
+
+				set: function ( value ) {
+
+					this.uniforms.resolution.value.copy( value );
+
+				}
+
+			},
+
+			alphaToCoverage: {
+
+				enumerable: true,
+
+				get: function () {
+
+					return Boolean( 'USE_ALPHA_TO_COVERAGE' in this.defines );
+
+				},
+
+				set: function ( value ) {
+
+					if ( Boolean( value ) !== Boolean( 'USE_ALPHA_TO_COVERAGE' in this.defines ) ) {
+
+						this.needsUpdate = true;
+
+					}
+
+					if ( value === true ) {
+
+						this.defines.USE_ALPHA_TO_COVERAGE = '';
+						this.extensions.derivatives = true;
+
+					} else {
+
+						delete this.defines.USE_ALPHA_TO_COVERAGE;
+						this.extensions.derivatives = false;
+
+					}
+
+				}
+
+			}
+
+		} );
+
+		this.setValues( parameters );
+
+	}
+
+}
+
+const _box$1 = new Box3();
+const _vector = new Vector3();
+
+class LineSegmentsGeometry extends InstancedBufferGeometry {
+
+	constructor() {
+
+		super();
+
+		this.isLineSegmentsGeometry = true;
+
+		this.type = 'LineSegmentsGeometry';
+
+		const positions = [ - 1, 2, 0, 1, 2, 0, - 1, 1, 0, 1, 1, 0, - 1, 0, 0, 1, 0, 0, - 1, - 1, 0, 1, - 1, 0 ];
+		const uvs = [ - 1, 2, 1, 2, - 1, 1, 1, 1, - 1, - 1, 1, - 1, - 1, - 2, 1, - 2 ];
+		const index = [ 0, 2, 1, 2, 3, 1, 2, 4, 3, 4, 5, 3, 4, 6, 5, 6, 7, 5 ];
+
+		this.setIndex( index );
+		this.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+
+	}
+
+	applyMatrix4( matrix ) {
+
+		const start = this.attributes.instanceStart;
+		const end = this.attributes.instanceEnd;
+
+		if ( start !== undefined ) {
+
+			start.applyMatrix4( matrix );
+
+			end.applyMatrix4( matrix );
+
+			start.needsUpdate = true;
+
+		}
+
+		if ( this.boundingBox !== null ) {
+
+			this.computeBoundingBox();
+
+		}
+
+		if ( this.boundingSphere !== null ) {
+
+			this.computeBoundingSphere();
+
+		}
+
+		return this;
+
+	}
+
+	setPositions( array ) {
+
+		let lineSegments;
+
+		if ( array instanceof Float32Array ) {
+
+			lineSegments = array;
+
+		} else if ( Array.isArray( array ) ) {
+
+			lineSegments = new Float32Array( array );
+
+		}
+
+		const instanceBuffer = new InstancedInterleavedBuffer( lineSegments, 6, 1 ); // xyz, xyz
+
+		this.setAttribute( 'instanceStart', new InterleavedBufferAttribute( instanceBuffer, 3, 0 ) ); // xyz
+		this.setAttribute( 'instanceEnd', new InterleavedBufferAttribute( instanceBuffer, 3, 3 ) ); // xyz
+
+		//
+
+		this.computeBoundingBox();
+		this.computeBoundingSphere();
+
+		return this;
+
+	}
+
+	setColors( array ) {
+
+		let colors;
+
+		if ( array instanceof Float32Array ) {
+
+			colors = array;
+
+		} else if ( Array.isArray( array ) ) {
+
+			colors = new Float32Array( array );
+
+		}
+
+		const instanceColorBuffer = new InstancedInterleavedBuffer( colors, 6, 1 ); // rgb, rgb
+
+		this.setAttribute( 'instanceColorStart', new InterleavedBufferAttribute( instanceColorBuffer, 3, 0 ) ); // rgb
+		this.setAttribute( 'instanceColorEnd', new InterleavedBufferAttribute( instanceColorBuffer, 3, 3 ) ); // rgb
+
+		return this;
+
+	}
+
+	fromWireframeGeometry( geometry ) {
+
+		this.setPositions( geometry.attributes.position.array );
+
+		return this;
+
+	}
+
+	fromEdgesGeometry( geometry ) {
+
+		this.setPositions( geometry.attributes.position.array );
+
+		return this;
+
+	}
+
+	fromMesh( mesh ) {
+
+		this.fromWireframeGeometry( new WireframeGeometry( mesh.geometry ) );
+
+		// set colors, maybe
+
+		return this;
+
+	}
+
+	fromLineSegments( lineSegments ) {
+
+		const geometry = lineSegments.geometry;
+
+		this.setPositions( geometry.attributes.position.array ); // assumes non-indexed
+
+		// set colors, maybe
+
+		return this;
+
+	}
+
+	computeBoundingBox() {
+
+		if ( this.boundingBox === null ) {
+
+			this.boundingBox = new Box3();
+
+		}
+
+		const start = this.attributes.instanceStart;
+		const end = this.attributes.instanceEnd;
+
+		if ( start !== undefined && end !== undefined ) {
+
+			this.boundingBox.setFromBufferAttribute( start );
+
+			_box$1.setFromBufferAttribute( end );
+
+			this.boundingBox.union( _box$1 );
+
+		}
+
+	}
+
+	computeBoundingSphere() {
+
+		if ( this.boundingSphere === null ) {
+
+			this.boundingSphere = new Sphere();
+
+		}
+
+		if ( this.boundingBox === null ) {
+
+			this.computeBoundingBox();
+
+		}
+
+		const start = this.attributes.instanceStart;
+		const end = this.attributes.instanceEnd;
+
+		if ( start !== undefined && end !== undefined ) {
+
+			const center = this.boundingSphere.center;
+
+			this.boundingBox.getCenter( center );
+
+			let maxRadiusSq = 0;
+
+			for ( let i = 0, il = start.count; i < il; i ++ ) {
+
+				_vector.fromBufferAttribute( start, i );
+				maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( _vector ) );
+
+				_vector.fromBufferAttribute( end, i );
+				maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( _vector ) );
+
+			}
+
+			this.boundingSphere.radius = Math.sqrt( maxRadiusSq );
+
+			if ( isNaN( this.boundingSphere.radius ) ) {
+
+				console.error( 'THREE.LineSegmentsGeometry.computeBoundingSphere(): Computed radius is NaN. The instanced position data is likely to have NaN values.', this );
+
+			}
+
+		}
+
+	}
+
+	toJSON() {
+
+		// todo
+
+	}
+
+	applyMatrix( matrix ) {
+
+		console.warn( 'THREE.LineSegmentsGeometry: applyMatrix() has been renamed to applyMatrix4().' );
+
+		return this.applyMatrix4( matrix );
+
+	}
+
+}
+
+class LineGeometry extends LineSegmentsGeometry {
+
+	constructor() {
+
+		super();
+
+		this.isLineGeometry = true;
+
+		this.type = 'LineGeometry';
+
+	}
+
+	setPositions( array ) {
+
+		// converts [ x1, y1, z1,  x2, y2, z2, ... ] to pairs format
+
+		const length = array.length - 3;
+		const points = new Float32Array( 2 * length );
+
+		for ( let i = 0; i < length; i += 3 ) {
+
+			points[ 2 * i ] = array[ i ];
+			points[ 2 * i + 1 ] = array[ i + 1 ];
+			points[ 2 * i + 2 ] = array[ i + 2 ];
+
+			points[ 2 * i + 3 ] = array[ i + 3 ];
+			points[ 2 * i + 4 ] = array[ i + 4 ];
+			points[ 2 * i + 5 ] = array[ i + 5 ];
+
+		}
+
+		super.setPositions( points );
+
+		return this;
+
+	}
+
+	setColors( array ) {
+
+		// converts [ r1, g1, b1,  r2, g2, b2, ... ] to pairs format
+
+		const length = array.length - 3;
+		const colors = new Float32Array( 2 * length );
+
+		for ( let i = 0; i < length; i += 3 ) {
+
+			colors[ 2 * i ] = array[ i ];
+			colors[ 2 * i + 1 ] = array[ i + 1 ];
+			colors[ 2 * i + 2 ] = array[ i + 2 ];
+
+			colors[ 2 * i + 3 ] = array[ i + 3 ];
+			colors[ 2 * i + 4 ] = array[ i + 4 ];
+			colors[ 2 * i + 5 ] = array[ i + 5 ];
+
+		}
+
+		super.setColors( colors );
+
+		return this;
+
+	}
+
+	fromLine( line ) {
+
+		const geometry = line.geometry;
+
+		this.setPositions( geometry.attributes.position.array ); // assumes non-indexed
+
+		// set colors, maybe
+
+		return this;
+
+	}
+
+}
+
+const _start = new Vector3();
+const _end = new Vector3();
+
+const _start4 = new Vector4();
+const _end4 = new Vector4();
+
+const _ssOrigin = new Vector4();
+const _ssOrigin3 = new Vector3();
+const _mvMatrix = new Matrix4();
+const _line = new Line3();
+const _closestPoint = new Vector3();
+
+const _box = new Box3();
+const _sphere = new Sphere();
+const _clipToWorldVector = new Vector4();
+
+let _ray, _lineWidth;
+
+// Returns the margin required to expand by in world space given the distance from the camera,
+// line width, resolution, and camera projection
+function getWorldSpaceHalfWidth( camera, distance, resolution ) {
+
+	// transform into clip space, adjust the x and y values by the pixel width offset, then
+	// transform back into world space to get world offset. Note clip space is [-1, 1] so full
+	// width does not need to be halved.
+	_clipToWorldVector.set( 0, 0, - distance, 1.0 ).applyMatrix4( camera.projectionMatrix );
+	_clipToWorldVector.multiplyScalar( 1.0 / _clipToWorldVector.w );
+	_clipToWorldVector.x = _lineWidth / resolution.width;
+	_clipToWorldVector.y = _lineWidth / resolution.height;
+	_clipToWorldVector.applyMatrix4( camera.projectionMatrixInverse );
+	_clipToWorldVector.multiplyScalar( 1.0 / _clipToWorldVector.w );
+
+	return Math.abs( Math.max( _clipToWorldVector.x, _clipToWorldVector.y ) );
+
+}
+
+function raycastWorldUnits( lineSegments, intersects ) {
+
+	const matrixWorld = lineSegments.matrixWorld;
+	const geometry = lineSegments.geometry;
+	const instanceStart = geometry.attributes.instanceStart;
+	const instanceEnd = geometry.attributes.instanceEnd;
+	const segmentCount = Math.min( geometry.instanceCount, instanceStart.count );
+
+	for ( let i = 0, l = segmentCount; i < l; i ++ ) {
+
+		_line.start.fromBufferAttribute( instanceStart, i );
+		_line.end.fromBufferAttribute( instanceEnd, i );
+
+		_line.applyMatrix4( matrixWorld );
+
+		const pointOnLine = new Vector3();
+		const point = new Vector3();
+
+		_ray.distanceSqToSegment( _line.start, _line.end, point, pointOnLine );
+		const isInside = point.distanceTo( pointOnLine ) < _lineWidth * 0.5;
+
+		if ( isInside ) {
+
+			intersects.push( {
+				point,
+				pointOnLine,
+				distance: _ray.origin.distanceTo( point ),
+				object: lineSegments,
+				face: null,
+				faceIndex: i,
+				uv: null,
+				uv2: null,
+			} );
+
+		}
+
+	}
+
+}
+
+function raycastScreenSpace( lineSegments, camera, intersects ) {
+
+	const projectionMatrix = camera.projectionMatrix;
+	const material = lineSegments.material;
+	const resolution = material.resolution;
+	const matrixWorld = lineSegments.matrixWorld;
+
+	const geometry = lineSegments.geometry;
+	const instanceStart = geometry.attributes.instanceStart;
+	const instanceEnd = geometry.attributes.instanceEnd;
+	const segmentCount = Math.min( geometry.instanceCount, instanceStart.count );
+
+	const near = - camera.near;
+
+	//
+
+	// pick a point 1 unit out along the ray to avoid the ray origin
+	// sitting at the camera origin which will cause "w" to be 0 when
+	// applying the projection matrix.
+	_ray.at( 1, _ssOrigin );
+
+	// ndc space [ - 1.0, 1.0 ]
+	_ssOrigin.w = 1;
+	_ssOrigin.applyMatrix4( camera.matrixWorldInverse );
+	_ssOrigin.applyMatrix4( projectionMatrix );
+	_ssOrigin.multiplyScalar( 1 / _ssOrigin.w );
+
+	// screen space
+	_ssOrigin.x *= resolution.x / 2;
+	_ssOrigin.y *= resolution.y / 2;
+	_ssOrigin.z = 0;
+
+	_ssOrigin3.copy( _ssOrigin );
+
+	_mvMatrix.multiplyMatrices( camera.matrixWorldInverse, matrixWorld );
+
+	for ( let i = 0, l = segmentCount; i < l; i ++ ) {
+
+		_start4.fromBufferAttribute( instanceStart, i );
+		_end4.fromBufferAttribute( instanceEnd, i );
+
+		_start4.w = 1;
+		_end4.w = 1;
+
+		// camera space
+		_start4.applyMatrix4( _mvMatrix );
+		_end4.applyMatrix4( _mvMatrix );
+
+		// skip the segment if it's entirely behind the camera
+		const isBehindCameraNear = _start4.z > near && _end4.z > near;
+		if ( isBehindCameraNear ) {
+
+			continue;
+
+		}
+
+		// trim the segment if it extends behind camera near
+		if ( _start4.z > near ) {
+
+			const deltaDist = _start4.z - _end4.z;
+			const t = ( _start4.z - near ) / deltaDist;
+			_start4.lerp( _end4, t );
+
+		} else if ( _end4.z > near ) {
+
+			const deltaDist = _end4.z - _start4.z;
+			const t = ( _end4.z - near ) / deltaDist;
+			_end4.lerp( _start4, t );
+
+		}
+
+		// clip space
+		_start4.applyMatrix4( projectionMatrix );
+		_end4.applyMatrix4( projectionMatrix );
+
+		// ndc space [ - 1.0, 1.0 ]
+		_start4.multiplyScalar( 1 / _start4.w );
+		_end4.multiplyScalar( 1 / _end4.w );
+
+		// screen space
+		_start4.x *= resolution.x / 2;
+		_start4.y *= resolution.y / 2;
+
+		_end4.x *= resolution.x / 2;
+		_end4.y *= resolution.y / 2;
+
+		// create 2d segment
+		_line.start.copy( _start4 );
+		_line.start.z = 0;
+
+		_line.end.copy( _end4 );
+		_line.end.z = 0;
+
+		// get closest point on ray to segment
+		const param = _line.closestPointToPointParameter( _ssOrigin3, true );
+		_line.at( param, _closestPoint );
+
+		// check if the intersection point is within clip space
+		const zPos = MathUtils.lerp( _start4.z, _end4.z, param );
+		const isInClipSpace = zPos >= - 1 && zPos <= 1;
+
+		const isInside = _ssOrigin3.distanceTo( _closestPoint ) < _lineWidth * 0.5;
+
+		if ( isInClipSpace && isInside ) {
+
+			_line.start.fromBufferAttribute( instanceStart, i );
+			_line.end.fromBufferAttribute( instanceEnd, i );
+
+			_line.start.applyMatrix4( matrixWorld );
+			_line.end.applyMatrix4( matrixWorld );
+
+			const pointOnLine = new Vector3();
+			const point = new Vector3();
+
+			_ray.distanceSqToSegment( _line.start, _line.end, point, pointOnLine );
+
+			intersects.push( {
+				point: point,
+				pointOnLine: pointOnLine,
+				distance: _ray.origin.distanceTo( point ),
+				object: lineSegments,
+				face: null,
+				faceIndex: i,
+				uv: null,
+				uv2: null,
+			} );
+
+		}
+
+	}
+
+}
+
+class LineSegments2 extends Mesh {
+
+	constructor( geometry = new LineSegmentsGeometry(), material = new LineMaterial( { color: Math.random() * 0xffffff } ) ) {
+
+		super( geometry, material );
+
+		this.isLineSegments2 = true;
+
+		this.type = 'LineSegments2';
+
+	}
+
+	// for backwards-compatibility, but could be a method of LineSegmentsGeometry...
+
+	computeLineDistances() {
+
+		const geometry = this.geometry;
+
+		const instanceStart = geometry.attributes.instanceStart;
+		const instanceEnd = geometry.attributes.instanceEnd;
+		const lineDistances = new Float32Array( 2 * instanceStart.count );
+
+		for ( let i = 0, j = 0, l = instanceStart.count; i < l; i ++, j += 2 ) {
+
+			_start.fromBufferAttribute( instanceStart, i );
+			_end.fromBufferAttribute( instanceEnd, i );
+
+			lineDistances[ j ] = ( j === 0 ) ? 0 : lineDistances[ j - 1 ];
+			lineDistances[ j + 1 ] = lineDistances[ j ] + _start.distanceTo( _end );
+
+		}
+
+		const instanceDistanceBuffer = new InstancedInterleavedBuffer( lineDistances, 2, 1 ); // d0, d1
+
+		geometry.setAttribute( 'instanceDistanceStart', new InterleavedBufferAttribute( instanceDistanceBuffer, 1, 0 ) ); // d0
+		geometry.setAttribute( 'instanceDistanceEnd', new InterleavedBufferAttribute( instanceDistanceBuffer, 1, 1 ) ); // d1
+
+		return this;
+
+	}
+
+	raycast( raycaster, intersects ) {
+
+		const worldUnits = this.material.worldUnits;
+		const camera = raycaster.camera;
+
+		if ( camera === null && ! worldUnits ) {
+
+			console.error( 'LineSegments2: "Raycaster.camera" needs to be set in order to raycast against LineSegments2 while worldUnits is set to false.' );
+
+		}
+
+		const threshold = ( raycaster.params.Line2 !== undefined ) ? raycaster.params.Line2.threshold || 0 : 0;
+
+		_ray = raycaster.ray;
+
+		const matrixWorld = this.matrixWorld;
+		const geometry = this.geometry;
+		const material = this.material;
+
+		_lineWidth = material.linewidth + threshold;
+
+		// check if we intersect the sphere bounds
+		if ( geometry.boundingSphere === null ) {
+
+			geometry.computeBoundingSphere();
+
+		}
+
+		_sphere.copy( geometry.boundingSphere ).applyMatrix4( matrixWorld );
+
+		// increase the sphere bounds by the worst case line screen space width
+		let sphereMargin;
+		if ( worldUnits ) {
+
+			sphereMargin = _lineWidth * 0.5;
+
+		} else {
+
+			const distanceToSphere = Math.max( camera.near, _sphere.distanceToPoint( _ray.origin ) );
+			sphereMargin = getWorldSpaceHalfWidth( camera, distanceToSphere, material.resolution );
+
+		}
+
+		_sphere.radius += sphereMargin;
+
+		if ( _ray.intersectsSphere( _sphere ) === false ) {
+
+			return;
+
+		}
+
+		// check if we intersect the box bounds
+		if ( geometry.boundingBox === null ) {
+
+			geometry.computeBoundingBox();
+
+		}
+
+		_box.copy( geometry.boundingBox ).applyMatrix4( matrixWorld );
+
+		// increase the box bounds by the worst case line width
+		let boxMargin;
+		if ( worldUnits ) {
+
+			boxMargin = _lineWidth * 0.5;
+
+		} else {
+
+			const distanceToBox = Math.max( camera.near, _box.distanceToPoint( _ray.origin ) );
+			boxMargin = getWorldSpaceHalfWidth( camera, distanceToBox, material.resolution );
+
+		}
+
+		_box.expandByScalar( boxMargin );
+
+		if ( _ray.intersectsBox( _box ) === false ) {
+
+			return;
+
+		}
+
+		if ( worldUnits ) {
+
+			raycastWorldUnits( this, intersects );
+
+		} else {
+
+			raycastScreenSpace( this, camera, intersects );
+
+		}
+
+	}
+
+}
+
+class GridHelper extends LineSegments {
+    constructor(sizeX, stepX, sizeZ, stepZ, color1 = 0x444444, color2 = 0x888888) {
+        color1 = new Color(color1);
+        color2 = new Color(color2);
+        const x = Math.round(sizeX / stepX);
+        const y = Math.round(sizeZ / stepZ);
+        sizeX = x * stepX / 2;
+        sizeZ = y * stepZ / 2;
+        const vertices = [];
+        const colors = [];
+        let j = 0;
+        for (let i = -1 * sizeX; i <= sizeX; i += stepX) {
+            vertices.push(i, 0, -1 * sizeZ, //x Y z
+            i, 0, sizeZ //x Y z
+            );
+            const color = i === 0 ? color1 : color2;
+            color.toArray(colors, j);
+            j += 3;
+            color.toArray(colors, j);
+            j += 3;
+            color.toArray(colors, j);
+            j += 3;
+            color.toArray(colors, j);
+            j += 3;
+        }
+        for (let i = -1 * sizeZ; i <= sizeZ; i += stepZ) {
+            vertices.push(-1 * sizeX, 0, i, //x Y z
+            sizeX, 0, i //x Y z
+            );
+            const color = i === 0 ? color1 : color2;
+            color.toArray(colors, j);
+            j += 3;
+            color.toArray(colors, j);
+            j += 3;
+            color.toArray(colors, j);
+            j += 3;
+            color.toArray(colors, j);
+            j += 3;
+        }
+        const geometry = new BufferGeometry();
+        geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+        geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+        const material = new LineBasicMaterial({ vertexColors: true, toneMapped: false });
+        super(geometry, material);
+        // this.type = 'BuildVolume';
+    }
+}
+
+function box(width, height, depth) {
+    width = width * 0.5,
+        height = height * 0.5,
+        depth = depth * 0.5;
+    const geometry = new BufferGeometry();
+    const position = [];
+    position.push(-width, -height, -depth, -width, height, -depth, -width, height, -depth, width, height, -depth, width, height, -depth, width, -height, -depth, width, -height, -depth, -width, -height, -depth, -width, -height, depth, -width, height, depth, -width, height, depth, width, height, depth, width, height, depth, width, -height, depth, width, -height, depth, -width, -height, depth, -width, -height, -depth, -width, -height, depth, -width, height, -depth, -width, height, depth, width, height, -depth, width, height, depth, width, -height, -depth, width, -height, depth);
+    geometry.setAttribute('position', new Float32BufferAttribute(position, 3));
+    return geometry;
+}
+function LineBox(x, y, z, color) {
+    const geometryBox = box(x, y, z);
+    const lineSegments = new LineSegments(geometryBox, new LineDashedMaterial({ color: new Color(color), dashSize: 3, gapSize: 1 }));
+    lineSegments.computeLineDistances();
+    return lineSegments;
+}
+
+class WebGLPreview {
+    constructor(opts) {
+        var _a, _b, _c;
+        this.parser = new Parser();
+        this.backgroundColor = 0xe0e0e0;
+        this.travelColor = 0x990000;
+        this.extrusionColor = 0x00ff00;
+        this.renderExtrusion = true;
+        this.renderTravel = false;
+        this.singleLayerMode = false;
+        this.initialCameraPosition = [-100, 400, 450];
+        this.debug = false;
+        this.allowDragNDrop = false;
+        this.disposables = [];
+        this.scene = new Scene();
+        this.scene.background = new Color(this.backgroundColor);
+        this.canvas = opts.canvas;
+        this.targetId = opts.targetId;
+        // this.endLayer = opts.limit;
+        this.endLayer = opts.endLayer;
+        this.startLayer = opts.startLayer;
+        this.topLayerColor = opts.topLayerColor;
+        this.lastSegmentColor = opts.lastSegmentColor;
+        this.lineWidth = opts.lineWidth;
+        this.buildVolume = opts.buildVolume;
+        this.initialCameraPosition = (_a = opts.initialCameraPosition) !== null && _a !== void 0 ? _a : this.initialCameraPosition;
+        this.debug = (_b = opts.debug) !== null && _b !== void 0 ? _b : this.debug;
+        this.allowDragNDrop = (_c = opts.allowDragNDrop) !== null && _c !== void 0 ? _c : this.allowDragNDrop;
+        console.info('Using THREE r' + REVISION);
+        console.debug('opts', opts);
+        if (this.targetId) {
+            console.warn('`targetId` is deprecated and will removed in the future. Use `canvas` instead.');
+        }
+        if (!this.canvas && !this.targetId) {
+            throw Error('Set either opts.canvas or opts.targetId');
+        }
+        if (!this.canvas) {
+            const container = document.getElementById(this.targetId);
+            if (!container)
+                throw new Error('Unable to find element ' + this.targetId);
+            this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true });
+            this.canvas = this.renderer.domElement;
+            container.appendChild(this.canvas);
+        }
+        else {
+            this.renderer = new WebGLRenderer({
+                canvas: this.canvas,
+                preserveDrawingBuffer: true
+            });
+        }
+        this.camera = new PerspectiveCamera(25, this.canvas.offsetWidth / this.canvas.offsetHeight, 10, 5000);
+        this.camera.position.fromArray(this.initialCameraPosition);
+        const fogFar = this.camera.far;
+        const fogNear = fogFar * 0.8;
+        this.scene.fog = new Fog(this.scene.background, fogNear, fogFar);
+        this.resize();
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.animate();
+        if (this.allowDragNDrop)
+            this._enableDropHandler();
+    }
+    get layers() {
+        return this.parser.layers.concat(this.parser.preamble);
+    }
+    // convert from 1-based to 0-based
+    get maxLayerIndex() {
+        var _a;
+        return ((_a = this.endLayer) !== null && _a !== void 0 ? _a : this.layers.length) - 1;
+    }
+    // convert from 1-based to 0-based
+    get minLayerIndex() {
+        var _a;
+        return this.singleLayerMode ? this.maxLayerIndex : ((_a = this.startLayer) !== null && _a !== void 0 ? _a : 0) - 1;
+    }
+    animate() {
+        requestAnimationFrame(() => this.animate());
+        this.controls.update();
+        this.renderer.render(this.scene, this.camera);
+    }
+    processGCode(gcode) {
+        this.parser.parseGCode(gcode);
+        this.render();
+    }
+    render() {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        while (this.scene.children.length > 0) {
+            this.scene.remove(this.scene.children[0]);
+        }
+        while (this.disposables.length > 0) {
+            this.disposables.pop().dispose();
+        }
+        if (this.debug) {
+            // show webgl axes
+            const axesHelper = new AxesHelper(Math.max(this.buildVolume.x / 2, this.buildVolume.y / 2) + 20);
+            this.scene.add(axesHelper);
+        }
+        if (this.buildVolume) {
+            this.drawBuildVolume();
+        }
+        this.group = new Group();
+        this.group.name = 'gcode';
+        const state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
+        for (let index = 0; index < this.layers.length; index++) {
+            if (index > this.maxLayerIndex)
+                break;
+            const currentLayer = {
+                extrusion: [],
+                travel: [],
+                z: state.z,
+            };
+            const l = this.layers[index];
+            for (const cmd of l.commands) {
+                if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
+                    const g = cmd;
+                    const next = {
+                        x: (_a = g.params.x) !== null && _a !== void 0 ? _a : state.x,
+                        y: (_b = g.params.y) !== null && _b !== void 0 ? _b : state.y,
+                        z: (_c = g.params.z) !== null && _c !== void 0 ? _c : state.z,
+                        r: (_d = g.params.r) !== null && _d !== void 0 ? _d : state.r,
+                        e: (_e = g.params.e) !== null && _e !== void 0 ? _e : state.e,
+                        i: (_f = g.params.i) !== null && _f !== void 0 ? _f : state.i,
+                        j: (_g = g.params.j) !== null && _g !== void 0 ? _g : state.j,
+                    };
+                    if (index >= this.minLayerIndex) {
+                        const extrude = g.params.e > 0;
+                        if ((extrude && this.renderExtrusion) ||
+                            (!extrude && this.renderTravel)) {
+                            if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
+                                this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
+                            }
+                            else {
+                                this.addLineSegment(currentLayer, state, next, extrude);
+                            }
+                        }
+                    }
+                    // update state
+                    if (next.x)
+                        state.x = next.x;
+                    if (next.y)
+                        state.y = next.y;
+                    if (next.z)
+                        state.z = next.z;
+                    if (next.r)
+                        state.r = next.r;
+                    if (next.e)
+                        state.e = next.e;
+                    state.i = 0;
+                    state.j = 0;
+                }
+            }
+            if (this.renderExtrusion) {
+                const brightness = Math.round((80 * index) / this.layers.length);
+                const extrusionColor = new Color(`hsl(0, 0%, ${brightness}%)`).getHex();
+                if (index == this.layers.length - 1) {
+                    const layerColor = (_h = this.topLayerColor) !== null && _h !== void 0 ? _h : extrusionColor;
+                    const lastSegmentColor = (_j = this.lastSegmentColor) !== null && _j !== void 0 ? _j : layerColor;
+                    const endPoint = currentLayer.extrusion.splice(-3);
+                    this.addLine(currentLayer.extrusion, layerColor);
+                    const preendPoint = currentLayer.extrusion.splice(-3);
+                    this.addLine([...preendPoint, ...endPoint], lastSegmentColor);
+                }
+                else {
+                    this.addLine(currentLayer.extrusion, extrusionColor);
+                }
+            }
+            if (this.renderTravel) {
+                this.addLine(currentLayer.travel, this.travelColor);
+            }
+        }
+        this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
+        if (this.buildVolume) {
+            this.group.position.set(-this.buildVolume.x / 2, 0, this.buildVolume.y / 2);
+        }
+        else {
+            // FIXME: this is just a very crude approximation for centering
+            this.group.position.set(-100, 0, 100);
+        }
+        this.scene.add(this.group);
+        this.renderer.render(this.scene, this.camera);
+    }
+    drawBuildVolume() {
+        this.scene.add(new GridHelper(this.buildVolume.x, 10, this.buildVolume.y, 10));
+        const geometryBox = LineBox(this.buildVolume.x, this.buildVolume.z, this.buildVolume.y, 0x888888);
+        geometryBox.position.setY(this.buildVolume.z / 2);
+        this.scene.add(geometryBox);
+    }
+    clear() {
+        this.startLayer = 1;
+        this.endLayer = Infinity;
+        this.singleLayerMode = false;
+        this.parser = new Parser();
+    }
+    resize() {
+        const [w, h] = [this.canvas.offsetWidth, this.canvas.offsetHeight];
+        this.camera.aspect = w / h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setSize(w, h, false);
+    }
+    addLineSegment(layer, p1, p2, extrude) {
+        const line = extrude ? layer.extrusion : layer.travel;
+        line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+    }
+    addArcSegment(layer, p1, p2, extrude, cw) {
+        const line = extrude ? layer.extrusion : layer.travel;
+        const currX = p1.x, currY = p1.y, currZ = p1.z, x = p2.x, y = p2.y, z = p2.z;
+        let r = p2.r;
+        let i = p2.i, j = p2.j;
+        if (r) { // in r mode a minimum radius will be applied if the distance can otherwise not be bridged
+            const deltaX = x - currX; // assume abs mode
+            const deltaY = y - currY;
+            // apply a minimal radius to bridge the distance
+            const minR = Math.sqrt(Math.pow(deltaX / 2, 2) + Math.pow(deltaY / 2, 2));
+            r = Math.max(r, minR);
+            const dSquared = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
+            const hSquared = Math.pow(r, 2) - dSquared / 4;
+            // if (dSquared == 0 || hSquared < 0) {
+            //   return { position: { x: x, y: z, z: y }, points: [] }; //we'll abort the render and move te position to the new position.
+            // }
+            let hDivD = Math.sqrt(hSquared / dSquared);
+            // Ref RRF DoArcMove for details
+            if ((cw && r < 0.0) || (!cw && r > 0.0)) {
+                hDivD = -hDivD;
+            }
+            i = deltaX / 2 + deltaY * hDivD;
+            j = deltaY / 2 - deltaX * hDivD;
+            // } else {
+            //     //the radial point is an offset from the current position
+            //     ///Need at least on point
+            //     if (i == 0 && j == 0) {
+            //         return { position: { x: x, y: y, z: z }, points: [] }; //we'll abort the render and move te position to the new position.
+            //     }
+        }
+        const wholeCircle = currX == i && currY == y;
+        const centerX = currX + i;
+        const centerY = currY + j;
+        const arcRadius = Math.sqrt(i * i + j * j);
+        const arcCurrentAngle = Math.atan2(-j, -i);
+        const finalTheta = Math.atan2(y - centerY, x - centerX);
+        let totalArc;
+        if (wholeCircle) {
+            totalArc = 2 * Math.PI;
+        }
+        else {
+            totalArc = cw
+                ? arcCurrentAngle - finalTheta
+                : finalTheta - arcCurrentAngle;
+            if (totalArc < 0.0) {
+                totalArc += 2 * Math.PI;
+            }
+        }
+        let totalSegments = (arcRadius * totalArc) / 1.8; //arcSegLength + 0.8;
+        if (totalSegments < 1) {
+            totalSegments = 1;
+        }
+        let arcAngleIncrement = totalArc / totalSegments;
+        arcAngleIncrement *= cw ? -1 : 1;
+        const points = [];
+        points.push({ x: currX, y: currY, z: currZ });
+        const zDist = currZ - z;
+        const zStep = zDist / totalSegments;
+        //get points for the arc
+        let px = currX;
+        let py = currY;
+        let pz = currZ;
+        //calculate segments
+        let currentAngle = arcCurrentAngle;
+        for (let moveIdx = 0; moveIdx < totalSegments - 1; moveIdx++) {
+            currentAngle += arcAngleIncrement;
+            px = centerX + arcRadius * Math.cos(currentAngle);
+            py = centerY + arcRadius * Math.sin(currentAngle);
+            pz += zStep;
+            points.push({ x: px, y: py, z: pz });
+        }
+        points.push({ x: p2.x, y: p2.y, z: p2.z });
+        for (let idx = 0; idx < points.length - 1; idx++) {
+            line.push(points[idx].x, points[idx].y, points[idx].z, points[idx + 1].x, points[idx + 1].y, points[idx + 1].z);
+        }
+    }
+    addLine(vertices, color) {
+        if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
+            this.addThickLine(vertices, color);
+            return;
+        }
+        const geometry = new BufferGeometry();
+        geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+        this.disposables.push(geometry);
+        const material = new LineBasicMaterial({ color: color });
+        this.disposables.push(material);
+        const lineSegments = new LineSegments(geometry, material);
+        this.group.add(lineSegments);
+    }
+    addThickLine(vertices, color) {
+        if (!vertices.length)
+            return;
+        const geometry = new LineGeometry();
+        this.disposables.push(geometry);
+        const matLine = new LineMaterial({
+            color: color,
+            linewidth: this.lineWidth / (1000 * window.devicePixelRatio)
+        });
+        this.disposables.push(matLine);
+        geometry.setPositions(vertices);
+        const line = new LineSegments2(geometry, matLine);
+        this.group.add(line);
+    }
+    // experimental DnD support
+    _enableDropHandler() {
+        this.canvas.addEventListener('dragover', (evt) => {
+            evt.stopPropagation();
+            evt.preventDefault();
+            evt.dataTransfer.dropEffect = 'copy';
+            this.canvas.classList.add('dragging');
+        });
+        this.canvas.addEventListener('dragleave', (evt) => {
+            evt.stopPropagation();
+            evt.preventDefault();
+            this.canvas.classList.remove('dragging');
+        });
+        this.canvas.addEventListener('drop', (evt) => __awaiter(this, void 0, void 0, function* () {
+            evt.stopPropagation();
+            evt.preventDefault();
+            this.canvas.classList.remove('dragging');
+            const files = evt.dataTransfer.files;
+            const file = files[0];
+            this.clear();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            yield this._readFromStream(file.stream());
+            this.render();
+        }));
+    }
+    _readFromStream(stream) {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function* () {
+            const reader = stream.getReader();
+            let result;
+            let tail = '';
+            let size = 0;
+            do {
+                result = yield reader.read();
+                size += (_b = (_a = result.value) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0;
+                const str = decode(result.value);
+                const idxNewLine = str.lastIndexOf('\n');
+                const maxFullLine = str.slice(0, idxNewLine);
+                // parse increments but don't render yet
+                this.parser.parseGCode(tail + maxFullLine);
+                tail = str.slice(idxNewLine);
+            } while (!result.done);
+            console.debug('read from stream', size);
+        });
+    }
+}
+function decode(uint8array) {
+    return new TextDecoder('utf-8').decode(uint8array);
+}
+
+const init = function (opts) { return new WebGLPreview(opts); };
+
+export { WebGLPreview, init };

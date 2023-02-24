@@ -296,15 +296,20 @@ export class WebGLPreview {
       currZ = p1.z,
       x = p2.x,
       y = p2.y,
-      z = p2.z,
-      r = p2.r;
+      z = p2.z;
+     let r = p2.r;
     
     let i = p2.i,
       j = p2.j;
     
-    if (r) {
-      const deltaX = x - currX;
+    if (r) { // in r mode a minimum radius will be applied if the distance can otherwise not be bridged
+      const deltaX = x - currX; // assume abs mode
       const deltaY = y - currY;
+      
+      // apply a minimal radius to bridge the distance
+      const minR = Math.sqrt(Math.pow(deltaX / 2, 2) + Math.pow(deltaY / 2, 2));
+      r = Math.max(r, minR);
+
       const dSquared = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
       const hSquared = Math.pow(r, 2) - dSquared / 4;
       // if (dSquared == 0 || hSquared < 0) {
