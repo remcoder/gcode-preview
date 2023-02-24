@@ -282,6 +282,7 @@ export class WebGLPreview {
     this.endLayer = Infinity;
     this.singleLayerMode = false;
     this.parser = new Parser();
+    this.beyondFirstMove = false;
   }
 
   resize(): void {
