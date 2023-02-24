@@ -85,9 +85,13 @@ export class Parser {
     let params;
     switch (gcode) {
       case 'g0':
+      case 'g00':
       case 'g1':
+      case 'g01':
       case 'g2':
+      case 'g02':
       case 'g3':
+      case 'g03':
         params = this.parseMove(parts.slice(1));
         return new MoveCommand(line, gcode, params, comment);
       default:
