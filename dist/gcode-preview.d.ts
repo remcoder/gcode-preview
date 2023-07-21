@@ -83,6 +83,7 @@ declare type GCodePreviewOptions = {
     initialCameraPosition?: number[];
     debug?: boolean;
     allowDragNDrop?: boolean;
+    nonTravelMoves?: string[];
 };
 declare class WebGLPreview {
     parser: Parser;
@@ -111,6 +112,7 @@ declare class WebGLPreview {
     controls: OrbitControls;
     beyondFirstMove: boolean;
     inches: boolean;
+    nonTravelmoves: string[];
     private disposables;
     constructor(opts: GCodePreviewOptions);
     get layers(): Layer[];
