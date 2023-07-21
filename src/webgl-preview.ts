@@ -26,6 +26,7 @@ export type GCodePreviewOptions = {
   initialCameraPosition?: number[];
   debug?: boolean;
   allowDragNDrop?: boolean;
+  nonTravelMoves?: string[];
 };
 
 export class WebGLPreview {
@@ -56,6 +57,7 @@ export class WebGLPreview {
   controls: OrbitControls;
   beyondFirstMove = false;
   inches = false;
+  nonTravelmoves : string[] = [];
   private disposables: { dispose(): void }[] = [];
 
   constructor(opts: GCodePreviewOptions) {
@@ -73,6 +75,7 @@ export class WebGLPreview {
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
+    this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
 
     console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
@@ -191,7 +194,7 @@ export class WebGLPreview {
           };
 
           if (index >= this.minLayerIndex) {
-            const extrude = g.params.e > 0;
+            const extrude = g.params.e > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
             if (
               (extrude && this.renderExtrusion) ||
               (!extrude && this.renderTravel)
