@@ -38,7 +38,8 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     buildVolume: settings?.buildVolume || { x: 150, y: 150, z: 150 },
     initialCameraPosition: [0, 400, 450],
     // debug: true
-    allowDragNDrop: true
+    allowDragNDrop: true,
+    backgroundColor: 0xffffff
   }));
 
   preview.renderExtrusion = true;

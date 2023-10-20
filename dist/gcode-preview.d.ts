@@ -84,6 +84,7 @@ type GCodePreviewOptions = {
     debug?: boolean;
     allowDragNDrop?: boolean;
     nonTravelMoves?: string[];
+    backgroundColor?: number;
 };
 declare class WebGLPreview {
     parser: Parser;

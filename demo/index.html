@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <head>
   <script>
     function loadAnalytics() {
@@ -11,9 +12,9 @@
 
     if (document.location.host == 'gcode-preview.web.app') {
       loadAnalytics();
-  
+
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
+      function gtag() { dataLayer.push(arguments); }
       gtag('js', new Date());
       gtag('config', 'UA-165890546-1');
     }
@@ -24,11 +25,11 @@
 
 <body>
   <canvas id="renderer" class="gcode-previewer"></canvas>
-  
+
   <div class="dnd">☝️ Drop a gcode file here to view it</div>
   <div class="version-box"><a href="https://www.npmjs.com/package/gcode-preview">
-    <img src="https://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
-  </a></div>
+      <img src="https://img.shields.io/npm/v/gcode-preview.svg?style=flat" />
+    </a></div>
   <div class="sidebar">
     <div>
       <h1>GCode Preview</h1>
@@ -41,56 +42,38 @@
       </section>
       <section>
         <div class="controls">
-          <label>End layer</label>&nbsp;<input
-            type="range"
-            min="1"
-            value="0"
-            id="end-layer"
-          />
+          <label>End layer</label>&nbsp;<input type="range" min="1" value="0" id="end-layer" />
         </div>
         <div class="controls">
-          <label>Start layer</label>&nbsp;<input
-            type="range"
-            min="1"
-            value="0"
-            id="start-layer"
-          />
+          <label>Start layer</label>&nbsp;<input type="range" min="1" value="0" id="start-layer" />
         </div>
         <div class="controls">
-          <label for="single-layer-mode">Single layer mode</label
-          ><input type="checkbox" id="single-layer-mode" />
+          <label for="single-layer-mode">Single layer mode</label><input type="checkbox" id="single-layer-mode" />
         </div>
         <div class="controls">
-          <label for="extrusion">Extrusion</label
-          ><input type="checkbox" id="extrusion" />
+          <label for="extrusion">Extrusion</label><input type="checkbox" id="extrusion" />
         </div>
         <div class="controls">
-          <label for="travel">Travel</label
-          ><input type="checkbox" id="travel" />
+          <label for="travel">Travel</label><input type="checkbox" id="travel" />
         </div>
         <div class="controls">
-          <label for="highlight">Highlight top layer</label
-          ><input type="checkbox" id="highlight" />
+          <label for="highlight">Highlight top layer</label><input type="checkbox" id="highlight" />
         </div>
       </section>
       <section>
-        <div  class="controls">
-          <label for="drawBuildVolume">Draw build volume</label
-          ><input type="checkbox" id="drawBuildVolume" checked />
+        <div class="controls">
+          <label for="drawBuildVolume">Draw build volume</label><input type="checkbox" id="drawBuildVolume" checked />
         </div>
         <div class="controls">
-          <label for="buildVolumeX">Build volume (x)</label
-          ><input type="number" id="buildVolumeX" step=10 value=150 />
+          <label for="buildVolumeX">Build volume (x)</label><input type="number" id="buildVolumeX" step=10 value=150 />
         </div>
-        <div  class="controls">
-          <label for="buildVolumeY">Build volume (y)</label
-          ><input type="number" id="buildVolumeY" step=10 value=150 />
+        <div class="controls">
+          <label for="buildVolumeY">Build volume (y)</label><input type="number" id="buildVolumeY" step=10 value=150 />
         </div>
-        <div  class="controls">
-          <label for="buildVolumeZ">Build volume (z)</label
-          ><input type="number" id="buildVolumeZ" step=10 value=150 />
+        <div class="controls">
+          <label for="buildVolumeZ">Build volume (z)</label><input type="number" id="buildVolumeZ" step=10 value=150 />
         </div>
-        
+
       </section>
       <section>
         <button id=snapshot>Create snapshot</button>
@@ -109,21 +92,17 @@
       <section>
         <br>
         <div>
-          
+
         </div>
         <div>
           <a href="https://github.com/remcoder/gcode-preview">Github repo</a>
         </div>
         <br>
         <div>
-          <a
-            href="https://github.com/remcoder/gcode-preview/archive/master.zip"
-            >Download stable</a>
+          <a href="https://github.com/remcoder/gcode-preview/archive/master.zip">Download stable</a>
         </div>
         <div>
-          <a
-            href="https://github.com/remcoder/gcode-preview/archive/develop.zip"
-            >Download latest</a>
+          <a href="https://github.com/remcoder/gcode-preview/archive/develop.zip">Download latest</a>
         </div>
       </section>
       <section>
@@ -136,9 +115,8 @@
       </section>
     </div>
   </div>
-  
-  <!-- <script src="js/three.min.js"></script> -->
-  <script src="../node_modules/three/build/three.min.js"></script>
+
+  <script src="js/three.min.js"></script>
   <script src="js/canvas2image.js"></script>
   <script src="js/gcode-preview.js"></script>
   <script src="js/demo.js"></script>

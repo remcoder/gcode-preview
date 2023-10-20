@@ -56,6 +56,7 @@ export type GCodePreviewOptions = {
   debug?: boolean;
   allowDragNDrop?: boolean;
   nonTravelMoves?: string[];
+  backgroundColor?: number;
 };
 
 export class WebGLPreview {
@@ -91,7 +92,9 @@ export class WebGLPreview {
 
   constructor(opts: GCodePreviewOptions) {
     this.scene = new Scene();
-    this.scene.background = new Color(this.backgroundColor);
+    this.scene.background = opts?.backgroundColor
+      ? new Color(opts.backgroundColor)
+      : new Color(this.backgroundColor);
     this.canvas = opts.canvas;
     this.targetId = opts.targetId;
     // this.endLayer = opts.limit;
