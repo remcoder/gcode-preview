@@ -19,6 +19,7 @@ const buildVolumeX = document.getElementById('buildVolumeX');
 const buildVolumeY = document.getElementById('buildVolumeY');
 const buildVolumeZ = document.getElementById('buildVolumeZ');
 const drawBuildVolume = document.getElementById('drawBuildVolume');
+const resetView = document.getElementById('reset-view');
 // const lineWidth = document.getElementById('line-width');
 
 // const prusaOrange = '#c86e3b';
@@ -28,14 +29,14 @@ const lastSegmentColor = new THREE.Color(`hsl(270, 50%, 50%)`).getHex();
 function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const settings = JSON.parse(localStorage.getItem('settings'));
   console.log('settings', settings);
-  
+
   const preview = (window.preview = new GCodePreview.init({
     canvas: document.querySelector('.gcode-previewer'),
     topLayerColor: topLayerColor,
     lastSegmentColor: lastSegmentColor,
     // lineWidth: 4,
-    buildVolume: settings?.buildVolume || {x: 150, y: 150, z: 150},
-    initialCameraPosition: [0,400,450],
+    buildVolume: settings?.buildVolume || { x: 150, y: 150, z: 150 },
+    initialCameraPosition: [0, 400, 450],
     // debug: true
     allowDragNDrop: true
   }));
@@ -44,40 +45,40 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
   preview.renderTravel = false;
   // preview.controls.autoRotate = true;
 
-  startLayer.addEventListener('input', function() {
+  startLayer.addEventListener('input', function () {
     preview.startLayer = +startLayer.value;
     endLayer.value = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
     preview.render();
   });
 
-  endLayer.addEventListener('input', function() {
+  endLayer.addEventListener('input', function () {
     preview.endLayer = +endLayer.value;
     startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
     preview.render();
   });
 
-  toggleSingleLayerMode.addEventListener('click', function() {
+  toggleSingleLayerMode.addEventListener('click', function () {
     preview.singleLayerMode = toggleSingleLayerMode.checked;
     if (preview.singleLayerMode) {
       startLayer.setAttribute('disabled', 'disabled');
-    } 
+    }
     else {
       startLayer.removeAttribute('disabled');
     }
     preview.render();
   });
 
-  toggleExtrusion.addEventListener('click', function() {
+  toggleExtrusion.addEventListener('click', function () {
     preview.renderExtrusion = toggleExtrusion.checked;
     preview.render();
   });
 
-  toggleTravel.addEventListener('click', function() {
+  toggleTravel.addEventListener('click', function () {
     preview.renderTravel = toggleTravel.checked;
     preview.render();
   });
 
-  toggleHighlight.addEventListener('click', function() {
+  toggleHighlight.addEventListener('click', function () {
     if (toggleHighlight.checked) {
       preview.topLayerColor = topLayerColor;
       preview.lastSegmentColor = lastSegmentColor;
@@ -88,7 +89,13 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     preview.render();
   });
 
-  function updateBuildVolume () {
+  resetView.addEventListener("click", function () {
+
+    preview.resetView()
+
+  })
+
+  function updateBuildVolume() {
     const x = parseInt(buildVolumeX.value, 10);
     const y = parseInt(buildVolumeY.value, 10);
     const z = parseInt(buildVolumeZ.value, 10);
@@ -96,8 +103,8 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     const draw = drawBuildVolume.checked;
 
     if (draw && !isNaN(x) && !isNaN(y)) {
-      preview.buildVolume = { 
-        x: x, 
+      preview.buildVolume = {
+        x: x,
         y: y,
         z: z
       }
@@ -105,7 +112,7 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     else {
       preview.buildVolume = null;
     }
-    
+
     preview.render();
 
     if (draw) {
@@ -135,15 +142,15 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
   //   preview.render();
   // });
 
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function () {
     preview.resize();
   });
 
-  snapshot.addEventListener('click', function(evt) {
+  snapshot.addEventListener('click', function (evt) {
     evt.stopPropagation();
     evt.preventDefault();
 
-    Canvas2Image.saveAsJPEG(gcodePreview.canvas,innerWidth, innerHeight, fileName.innerText.replace('.gcode','.jpg'));
+    Canvas2Image.saveAsJPEG(gcodePreview.canvas, innerWidth, innerHeight, fileName.innerText.replace('.gcode', '.jpg'));
   });
 
   gcodePreview = preview;
@@ -155,10 +162,10 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
 
 function storeSettings() {
   localStorage.setItem('settings', JSON.stringify({
-    buildVolume: { 
-      x : gcodePreview.buildVolume.x,
-      y : gcodePreview.buildVolume.y,
-      z : gcodePreview.buildVolume.z,
+    buildVolume: {
+      x: gcodePreview.buildVolume.x,
+      y: gcodePreview.buildVolume.y,
+      z: gcodePreview.buildVolume.z,
     }
   }));
 }
@@ -167,7 +174,7 @@ function updateUI() {
   startLayer.setAttribute('max', gcodePreview.layers.length);
   endLayer.setAttribute('max', gcodePreview.layers.length);
   endLayer.value = gcodePreview.layers.length;
-  
+
   layerCount.innerText =
     gcodePreview.layers && gcodePreview.layers.length + ' layers';
 
@@ -189,8 +196,8 @@ function updateUI() {
     favIcon = gcodePreview.parser.metadata.thumbnails['16x16'];
     setFavicons(favIcon?.src);
   }
-  
-  if(thumb != gcodePreview.parser.metadata.thumbnails['220x124']) {
+
+  if (thumb != gcodePreview.parser.metadata.thumbnails['220x124']) {
     thumb = gcodePreview.parser.metadata.thumbnails['220x124'];
     document.getElementById('thumb').src = thumb?.src ?? 'https://via.placeholder.com/120x60?text=noThumbnail';
   }
@@ -227,7 +234,7 @@ function startLoadingProgressive(gcode) {
     const start = c * chunkSize;
     const end = (c + 1) * chunkSize;
     const chunk = lines.slice(start, end);
-    
+
     c++;
     if (c < chunks) {
       window.__loadTimer__ = requestAnimationFrame(loadProgressive)
@@ -261,10 +268,10 @@ function humanFileSize(size) {
   );
 }
 
-function setFavicons(favImg){
+function setFavicons(favImg) {
   const headTitle = document.querySelector('head');
   const setFavicon = document.createElement('link');
-  setFavicon.setAttribute('rel','shortcut icon');
-  setFavicon.setAttribute('href',favImg);
+  setFavicon.setAttribute('rel', 'shortcut icon');
+  setFavicon.setAttribute('href', favImg);
   headTitle.appendChild(setFavicon);
 }

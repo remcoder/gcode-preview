@@ -12,8 +12,8 @@ declare class Thumbnail {
     get isValid(): boolean;
 }
 
-declare type singleLetter = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z';
-declare type CommandParams = {
+type singleLetter = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z';
+type CommandParams = {
     [key in singleLetter]?: number;
 };
 declare class GCodeCommand {
@@ -23,7 +23,7 @@ declare class GCodeCommand {
     comment?: string;
     constructor(src: string, gcode: string, params: CommandParams, comment?: string);
 }
-declare type Metadata = {
+type Metadata = {
     thumbnails: Record<string, Thumbnail>;
 };
 declare class Layer {
@@ -56,12 +56,12 @@ interface Parser {
     parseGcode: typeof Parser.prototype.parseGCode;
 }
 
-declare type RenderLayer = {
+type RenderLayer = {
     extrusion: number[];
     travel: number[];
     z: number;
 };
-declare type Vector3 = {
+type Vector3 = {
     x: number;
     y: number;
     z: number;
@@ -69,9 +69,9 @@ declare type Vector3 = {
     i: number;
     j: number;
 };
-declare type Point = Vector3;
-declare type BuildVolume = Vector3;
-declare type GCodePreviewOptions = {
+type Point = Vector3;
+type BuildVolume = Vector3;
+type GCodePreviewOptions = {
     canvas?: HTMLCanvasElement;
     endLayer?: number;
     startLayer?: number;
@@ -115,6 +115,7 @@ declare class WebGLPreview {
     nonTravelmoves: string[];
     private disposables;
     constructor(opts: GCodePreviewOptions);
+    resetView(): void;
     get layers(): Layer[];
     get maxLayerIndex(): number;
     get minLayerIndex(): number;
