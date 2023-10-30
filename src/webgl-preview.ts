@@ -250,14 +250,17 @@ export class WebGLPreview {
 
           if (index >= this.minLayerIndex) {
             const extrude = g.params.e > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
-            if (
-              (extrude && this.renderExtrusion) ||
-              (!extrude && this.renderTravel)
-            ) {
-              if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
-                this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
-              } else {
-                this.addLineSegment(currentLayer, state, next, extrude);
+            const moving = next.x != state.x || next.y != state.y;
+            if (moving) {
+              if (
+                (extrude && this.renderExtrusion) ||
+                (!extrude && this.renderTravel)
+              ) {
+                if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
+                  this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
+                } else {
+                  this.addLineSegment(currentLayer, state, next, extrude);
+                }
               }
             }
           }
@@ -283,8 +286,8 @@ export class WebGLPreview {
           const lastSegmentColor = this._lastSegmentColor ?? layerColor;
 
           const endPoint = currentLayer.extrusion.splice(-3);
-          this.addLine(currentLayer.extrusion, layerColor.getHex());
           const preendPoint = currentLayer.extrusion.splice(-3);
+          this.addLine(currentLayer.extrusion, layerColor.getHex());
           this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
         } else {
           this.addLine(currentLayer.extrusion, extrusionColor.getHex());
