@@ -43,8 +43,24 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     buildVolume: settings?.buildVolume || {x: 150, y: 150, z: 150},
     initialCameraPosition: [0,400,450],
     allowDragNDrop: true,
-    extrusionColor: 'hotpink' // can be any valid THREE.Color value: css string, color name, hex value, or Color instance.
+    extrusionColor: 'hotpink', // can be any valid THREE.Color value: css string, color name, hex value, or Color instance.
+    backgroundColor: '#111',
+    travelColor: 'lime',
   }));
+
+  // set default colors on inputs
+  extrusionColor.value = '#' + new THREE.Color(preview.extrusionColor).getHexString();
+  backgroundColor.value = '#' + new THREE.Color(preview.backgroundColor).getHexString();
+  travelColor.value = '#' + new THREE.Color(preview.travelColor).getHexString();
+
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (e.matches) {
+      preview.backgroundColor = '#111';
+    } else {
+      preview.backgroundColor = '#eee';
+    }
+    backgroundColor.value = '#' + new THREE.Color(preview.backgroundColor).getHexString();
+  });
 
   preview.renderExtrusion = true;
   preview.renderTravel = false;
