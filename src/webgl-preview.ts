@@ -14,24 +14,27 @@ type BuildVolume = Vector3;
 type State = { x: number; y: number; z: number; r: number; e: number; i: number; j: number; }; // feedrate?
 
 export type GCodePreviewOptions = {
+  allowDragNDrop?: boolean;
+  buildVolume?: BuildVolume;
   canvas?: HTMLCanvasElement;
+  debug?: boolean;
   endLayer?: number;
-  startLayer?: number;
-  targetId?: string;
-  // limit?: number;
-  topLayerColor?: number;
+  extrusionColor?: Color | number | string;
+  initialCameraPosition?: number[];
   lastSegmentColor?: number;
   lineWidth?: number;
-  buildVolume?: BuildVolume;
-  initialCameraPosition?: number[];
-  debug?: boolean;
-  allowDragNDrop?: boolean;
   nonTravelMoves?: string[];
+  startLayer?: number;
+  targetId?: string;
+  topLayerColor?: number;
+};
+
+const target = {
+  h:0, s:0, l:0
 };
 
 export class WebGLPreview {
   parser = new Parser();
-  // limit?: number;
   targetId: string;
   scene: Scene;
   camera: PerspectiveCamera;
@@ -39,7 +42,7 @@ export class WebGLPreview {
   group: Group;
   backgroundColor = 0xe0e0e0;
   travelColor = 0x990000;
-  extrusionColor = 0x00ff00;
+  extrusionColor = new Color(0xffff00);
   topLayerColor?: number;
   lastSegmentColor?: number;
   container: HTMLElement;
@@ -65,7 +68,6 @@ export class WebGLPreview {
     this.scene.background = new Color(this.backgroundColor);
     this.canvas = opts.canvas;
     this.targetId = opts.targetId;
-    // this.endLayer = opts.limit;
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
     this.topLayerColor = opts.topLayerColor;
@@ -76,6 +78,7 @@ export class WebGLPreview {
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
+    this.extrusionColor = opts.extrusionColor ? new Color(opts.extrusionColor) : this.extrusionColor;
 
     console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
@@ -218,10 +221,10 @@ export class WebGLPreview {
       }
 
       if (this.renderExtrusion) {
-        const brightness = Math.round((80 * index) / this.layers.length);
-        const extrusionColor = new Color(
-          `hsl(0, 0%, ${brightness}%)`
-        ).getHex();
+        const brightness = 0.1 + 0.7 * index / this.layers.length;
+        
+        this.extrusionColor.getHSL(target);
+        const extrusionColor = new Color().setHSL(target.h, target.s, brightness).getHex();
 
         if (index == this.layers.length - 1) {
           const layerColor = this.topLayerColor ?? extrusionColor;
@@ -495,4 +498,26 @@ export class WebGLPreview {
 
 function decode(uint8array: Uint8Array) {
   return new TextDecoder('utf-8').decode(uint8array);
+}
+
+// adapted from https://gist.github.com/vahidk/05184faf3d92a0aa1b46aeaa93b07786
+function rgbToHsl(n: number) {
+  let r = (n >> 16) & 255;
+  let g = (n >> 8) & 255;
+  let b = n & 255;
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  let h;
+  if (d === 0) h = 0;
+  else if (max === r) h = (g - b) / d % 6;
+  else if (max === g) h = (b - r) / d + 2;
+  else if (max === b) h = (r - g) / d + 4;
+  const l = (min + max) / 2;
+  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+  
+  h = (h + 60) % 60; // normalize hue to 0..360 deg to avoid negative values
+  h /= 60; // normalize hue to 0..1
+  return [h, s, l];
 }

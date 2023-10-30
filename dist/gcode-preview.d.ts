@@ -1,5 +1,5 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { Scene, PerspectiveCamera, WebGLRenderer, Group } from 'three';
+import { Scene, PerspectiveCamera, WebGLRenderer, Group, Color } from 'three';
 
 declare class Thumbnail {
     size: string;
@@ -72,18 +72,19 @@ declare type Vector3 = {
 declare type Point = Vector3;
 declare type BuildVolume = Vector3;
 declare type GCodePreviewOptions = {
+    allowDragNDrop?: boolean;
+    buildVolume?: BuildVolume;
     canvas?: HTMLCanvasElement;
+    debug?: boolean;
     endLayer?: number;
+    extrusionColor?: Color | number | string;
+    initialCameraPosition?: number[];
+    lastSegmentColor?: number;
+    lineWidth?: number;
+    nonTravelMoves?: string[];
     startLayer?: number;
     targetId?: string;
     topLayerColor?: number;
-    lastSegmentColor?: number;
-    lineWidth?: number;
-    buildVolume?: BuildVolume;
-    initialCameraPosition?: number[];
-    debug?: boolean;
-    allowDragNDrop?: boolean;
-    nonTravelMoves?: string[];
 };
 declare class WebGLPreview {
     parser: Parser;
@@ -94,7 +95,7 @@ declare class WebGLPreview {
     group: Group;
     backgroundColor: number;
     travelColor: number;
-    extrusionColor: number;
+    extrusionColor: Color;
     topLayerColor?: number;
     lastSegmentColor?: number;
     container: HTMLElement;

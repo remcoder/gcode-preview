@@ -33,11 +33,10 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     canvas: document.querySelector('.gcode-previewer'),
     topLayerColor: topLayerColor,
     lastSegmentColor: lastSegmentColor,
-    // lineWidth: 4,
     buildVolume: settings?.buildVolume || {x: 150, y: 150, z: 150},
     initialCameraPosition: [0,400,450],
-    // debug: true
-    allowDragNDrop: true
+    allowDragNDrop: true,
+    extrusionColor: 'hotpink' // can be any valid THREE.Color value: css string, color name, hex value, or Color instance.
   }));
 
   preview.renderExtrusion = true;
