@@ -2,11 +2,13 @@ html, body {
   margin: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 body {
   font-family: Verdana;
   color: #eee;
   background: #eee;
+
 }
 
 /* Light mode */
@@ -38,7 +40,8 @@ body {
   flex-direction: column;
   justify-content: space-between;
   transform: translateZ(0);
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .description {
