@@ -65,12 +65,32 @@
           ><input type="checkbox" id="extrusion" />
         </div>
         <div class="controls">
+          <label for="extrusionColor">Extrusion color</label>
+          <input type="color" id="extrusion-color" value="#ff0000" />
+        </div>
+        <div class="controls">
           <label for="travel">Travel</label
           ><input type="checkbox" id="travel" />
         </div>
         <div class="controls">
+          <label for="travel-color">Travel color</label>
+          <input type="color" id="travel-color" value="#0000ff" />
+        </div>
+        <div class="controls">
           <label for="highlight">Highlight top layer</label
           ><input type="checkbox" id="highlight" />
+        </div>
+        <div class="controls">
+          <label for="top-layer-color">Top layer color</label>
+          <input type="color" id="top-layer-color" value="#00ffff" />
+        </div>
+        <div class="controls">
+          <label for="last-segment-color">Last segment color</label>
+          <input type="color" id="last-segment-color" value="#ffffff" />
+        </div>
+        <div class="controls">
+          <label for="background-color">Background color</label>
+          <input type="color" id="background-color" value="#e0e0e0" />
         </div>
       </section>
       <section>
@@ -96,13 +116,6 @@
         <button id=snapshot>Create snapshot</button>
       </section>
 
-      <!-- <section class="experimental">
-        <h4>experimental</h4>
-        <div class="controls">
-          <label for="lineWidth">Line width</label>
-          <input id="line-width" type="range" min="0" max="10" step="1" value="2" />
-        </div>
-      </section> -->
     </div>
     <div>
       <section>
@@ -112,17 +125,6 @@
         </div>
         <div>
           <a href="https://github.com/remcoder/gcode-preview">Github repo</a>
-        </div>
-        <br>
-        <div>
-          <a
-            href="https://github.com/remcoder/gcode-preview/archive/master.zip"
-            >Download stable</a>
-        </div>
-        <div>
-          <a
-            href="https://github.com/remcoder/gcode-preview/archive/develop.zip"
-            >Download latest</a>
         </div>
       </section>
       <section>

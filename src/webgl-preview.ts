@@ -5,7 +5,7 @@ import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
-import { Scene, PerspectiveCamera, WebGLRenderer, Group, Color, REVISION, Fog, AxesHelper, Euler, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments } from 'three';
+import { Scene, PerspectiveCamera, WebGLRenderer, Group, Color, REVISION, Fog, AxesHelper, Euler, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments, ColorRepresentation } from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
 type Vector3 = { x: number; y: number; z: number; r: number; i: number; j: number };
@@ -14,34 +14,34 @@ type BuildVolume = Vector3;
 type State = { x: number; y: number; z: number; r: number; e: number; i: number; j: number; }; // feedrate?
 
 export type GCodePreviewOptions = {
+  allowDragNDrop?: boolean;
+  buildVolume?: BuildVolume;
+  backgroundColor?: ColorRepresentation;
   canvas?: HTMLCanvasElement;
+  debug?: boolean;
   endLayer?: number;
+  extrusionColor?: ColorRepresentation;
+  initialCameraPosition?: number[];
+  lastSegmentColor?: ColorRepresentation;
+  lineWidth?: number;
+  nonTravelMoves?: string[];
   startLayer?: number;
   targetId?: string;
-  // limit?: number;
-  topLayerColor?: number;
-  lastSegmentColor?: number;
-  lineWidth?: number;
-  buildVolume?: BuildVolume;
-  initialCameraPosition?: number[];
-  debug?: boolean;
-  allowDragNDrop?: boolean;
-  nonTravelMoves?: string[];
+  topLayerColor?: ColorRepresentation;
+  travelColor?: ColorRepresentation;
+};
+
+const target = {
+  h:0, s:0, l:0
 };
 
 export class WebGLPreview {
   parser = new Parser();
-  // limit?: number;
   targetId: string;
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
   group: Group;
-  backgroundColor = 0xe0e0e0;
-  travelColor = 0x990000;
-  extrusionColor = 0x00ff00;
-  topLayerColor?: number;
-  lastSegmentColor?: number;
   container: HTMLElement;
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
@@ -59,24 +59,42 @@ export class WebGLPreview {
   inches = false;
   nonTravelmoves : string[] = [];
   private disposables: { dispose(): void }[] = [];
+  private _extrusionColor = new Color(0xffff00);
+  private _backgroundColor = new Color(0xe0e0e0);
+  private _travelColor = new Color(0x990000);
+  private _topLayerColor?: Color;
+  private _lastSegmentColor?: Color;
 
   constructor(opts: GCodePreviewOptions) {
     this.scene = new Scene();
-    this.scene.background = new Color(this.backgroundColor);
+    this.scene.background = this._backgroundColor;
+    if ('backgroundColor' in opts) {
+      this.backgroundColor = new Color(opts.backgroundColor);
+    }
     this.canvas = opts.canvas;
     this.targetId = opts.targetId;
-    // this.endLayer = opts.limit;
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
-    this.topLayerColor = opts.topLayerColor;
-    this.lastSegmentColor = opts.lastSegmentColor;
     this.lineWidth = opts.lineWidth;
     this.buildVolume = opts.buildVolume;
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
-
+    
+    if (opts.extrusionColor != undefined) {
+      this.extrusionColor = new Color(opts.extrusionColor);
+    }
+    if (opts.travelColor != undefined) {
+      this.travelColor = new Color(opts.travelColor);
+    }
+    if (opts.topLayerColor != undefined) {
+      this.topLayerColor = new Color(opts.topLayerColor);
+    }
+    if (opts.lastSegmentColor != undefined) {
+      this.lastSegmentColor = new Color(opts.lastSegmentColor);
+    }
+    
     console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
 
@@ -109,7 +127,7 @@ export class WebGLPreview {
     this.camera.position.fromArray(this.initialCameraPosition);
     const fogFar = (this.camera as PerspectiveCamera).far;
     const fogNear = fogFar * 0.8;
-    this.scene.fog = new Fog(this.scene.background, fogNear, fogFar);
+    this.scene.fog = new Fog(this._backgroundColor, fogNear, fogFar);
 
     this.resize();
 
@@ -118,6 +136,43 @@ export class WebGLPreview {
 
     if (this.allowDragNDrop)
       this._enableDropHandler();
+  }
+
+  get extrusionColor(): Color {
+    return this._extrusionColor;
+  }
+  set extrusionColor(value: number|string|Color) {
+    this._extrusionColor = new Color(value);
+  }
+
+  get backgroundColor(): Color {
+    return this._backgroundColor;
+  }
+
+  set backgroundColor(value: number|string|Color) {
+    this._backgroundColor = new Color(value);
+    this.scene.background = this._backgroundColor;
+  }
+
+  get travelColor(): Color {
+    return this._travelColor;
+  }
+  set travelColor(value: number|string|Color) {
+    this._travelColor = new Color(value);
+  }
+
+  get topLayerColor(): ColorRepresentation|undefined {
+    return this._topLayerColor;
+  }
+  set topLayerColor(value: ColorRepresentation|undefined) {
+    this._topLayerColor = value !== undefined ? new Color(value) : undefined;
+  }
+
+  get lastSegmentColor(): ColorRepresentation|undefined {
+    return this._lastSegmentColor;
+  }
+  set lastSegmentColor(value: ColorRepresentation|undefined) {
+    this._lastSegmentColor = value !== undefined ? new Color(value) : undefined;
   }
 
   get layers(): Layer[] {
@@ -195,14 +250,17 @@ export class WebGLPreview {
 
           if (index >= this.minLayerIndex) {
             const extrude = g.params.e > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
-            if (
-              (extrude && this.renderExtrusion) ||
-              (!extrude && this.renderTravel)
-            ) {
-              if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
-                this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
-              } else {
-                this.addLineSegment(currentLayer, state, next, extrude);
+            const moving = next.x != state.x || next.y != state.y;
+            if (moving) {
+              if (
+                (extrude && this.renderExtrusion) ||
+                (!extrude && this.renderTravel)
+              ) {
+                if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
+                  this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
+                } else {
+                  this.addLineSegment(currentLayer, state, next, extrude);
+                }
               }
             }
           }
@@ -218,26 +276,26 @@ export class WebGLPreview {
       }
 
       if (this.renderExtrusion) {
-        const brightness = Math.round((80 * index) / this.layers.length);
-        const extrusionColor = new Color(
-          `hsl(0, 0%, ${brightness}%)`
-        ).getHex();
+        const brightness = 0.1 + 0.7 * index / this.layers.length;
+        
+        this._extrusionColor.getHSL(target);
+        const extrusionColor = new Color().setHSL(target.h, target.s, brightness);
 
         if (index == this.layers.length - 1) {
-          const layerColor = this.topLayerColor ?? extrusionColor;
-          const lastSegmentColor = this.lastSegmentColor ?? layerColor;
+          const layerColor = this._topLayerColor ?? extrusionColor;
+          const lastSegmentColor = this._lastSegmentColor ?? layerColor;
 
           const endPoint = currentLayer.extrusion.splice(-3);
-          this.addLine(currentLayer.extrusion, layerColor);
           const preendPoint = currentLayer.extrusion.splice(-3);
-          this.addLine([...preendPoint, ...endPoint], lastSegmentColor);
+          this.addLine(currentLayer.extrusion, layerColor.getHex());
+          this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
         } else {
-          this.addLine(currentLayer.extrusion, extrusionColor);
+          this.addLine(currentLayer.extrusion, extrusionColor.getHex());
         }
       }
 
       if (this.renderTravel) {
-        this.addLine(currentLayer.travel, this.travelColor);
+        this.addLine(currentLayer.travel, this._travelColor.getHex());
       }
     }
 
@@ -407,6 +465,7 @@ export class WebGLPreview {
   }
 
   addLine(vertices: number[], color: number): void {
+    // TODO: remove this
     if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
       this.addThickLine(vertices, color);
       return;
@@ -425,6 +484,7 @@ export class WebGLPreview {
     this.group.add(lineSegments);
   }
 
+  // TODO: remove this
   addThickLine(vertices: number[], color: number): void {
     if (!vertices.length) return;
 
@@ -443,7 +503,6 @@ export class WebGLPreview {
     this.group.add(line);
   }
 
-  // experimental DnD support
   private _enableDropHandler() {
     this.canvas.addEventListener('dragover', (evt) => {
       evt.stopPropagation();

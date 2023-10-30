@@ -1,5 +1,5 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { Scene, PerspectiveCamera, WebGLRenderer, Group } from 'three';
+import { Scene, PerspectiveCamera, WebGLRenderer, Group, Color, ColorRepresentation } from 'three';
 
 declare class Thumbnail {
     size: string;
@@ -72,18 +72,21 @@ declare type Vector3 = {
 declare type Point = Vector3;
 declare type BuildVolume = Vector3;
 declare type GCodePreviewOptions = {
+    allowDragNDrop?: boolean;
+    buildVolume?: BuildVolume;
+    backgroundColor?: ColorRepresentation;
     canvas?: HTMLCanvasElement;
+    debug?: boolean;
     endLayer?: number;
+    extrusionColor?: ColorRepresentation;
+    initialCameraPosition?: number[];
+    lastSegmentColor?: ColorRepresentation;
+    lineWidth?: number;
+    nonTravelMoves?: string[];
     startLayer?: number;
     targetId?: string;
-    topLayerColor?: number;
-    lastSegmentColor?: number;
-    lineWidth?: number;
-    buildVolume?: BuildVolume;
-    initialCameraPosition?: number[];
-    debug?: boolean;
-    allowDragNDrop?: boolean;
-    nonTravelMoves?: string[];
+    topLayerColor?: ColorRepresentation;
+    travelColor?: ColorRepresentation;
 };
 declare class WebGLPreview {
     parser: Parser;
@@ -92,11 +95,6 @@ declare class WebGLPreview {
     camera: PerspectiveCamera;
     renderer: WebGLRenderer;
     group: Group;
-    backgroundColor: number;
-    travelColor: number;
-    extrusionColor: number;
-    topLayerColor?: number;
-    lastSegmentColor?: number;
     container: HTMLElement;
     canvas: HTMLCanvasElement;
     renderExtrusion: boolean;
@@ -114,7 +112,22 @@ declare class WebGLPreview {
     inches: boolean;
     nonTravelmoves: string[];
     private disposables;
+    private _extrusionColor;
+    private _backgroundColor;
+    private _travelColor;
+    private _topLayerColor?;
+    private _lastSegmentColor?;
     constructor(opts: GCodePreviewOptions);
+    get extrusionColor(): Color;
+    set extrusionColor(value: number | string | Color);
+    get backgroundColor(): Color;
+    set backgroundColor(value: number | string | Color);
+    get travelColor(): Color;
+    set travelColor(value: number | string | Color);
+    get topLayerColor(): ColorRepresentation | undefined;
+    set topLayerColor(value: ColorRepresentation | undefined);
+    get lastSegmentColor(): ColorRepresentation | undefined;
+    set lastSegmentColor(value: ColorRepresentation | undefined);
     get layers(): Layer[];
     get maxLayerIndex(): number;
     get minLayerIndex(): number;

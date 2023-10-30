@@ -9,8 +9,12 @@ const startLayer = document.getElementById('start-layer');
 const endLayer = document.getElementById('end-layer');
 const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
+const extrusionColor = document.getElementById('extrusion-color');
+const backgroundColor = document.getElementById('background-color');
 const toggleTravel = document.getElementById('travel');
 const toggleHighlight = document.getElementById('highlight');
+const topLayerColorInput = document.getElementById('top-layer-color');
+const lastSegmentColorInput = document.getElementById('last-segment-color');
 const layerCount = document.getElementById('layer-count');
 const fileName = document.getElementById('file-name');
 const fileSize = document.getElementById('file-size');
@@ -19,11 +23,14 @@ const buildVolumeX = document.getElementById('buildVolumeX');
 const buildVolumeY = document.getElementById('buildVolumeY');
 const buildVolumeZ = document.getElementById('buildVolumeZ');
 const drawBuildVolume = document.getElementById('drawBuildVolume');
-// const lineWidth = document.getElementById('line-width');
+const travelColor = document.getElementById('travel-color');
 
 // const prusaOrange = '#c86e3b';
-const topLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
-const lastSegmentColor = new THREE.Color(`hsl(270, 50%, 50%)`).getHex();
+let topLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
+let lastSegmentColor = new THREE.Color(`hsl(270, 100%, 100%)`).getHex();
+
+topLayerColorInput.value = '#' + new THREE.Color(topLayerColor).getHexString();
+lastSegmentColorInput.value = '#' + new THREE.Color(lastSegmentColor).getHexString();
 
 function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const settings = JSON.parse(localStorage.getItem('settings'));
@@ -33,12 +40,27 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     canvas: document.querySelector('.gcode-previewer'),
     topLayerColor: topLayerColor,
     lastSegmentColor: lastSegmentColor,
-    // lineWidth: 4,
     buildVolume: settings?.buildVolume || {x: 150, y: 150, z: 150},
     initialCameraPosition: [0,400,450],
-    // debug: true
-    allowDragNDrop: true
+    allowDragNDrop: true,
+    extrusionColor: 'hotpink', // can be any valid THREE.Color value: css string, color name, hex value, or Color instance.
+    backgroundColor: '#111',
+    travelColor: 'lime',
   }));
+
+  // set default colors on inputs
+  extrusionColor.value = '#' + new THREE.Color(preview.extrusionColor).getHexString();
+  backgroundColor.value = '#' + new THREE.Color(preview.backgroundColor).getHexString();
+  travelColor.value = '#' + new THREE.Color(preview.travelColor).getHexString();
+
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (e.matches) {
+      preview.backgroundColor = '#111';
+    } else {
+      preview.backgroundColor = '#eee';
+    }
+    backgroundColor.value = '#' + new THREE.Color(preview.backgroundColor).getHexString();
+  });
 
   preview.renderExtrusion = true;
   preview.renderTravel = false;
@@ -71,11 +93,23 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     preview.renderExtrusion = toggleExtrusion.checked;
     preview.render();
   });
+  extrusionColor.addEventListener('input', ()=> throttle(() => {
+    preview.extrusionColor = extrusionColor.value;
+    preview.render();
+  }));
+  backgroundColor.addEventListener('input', ()=> throttle(() => {
+    preview.backgroundColor = backgroundColor.value;
+    preview.render();
+  }));
 
   toggleTravel.addEventListener('click', function() {
     preview.renderTravel = toggleTravel.checked;
     preview.render();
   });
+  travelColor.addEventListener('input', () => throttle(() => {
+    preview.travelColor = travelColor.value;
+    preview.render();
+  }));
 
   toggleHighlight.addEventListener('click', function() {
     if (toggleHighlight.checked) {
@@ -87,6 +121,19 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     }
     preview.render();
   });
+
+  topLayerColorInput.addEventListener('input', () => throttle(() => {
+    topLayerColor = new THREE.Color(topLayerColorInput.value);
+    preview.topLayerColor = topLayerColor;
+    preview.render();
+  }));
+
+  lastSegmentColorInput.addEventListener('input', () => throttle(() => {
+    lastSegmentColor = new THREE.Color(lastSegmentColorInput.value);
+    preview.lastSegmentColor = lastSegmentColor;
+    preview.render();
+  }));
+
 
   function updateBuildVolume () {
     const x = parseInt(buildVolumeX.value, 10);
@@ -267,4 +314,14 @@ function setFavicons(favImg){
   setFavicon.setAttribute('rel','shortcut icon');
   setFavicon.setAttribute('href',favImg);
   headTitle.appendChild(setFavicon);
+}
+
+let throttleTimer;
+const throttle = (callback, time) => {
+  if (throttleTimer) return;
+    throttleTimer = true;
+    setTimeout(() => {
+        callback();
+        throttleTimer = false;
+    }, time);
 }
