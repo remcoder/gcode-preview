@@ -10,6 +10,7 @@ const endLayer = document.getElementById('end-layer');
 const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
 const extrusionColor = document.getElementById('extrusion-color');
+const backgroundColor = document.getElementById('background-color');
 const toggleTravel = document.getElementById('travel');
 const toggleHighlight = document.getElementById('highlight');
 const layerCount = document.getElementById('layer-count');
@@ -75,6 +76,11 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     preview.extrusionColor = extrusionColor.value;
     preview.render();
   });
+  backgroundColor.addEventListener('input', function() {
+    preview.backgroundColor = backgroundColor.value;
+    preview.render();
+  } );
+  
   toggleTravel.addEventListener('click', function() {
     preview.renderTravel = toggleTravel.checked;
     preview.render();

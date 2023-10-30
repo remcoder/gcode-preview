@@ -5,7 +5,7 @@ import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
-import { Scene, PerspectiveCamera, WebGLRenderer, Group, Color, REVISION, Fog, AxesHelper, Euler, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments } from 'three';
+import { Scene, PerspectiveCamera, WebGLRenderer, Group, Color, REVISION, Fog, AxesHelper, Euler, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments, ColorRepresentation } from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
 type Vector3 = { x: number; y: number; z: number; r: number; i: number; j: number };
@@ -16,10 +16,11 @@ type State = { x: number; y: number; z: number; r: number; e: number; i: number;
 export type GCodePreviewOptions = {
   allowDragNDrop?: boolean;
   buildVolume?: BuildVolume;
+  backgroundColor?: ColorRepresentation;
   canvas?: HTMLCanvasElement;
   debug?: boolean;
   endLayer?: number;
-  extrusionColor?: Color | number | string;
+  extrusionColor?: ColorRepresentation;
   initialCameraPosition?: number[];
   lastSegmentColor?: number;
   lineWidth?: number;
@@ -40,7 +41,6 @@ export class WebGLPreview {
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
   group: Group;
-  backgroundColor = 0xe0e0e0;
   travelColor = 0x990000;
   topLayerColor?: number;
   lastSegmentColor?: number;
@@ -62,10 +62,11 @@ export class WebGLPreview {
   nonTravelmoves : string[] = [];
   private disposables: { dispose(): void }[] = [];
   private _extrusionColor = new Color(0xffff00);
+  private _backgroundColor = new Color(0xe0e0e0);
 
   constructor(opts: GCodePreviewOptions) {
     this.scene = new Scene();
-    this.scene.background = new Color(this.backgroundColor);
+    this.backgroundColor = opts.backgroundColor ? new Color(opts.backgroundColor) : this._backgroundColor;
     this.canvas = opts.canvas;
     this.targetId = opts.targetId;
     this.endLayer = opts.endLayer;
@@ -112,7 +113,7 @@ export class WebGLPreview {
     this.camera.position.fromArray(this.initialCameraPosition);
     const fogFar = (this.camera as PerspectiveCamera).far;
     const fogNear = fogFar * 0.8;
-    this.scene.fog = new Fog(this.scene.background, fogNear, fogFar);
+    this.scene.fog = new Fog(this._backgroundColor, fogNear, fogFar);
 
     this.resize();
 
@@ -128,6 +129,15 @@ export class WebGLPreview {
   }
   set extrusionColor(value: number|string|Color) {
     this._extrusionColor = new Color(value);
+  }
+
+  get backgroundColor(): Color {
+    return this._backgroundColor;
+  }
+
+  set backgroundColor(value: number|string|Color) {
+    this._backgroundColor = new Color(value);
+    this.scene.background = this._backgroundColor;
   }
 
   get layers(): Layer[] {
