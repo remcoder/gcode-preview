@@ -22,12 +22,12 @@ export type GCodePreviewOptions = {
   endLayer?: number;
   extrusionColor?: ColorRepresentation;
   initialCameraPosition?: number[];
-  lastSegmentColor?: number;
+  lastSegmentColor?: ColorRepresentation;
   lineWidth?: number;
   nonTravelMoves?: string[];
   startLayer?: number;
   targetId?: string;
-  topLayerColor?: number;
+  topLayerColor?: ColorRepresentation;
   travelColor?: ColorRepresentation;
 };
 
@@ -42,8 +42,6 @@ export class WebGLPreview {
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
   group: Group;
-  topLayerColor?: number;
-  lastSegmentColor?: number;
   container: HTMLElement;
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
@@ -64,25 +62,39 @@ export class WebGLPreview {
   private _extrusionColor = new Color(0xffff00);
   private _backgroundColor = new Color(0xe0e0e0);
   private _travelColor = new Color(0x990000);
+  private _topLayerColor?: Color;
+  private _lastSegmentColor?: Color;
 
   constructor(opts: GCodePreviewOptions) {
     this.scene = new Scene();
-    this.backgroundColor = opts.backgroundColor ? new Color(opts.backgroundColor) : this._backgroundColor;
+    this.scene.background = this._backgroundColor;
+    if ('backgroundColor' in opts) {
+      this.backgroundColor = new Color(opts.backgroundColor);
+    }
     this.canvas = opts.canvas;
     this.targetId = opts.targetId;
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
-    this.topLayerColor = opts.topLayerColor;
-    this.lastSegmentColor = opts.lastSegmentColor;
     this.lineWidth = opts.lineWidth;
     this.buildVolume = opts.buildVolume;
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
-    this.extrusionColor = opts.extrusionColor ? new Color(opts.extrusionColor) : this._extrusionColor;
-    this.travelColor = opts.travelColor ? new Color(opts.travelColor) : this._travelColor;
-
+    
+    if (opts.extrusionColor != undefined) {
+      this.extrusionColor = new Color(opts.extrusionColor);
+    }
+    if (opts.travelColor != undefined) {
+      this.travelColor = new Color(opts.travelColor);
+    }
+    if (opts.topLayerColor != undefined) {
+      this.topLayerColor = new Color(opts.topLayerColor);
+    }
+    if (opts.lastSegmentColor != undefined) {
+      this.lastSegmentColor = new Color(opts.lastSegmentColor);
+    }
+    
     console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
 
@@ -147,6 +159,20 @@ export class WebGLPreview {
   }
   set travelColor(value: number|string|Color) {
     this._travelColor = new Color(value);
+  }
+
+  get topLayerColor(): ColorRepresentation|undefined {
+    return this._topLayerColor;
+  }
+  set topLayerColor(value: ColorRepresentation|undefined) {
+    this._topLayerColor = value !== undefined ? new Color(value) : undefined;
+  }
+
+  get lastSegmentColor(): ColorRepresentation|undefined {
+    return this._lastSegmentColor;
+  }
+  set lastSegmentColor(value: ColorRepresentation|undefined) {
+    this._lastSegmentColor = value !== undefined ? new Color(value) : undefined;
   }
 
   get layers(): Layer[] {
@@ -250,18 +276,18 @@ export class WebGLPreview {
         const brightness = 0.1 + 0.7 * index / this.layers.length;
         
         this._extrusionColor.getHSL(target);
-        const extrusionColor = new Color().setHSL(target.h, target.s, brightness).getHex();
+        const extrusionColor = new Color().setHSL(target.h, target.s, brightness);
 
         if (index == this.layers.length - 1) {
-          const layerColor = this.topLayerColor ?? extrusionColor;
-          const lastSegmentColor = this.lastSegmentColor ?? layerColor;
+          const layerColor = this._topLayerColor ?? extrusionColor;
+          const lastSegmentColor = this._lastSegmentColor ?? layerColor;
 
           const endPoint = currentLayer.extrusion.splice(-3);
-          this.addLine(currentLayer.extrusion, layerColor);
+          this.addLine(currentLayer.extrusion, layerColor.getHex());
           const preendPoint = currentLayer.extrusion.splice(-3);
-          this.addLine([...preendPoint, ...endPoint], lastSegmentColor);
+          this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
         } else {
-          this.addLine(currentLayer.extrusion, extrusionColor);
+          this.addLine(currentLayer.extrusion, extrusionColor.getHex());
         }
       }
 

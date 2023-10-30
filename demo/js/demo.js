@@ -13,6 +13,8 @@ const extrusionColor = document.getElementById('extrusion-color');
 const backgroundColor = document.getElementById('background-color');
 const toggleTravel = document.getElementById('travel');
 const toggleHighlight = document.getElementById('highlight');
+const topLayerColorInput = document.getElementById('top-layer-color');
+const lastSegmentColorInput = document.getElementById('last-segment-color');
 const layerCount = document.getElementById('layer-count');
 const fileName = document.getElementById('file-name');
 const fileSize = document.getElementById('file-size');
@@ -22,11 +24,13 @@ const buildVolumeY = document.getElementById('buildVolumeY');
 const buildVolumeZ = document.getElementById('buildVolumeZ');
 const drawBuildVolume = document.getElementById('drawBuildVolume');
 const travelColor = document.getElementById('travel-color');
-// const lineWidth = document.getElementById('line-width');
 
 // const prusaOrange = '#c86e3b';
-const topLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
-const lastSegmentColor = new THREE.Color(`hsl(270, 50%, 50%)`).getHex();
+let topLayerColor = new THREE.Color(`hsl(180, 50%, 50%)`).getHex();
+let lastSegmentColor = new THREE.Color(`hsl(270, 100%, 100%)`).getHex();
+
+topLayerColorInput.value = '#' + new THREE.Color(topLayerColor).getHexString();
+lastSegmentColorInput.value = '#' + new THREE.Color(lastSegmentColor).getHexString();
 
 function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const settings = JSON.parse(localStorage.getItem('settings'));
@@ -101,6 +105,19 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     }
     preview.render();
   });
+
+  topLayerColorInput.addEventListener('input', function() {
+    topLayerColor = new THREE.Color(topLayerColorInput.value);
+    preview.topLayerColor = topLayerColor;
+    preview.render();
+  });
+
+  lastSegmentColorInput.addEventListener('input', function() {
+    lastSegmentColor = new THREE.Color(lastSegmentColorInput.value);
+    preview.lastSegmentColor = lastSegmentColor;
+    preview.render();
+  });
+
 
   function updateBuildVolume () {
     const x = parseInt(buildVolumeX.value, 10);
