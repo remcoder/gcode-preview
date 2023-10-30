@@ -21,6 +21,7 @@ const buildVolumeX = document.getElementById('buildVolumeX');
 const buildVolumeY = document.getElementById('buildVolumeY');
 const buildVolumeZ = document.getElementById('buildVolumeZ');
 const drawBuildVolume = document.getElementById('drawBuildVolume');
+const travelColor = document.getElementById('travel-color');
 // const lineWidth = document.getElementById('line-width');
 
 // const prusaOrange = '#c86e3b';
@@ -80,9 +81,13 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     preview.backgroundColor = backgroundColor.value;
     preview.render();
   } );
-  
+
   toggleTravel.addEventListener('click', function() {
     preview.renderTravel = toggleTravel.checked;
+    preview.render();
+  });
+  travelColor.addEventListener('input', function() {
+    preview.travelColor = travelColor.value;
     preview.render();
   });
 

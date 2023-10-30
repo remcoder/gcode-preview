@@ -28,6 +28,7 @@ export type GCodePreviewOptions = {
   startLayer?: number;
   targetId?: string;
   topLayerColor?: number;
+  travelColor?: ColorRepresentation;
 };
 
 const target = {
@@ -41,7 +42,6 @@ export class WebGLPreview {
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
   group: Group;
-  travelColor = 0x990000;
   topLayerColor?: number;
   lastSegmentColor?: number;
   container: HTMLElement;
@@ -63,6 +63,7 @@ export class WebGLPreview {
   private disposables: { dispose(): void }[] = [];
   private _extrusionColor = new Color(0xffff00);
   private _backgroundColor = new Color(0xe0e0e0);
+  private _travelColor = new Color(0x990000);
 
   constructor(opts: GCodePreviewOptions) {
     this.scene = new Scene();
@@ -80,6 +81,7 @@ export class WebGLPreview {
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
     this.extrusionColor = opts.extrusionColor ? new Color(opts.extrusionColor) : this._extrusionColor;
+    this.travelColor = opts.travelColor ? new Color(opts.travelColor) : this._travelColor;
 
     console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
@@ -138,6 +140,13 @@ export class WebGLPreview {
   set backgroundColor(value: number|string|Color) {
     this._backgroundColor = new Color(value);
     this.scene.background = this._backgroundColor;
+  }
+
+  get travelColor(): Color {
+    return this._travelColor;
+  }
+  set travelColor(value: number|string|Color) {
+    this._travelColor = new Color(value);
   }
 
   get layers(): Layer[] {
@@ -257,7 +266,7 @@ export class WebGLPreview {
       }
 
       if (this.renderTravel) {
-        this.addLine(currentLayer.travel, this.travelColor);
+        this.addLine(currentLayer.travel, this._travelColor.getHex());
       }
     }
 

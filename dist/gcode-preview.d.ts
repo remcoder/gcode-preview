@@ -86,6 +86,7 @@ declare type GCodePreviewOptions = {
     startLayer?: number;
     targetId?: string;
     topLayerColor?: number;
+    travelColor?: ColorRepresentation;
 };
 declare class WebGLPreview {
     parser: Parser;
@@ -94,7 +95,6 @@ declare class WebGLPreview {
     camera: PerspectiveCamera;
     renderer: WebGLRenderer;
     group: Group;
-    travelColor: number;
     topLayerColor?: number;
     lastSegmentColor?: number;
     container: HTMLElement;
@@ -116,11 +116,14 @@ declare class WebGLPreview {
     private disposables;
     private _extrusionColor;
     private _backgroundColor;
+    private _travelColor;
     constructor(opts: GCodePreviewOptions);
     get extrusionColor(): Color;
     set extrusionColor(value: number | string | Color);
     get backgroundColor(): Color;
     set backgroundColor(value: number | string | Color);
+    get travelColor(): Color;
+    set travelColor(value: number | string | Color);
     get layers(): Layer[];
     get maxLayerIndex(): number;
     get minLayerIndex(): number;
