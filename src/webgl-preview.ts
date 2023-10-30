@@ -417,6 +417,7 @@ export class WebGLPreview {
   }
 
   addLine(vertices: number[], color: number): void {
+    // TODO: remove this
     if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
       this.addThickLine(vertices, color);
       return;
@@ -435,6 +436,7 @@ export class WebGLPreview {
     this.group.add(lineSegments);
   }
 
+  // TODO: remove this
   addThickLine(vertices: number[], color: number): void {
     if (!vertices.length) return;
 
@@ -453,7 +455,6 @@ export class WebGLPreview {
     this.group.add(line);
   }
 
-  // experimental DnD support
   private _enableDropHandler() {
     this.canvas.addEventListener('dragover', (evt) => {
       evt.stopPropagation();
@@ -505,26 +506,4 @@ export class WebGLPreview {
 
 function decode(uint8array: Uint8Array) {
   return new TextDecoder('utf-8').decode(uint8array);
-}
-
-// adapted from https://gist.github.com/vahidk/05184faf3d92a0aa1b46aeaa93b07786
-function rgbToHsl(n: number) {
-  let r = (n >> 16) & 255;
-  let g = (n >> 8) & 255;
-  let b = n & 255;
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const d = max - min;
-  let h;
-  if (d === 0) h = 0;
-  else if (max === r) h = (g - b) / d % 6;
-  else if (max === g) h = (b - r) / d + 2;
-  else if (max === b) h = (r - g) / d + 4;
-  const l = (min + max) / 2;
-  const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
-  
-  h = (h + 60) % 60; // normalize hue to 0..360 deg to avoid negative values
-  h /= 60; // normalize hue to 0..1
-  return [h, s, l];
 }
