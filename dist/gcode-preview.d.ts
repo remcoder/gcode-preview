@@ -95,7 +95,6 @@ declare class WebGLPreview {
     group: Group;
     backgroundColor: number;
     travelColor: number;
-    extrusionColor: Color;
     topLayerColor?: number;
     lastSegmentColor?: number;
     container: HTMLElement;
@@ -115,7 +114,10 @@ declare class WebGLPreview {
     inches: boolean;
     nonTravelmoves: string[];
     private disposables;
+    private _extrusionColor;
     constructor(opts: GCodePreviewOptions);
+    get extrusionColor(): Color;
+    set extrusionColor(value: number | string | Color);
     get layers(): Layer[];
     get maxLayerIndex(): number;
     get minLayerIndex(): number;

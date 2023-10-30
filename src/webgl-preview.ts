@@ -42,7 +42,6 @@ export class WebGLPreview {
   group: Group;
   backgroundColor = 0xe0e0e0;
   travelColor = 0x990000;
-  extrusionColor = new Color(0xffff00);
   topLayerColor?: number;
   lastSegmentColor?: number;
   container: HTMLElement;
@@ -62,6 +61,7 @@ export class WebGLPreview {
   inches = false;
   nonTravelmoves : string[] = [];
   private disposables: { dispose(): void }[] = [];
+  private _extrusionColor = new Color(0xffff00);
 
   constructor(opts: GCodePreviewOptions) {
     this.scene = new Scene();
@@ -78,7 +78,7 @@ export class WebGLPreview {
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
-    this.extrusionColor = opts.extrusionColor ? new Color(opts.extrusionColor) : this.extrusionColor;
+    this.extrusionColor = opts.extrusionColor ? new Color(opts.extrusionColor) : this._extrusionColor;
 
     console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
@@ -121,6 +121,13 @@ export class WebGLPreview {
 
     if (this.allowDragNDrop)
       this._enableDropHandler();
+  }
+
+  get extrusionColor(): Color {
+    return this._extrusionColor;
+  }
+  set extrusionColor(value: number|string|Color) {
+    this._extrusionColor = new Color(value);
   }
 
   get layers(): Layer[] {
@@ -223,7 +230,7 @@ export class WebGLPreview {
       if (this.renderExtrusion) {
         const brightness = 0.1 + 0.7 * index / this.layers.length;
         
-        this.extrusionColor.getHSL(target);
+        this._extrusionColor.getHSL(target);
         const extrusionColor = new Color().setHSL(target.h, target.s, brightness).getHex();
 
         if (index == this.layers.length - 1) {
