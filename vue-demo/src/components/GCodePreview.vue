@@ -40,7 +40,8 @@ export default {
       lastSegmentColor: new THREE.Color(this.lastSegmentColor).getHex(),
       lineWidth: this.lineWidth,
       buildVolume: {x: 250, y:220, z: 150},
-      initialCameraPosition: [0, 400, 450]
+      initialCameraPosition: [0, 400, 450],
+      extrusionColor: 'cyan'
     });
 
     window.addEventListener('resize', () => {

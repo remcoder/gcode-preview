@@ -16,7 +16,8 @@ $: {
 onMount(() => {
     window['preview'] = preview = GCodePreview.init({
         canvas,
-        allowDragNDrop: true  
+        allowDragNDrop: true,
+        extrusionColor: 'lime'
     });
 
     load(src);
