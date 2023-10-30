@@ -77,23 +77,23 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     preview.renderExtrusion = toggleExtrusion.checked;
     preview.render();
   });
-  extrusionColor.addEventListener('input', function() {
+  extrusionColor.addEventListener('input', ()=> throttle(() => {
     preview.extrusionColor = extrusionColor.value;
     preview.render();
-  });
-  backgroundColor.addEventListener('input', function() {
+  }));
+  backgroundColor.addEventListener('input', ()=> throttle(() => {
     preview.backgroundColor = backgroundColor.value;
     preview.render();
-  } );
+  }));
 
   toggleTravel.addEventListener('click', function() {
     preview.renderTravel = toggleTravel.checked;
     preview.render();
   });
-  travelColor.addEventListener('input', function() {
+  travelColor.addEventListener('input', () => throttle(() => {
     preview.travelColor = travelColor.value;
     preview.render();
-  });
+  }));
 
   toggleHighlight.addEventListener('click', function() {
     if (toggleHighlight.checked) {
@@ -106,17 +106,17 @@ function initDemo() { // eslint-disable-line no-unused-vars, @typescript-eslint/
     preview.render();
   });
 
-  topLayerColorInput.addEventListener('input', function() {
+  topLayerColorInput.addEventListener('input', () => throttle(() => {
     topLayerColor = new THREE.Color(topLayerColorInput.value);
     preview.topLayerColor = topLayerColor;
     preview.render();
-  });
+  }));
 
-  lastSegmentColorInput.addEventListener('input', function() {
+  lastSegmentColorInput.addEventListener('input', () => throttle(() => {
     lastSegmentColor = new THREE.Color(lastSegmentColorInput.value);
     preview.lastSegmentColor = lastSegmentColor;
     preview.render();
-  });
+  }));
 
 
   function updateBuildVolume () {
@@ -298,4 +298,14 @@ function setFavicons(favImg){
   setFavicon.setAttribute('rel','shortcut icon');
   setFavicon.setAttribute('href',favImg);
   headTitle.appendChild(setFavicon);
+}
+
+let throttleTimer;
+const throttle = (callback, time) => {
+  if (throttleTimer) return;
+    throttleTimer = true;
+    setTimeout(() => {
+        callback();
+        throttleTimer = false;
+    }, time);
 }
