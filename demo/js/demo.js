@@ -48,7 +48,7 @@ function initDemo() {
     topLayerColor: 'rgb(0, 255, 255)',
     lastSegmentColor: '#fff',
     extrusionColor: 'hotpink',
-    backgroundColor: 0x101010,
+    backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
     travelColor: new THREE.Color('lime')
   }));
 
@@ -58,7 +58,6 @@ function initDemo() {
   travelColor.value = '#' + new THREE.Color(preview.travelColor).getHexString();
 
   preferDarkMode.addEventListener('change', (e) => {
-    console.log('dark mode', e.matches);
     if (e.matches) {
       preview.backgroundColor = '#111';
     } else {
