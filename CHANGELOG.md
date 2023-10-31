@@ -1,5 +1,26 @@
 ## next
-## 2.9.1
+
+## 2.10 🎃 Halloween release 🎃
+
+This release is all about colors!
+- Allow custom colors to be set for:
+     - extrusion
+     - travel
+     - top layer
+     - last segment
+     - background
+- DEMO
+     - supports light/dark mode
+
+Colors can be any valid THREE.Color value: css string, color name, hex value, or Color instance.
+
+## 2.9.4
+- Custom non travel moves for CNC'ing
+
+## 2.9.3
+- fixed a bug where the start of the gcode was skipped
+
+## 2.9.2
 - Some Mach3 compatibility changes:
      - allow g00,g01,g02,g03
      - when g2/g3 are given an r too small to bridge the gap, the radius is automatically set to the minimum needed.
