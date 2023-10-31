@@ -42,14 +42,14 @@ function initDemo() {
 
   const preview = (window.preview = new GCodePreview.init({
     canvas: document.querySelector('.gcode-previewer'),
-    topLayerColor: topLayerColor,
-    lastSegmentColor: lastSegmentColor,
-    buildVolume: settings?.buildVolume || { x: 150, y: 150, z: 150 },
+    buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
     allowDragNDrop: true,
-    extrusionColor: 'hotpink', // can be any valid THREE.Color value: css string, color name, hex value, or Color instance.
-    backgroundColor: preferDarkMode.matches ? '#111' : '#ddd',
-    travelColor: 'lime'
+    topLayerColor: 'rgb(0, 255, 255)',
+    lastSegmentColor: '#fff',
+    extrusionColor: 'hotpink',
+    backgroundColor: 0x101010,
+    travelColor: new THREE.Color('lime')
   }));
 
   // set default colors on inputs
