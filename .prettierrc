@@ -5,6 +5,5 @@
   "trailingComma": "none",
   "semi": true,
   "endOfLine": "lf",
-  "printWidth": 120,
-  "spaceBeforeFunctionParen": false
+  "printWidth": 120
 }

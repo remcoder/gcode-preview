@@ -32,6 +32,7 @@ let lastSegmentColor = new THREE.Color(`hsl(270, 100%, 100%)`).getHex();
 topLayerColorInput.value = '#' + new THREE.Color(topLayerColor).getHexString();
 lastSegmentColorInput.value = '#' + new THREE.Color(lastSegmentColor).getHexString();
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 function initDemo() {
   // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const settings = JSON.parse(localStorage.getItem('settings'));
@@ -249,8 +250,8 @@ function updateUI() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 async function loadGCodeFromServer(file) {
-  // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const response = await fetch(file);
 
   if (response.status !== 200) {
