@@ -151,3 +151,7 @@ canvas#renderer,
 .version-box {
   transform: translateZ(0);
 }
+
+.bmc-btn-container {
+  transform: scale(0.6);
+}
