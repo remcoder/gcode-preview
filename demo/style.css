@@ -78,13 +78,11 @@ body {
   top: 0;
   right: 0;
   padding: 10px;
-  color: #808080;
   transform: translateZ(0);
   filter: grayscale(1);
 }
 
 .version-box a {
-  color: #808080;
   text-decoration: none;
 }
 
