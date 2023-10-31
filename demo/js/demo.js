@@ -32,6 +32,8 @@ let lastSegmentColor = new THREE.Color(`hsl(270, 100%, 100%)`).getHex();
 topLayerColorInput.value = '#' + new THREE.Color(topLayerColor).getHexString();
 lastSegmentColorInput.value = '#' + new THREE.Color(lastSegmentColor).getHexString();
 
+const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 function initDemo() {
   // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
@@ -46,7 +48,7 @@ function initDemo() {
     initialCameraPosition: [180, 150, 300],
     allowDragNDrop: true,
     extrusionColor: 'hotpink', // can be any valid THREE.Color value: css string, color name, hex value, or Color instance.
-    backgroundColor: '#111',
+    backgroundColor: preferDarkMode.matches ? '#111' : '#ddd',
     travelColor: 'lime'
   }));
 
@@ -55,7 +57,7 @@ function initDemo() {
   backgroundColor.value = '#' + new THREE.Color(preview.backgroundColor).getHexString();
   travelColor.value = '#' + new THREE.Color(preview.travelColor).getHexString();
 
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  preferDarkMode.addEventListener('change', (e) => {
     console.log('dark mode', e.matches);
     if (e.matches) {
       preview.backgroundColor = '#111';
