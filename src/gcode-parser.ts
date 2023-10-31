@@ -1,11 +1,59 @@
 /* eslint-disable no-unused-vars */
 import { Thumbnail } from './thumbnail';
 
-type singleLetter = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' 
-| 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' 
-| 'y' | 'z' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' 
-| 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' 
-| 'Y' | 'Z';
+type singleLetter =
+  | 'a'
+  | 'b'
+  | 'c'
+  | 'd'
+  | 'e'
+  | 'f'
+  | 'g'
+  | 'h'
+  | 'i'
+  | 'j'
+  | 'k'
+  | 'l'
+  | 'm'
+  | 'n'
+  | 'o'
+  | 'p'
+  | 'q'
+  | 'r'
+  | 's'
+  | 't'
+  | 'u'
+  | 'v'
+  | 'w'
+  | 'x'
+  | 'y'
+  | 'z'
+  | 'A'
+  | 'B'
+  | 'C'
+  | 'D'
+  | 'E'
+  | 'F'
+  | 'G'
+  | 'H'
+  | 'I'
+  | 'J'
+  | 'K'
+  | 'L'
+  | 'M'
+  | 'N'
+  | 'O'
+  | 'P'
+  | 'Q'
+  | 'R'
+  | 'S'
+  | 'T'
+  | 'U'
+  | 'V'
+  | 'W'
+  | 'X'
+  | 'Y'
+  | 'Z';
 type CommandParams = { [key in singleLetter]?: number };
 
 type MoveCommandParamName = 'x' | 'y' | 'z' | 'r' | 'e' | 'f' | 'i' | 'j';
@@ -13,10 +61,12 @@ type MoveCommandParams = {
   [key in MoveCommandParamName]?: number;
 };
 export class GCodeCommand {
-  constructor(public src: string, 
+  constructor(
+    public src: string,
     public gcode: string,
     public params: CommandParams,
-    public comment?: string) {}
+    public comment?: string
+  ) {}
 }
 
 export class MoveCommand extends GCodeCommand {
@@ -49,10 +99,8 @@ export class Parser {
   maxZ = 0;
   metadata: Metadata = { thumbnails: {} };
 
-  parseGCode(input: string | string[]) : { layers : Layer[], metadata: Metadata } {
-    const lines = Array.isArray(input)
-      ? input
-      : input.split('\n');
+  parseGCode(input: string | string[]): { layers: Layer[]; metadata: Metadata } {
+    const lines = Array.isArray(input) ? input : input.split('\n');
 
     this.lines = this.lines.concat(lines);
 
@@ -61,17 +109,16 @@ export class Parser {
     this.groupIntoLayers(commands);
 
     // merge thumbs
-    const thumbs = this.parseMetadata(commands.filter(cmd=>cmd.comment)).thumbnails;
+    const thumbs = this.parseMetadata(commands.filter((cmd) => cmd.comment)).thumbnails;
     for (const [key, value] of Object.entries(thumbs)) {
-      this.metadata.thumbnails[key] = value
+      this.metadata.thumbnails[key] = value;
     }
 
     return { layers: this.layers, metadata: this.metadata };
   }
 
   private lines2commands(lines: string[]) {
-    return lines
-      .map(l => this.parseCommand(l));
+    return lines.map((l) => this.parseCommand(l));
   }
 
   private parseCommand(line: string, keepComments = true): GCodeCommand | null {
@@ -101,21 +148,11 @@ export class Parser {
     }
   }
 
-
   // G0 & G1
   private parseMove(params: string[]): MoveCommandParams {
     return params.reduce((acc: MoveCommandParams, cur: string) => {
       const key = cur.charAt(0).toLowerCase();
-      if (
-        key == 'x' ||
-        key == 'y' ||
-        key == 'z' ||
-        key == 'e' ||
-        key == 'r' ||
-        key == 'f' ||
-        key == 'i' || 
-        key == 'j'
-      )
+      if (key == 'x' || key == 'y' || key == 'z' || key == 'e' || key == 'r' || key == 'f' || key == 'i' || key == 'j')
         acc[key] = parseFloat(cur.slice(1));
       return acc;
     }, {});
@@ -139,10 +176,8 @@ export class Parser {
       const cmd = commands[lineNumber];
 
       if (!(cmd instanceof MoveCommand)) {
-        if (this.currentLayer) 
-          this.currentLayer.commands.push(cmd);
-        else  
-          this.preamble.commands.push(cmd);
+        if (this.currentLayer) this.currentLayer.commands.push(cmd);
+        else this.preamble.commands.push(cmd);
         continue;
       }
       const params = cmd.params;
@@ -151,21 +186,15 @@ export class Parser {
         this.curZ = params.z;
       }
 
-      if (
-        params.e > 0 &&
-        (params.x != undefined || params.y != undefined) &&
-        this.curZ > this.maxZ
-      ) {
+      if (params.e > 0 && (params.x != undefined || params.y != undefined) && this.curZ > this.maxZ) {
         this.maxZ = this.curZ;
         this.currentLayer = new Layer(this.layers.length, [cmd], lineNumber);
         this.layers.push(this.currentLayer);
         continue;
       }
 
-      if (this.currentLayer) 
-        this.currentLayer.commands.push(cmd);
-      else  
-        this.preamble.commands.push(cmd);
+      if (this.currentLayer) this.currentLayer.commands.push(cmd);
+      else this.preamble.commands.push(cmd);
     }
 
     return this.layers;
@@ -183,18 +212,15 @@ export class Parser {
 
       if (idxThumbBegin > -1) {
         thumb = Thumbnail.parse(comment.slice(idxThumbBegin + 15).trim());
-      }
-      else if (thumb) {
+      } else if (thumb) {
         if (idxThumbEnd == -1) {
           thumb.chars += comment.trim();
-        }
-        else  {
+        } else {
           if (thumb.isValid) {
             thumbnails[thumb.size] = thumb;
             console.debug('thumb found', thumb.size);
             console.debug('declared length', thumb.charLength, 'actual length', thumb.chars.length);
-          }
-          else {
+          } else {
             console.warn('thumb found but seems to be invalid');
           }
           thumb = null;
