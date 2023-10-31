@@ -85,7 +85,7 @@ export class WebGLPreview {
   constructor(opts: GCodePreviewOptions) {
     this.scene = new Scene();
     this.scene.background = this._backgroundColor;
-    if ('backgroundColor' in opts) {
+    if (opts.backgroundColor !== undefined) {
       this.backgroundColor = new Color(opts.backgroundColor);
     }
     this.canvas = opts.canvas;
