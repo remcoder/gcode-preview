@@ -3,7 +3,8 @@ A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D 
 
 Try the [online demo](https://gcode-preview.web.app/)
 
-![Demo Animation](../assets/benchy.gif?raw=true)
+<img width="519" alt="image" src="https://github.com/remcoder/gcode-preview/assets/461650/623b21e6-bbac-4124-8c92-83eb163782c6">
+
 
 
 ## Installation
