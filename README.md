@@ -24,6 +24,7 @@ or
 
   const preview = GCodePreview.init({
       document.querySelector('canvas'),
+      extrusionColor: 'hotpink'
   });
   
   // draw a diagonal line
