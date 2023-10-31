@@ -36,7 +36,7 @@ lastSegmentColorInput.value = '#' + new THREE.Color(lastSegmentColor).getHexStri
 function initDemo() {
   // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const settings = JSON.parse(localStorage.getItem('settings'));
-  console.log('settings', settings);
+  console.debug('settings', settings);
 
   const preview = (window.preview = new GCodePreview.init({
     canvas: document.querySelector('.gcode-previewer'),
@@ -56,6 +56,7 @@ function initDemo() {
   travelColor.value = '#' + new THREE.Color(preview.travelColor).getHexString();
 
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    console.log('dark mode', e.matches);
     if (e.matches) {
       preview.backgroundColor = '#111';
     } else {
@@ -289,18 +290,14 @@ function startLoadingProgressive(gcode) {
     } else {
       startLayer.removeAttribute('disabled');
       endLayer.removeAttribute('disabled');
-      console.log(gcodePreview.parser.metadata.thumbnails);
+      console.debug(gcodePreview.parser.metadata.thumbnails);
     }
     gcodePreview.processGCode(chunk);
     updateUI();
   }
 
   const lines = gcode.split('\n');
-  console.log('lines', lines.length);
-  console.log('chunk size', chunkSize);
   const chunks = lines.length / chunkSize;
-  console.log('chunks', chunks);
-  console.log('loading');
   gcodePreview.clear();
   if (window.__loadTimer__) clearTimeout(window.__loadTimer__);
   loadProgressive();

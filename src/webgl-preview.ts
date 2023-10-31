@@ -327,7 +327,6 @@ export class WebGLPreview {
       return;
     }
     this.inches = true;
-    console.log('Units set to inches');
   }
 
   drawBuildVolume(): void {
