@@ -304,9 +304,9 @@ export class WebGLPreview {
         }
       }
 
-      console.log('this.renderTravel :>> ', this.renderTravel);
       if (this.renderTravel) {
-        console.log('adding travel line');
+        console.warn('adding travel line');
+        console.error('adding travel line')
         this.addLine(currentLayer.travel, this._travelColor.getHex());
       }
     }
