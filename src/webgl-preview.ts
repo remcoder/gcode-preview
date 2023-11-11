@@ -245,7 +245,7 @@ export class WebGLPreview {
         travel: [],
         z: state.z
       };
-      console.log('currentLayer :>> ', currentLayer);
+      // console.log('currentLayer :>> ', currentLayer);
       const l = this.layers[index];
       for (const cmd of l.commands) {
         if (cmd.gcode == 'g20') {
@@ -305,8 +305,8 @@ export class WebGLPreview {
       }
 
       if (this.renderTravel) {
-        console.warn('adding travel line');
-        console.error('adding travel line')
+        // console.warn('adding travel line');
+        // console.error('adding travel line')
         this.addLine(currentLayer.travel, this._travelColor.getHex());
       }
     }
