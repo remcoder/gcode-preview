@@ -286,8 +286,9 @@ export class WebGLPreview {
       }
 
       if (this.renderExtrusion) {
-        const brightness = 0.1 + (0.7 * index) / this.layers.length;
-        console.log('brightness :>> ', brightness);
+        // const brightness = 0.1 + (0.7 * index) / this.layers.length;
+        const brightness = 0.5;
+        // console.log('brightness :>> ', brightness);
 
         this._extrusionColor.getHSL(target);
         const extrusionColor = new Color().setHSL(target.h, target.s, brightness);
@@ -306,7 +307,7 @@ export class WebGLPreview {
       }
 
       if (this.renderTravel) {
-        // console.warn('adding travel line');
+        console.warn('adding travel line');
         // console.error('adding travel line')
         this.addLine(currentLayer.travel, this._travelColor.getHex());
       }
