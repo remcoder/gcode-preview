@@ -287,7 +287,8 @@ export class WebGLPreview {
 
       if (this.renderExtrusion) {
         // const brightness = 0.1 + (0.7 * index) / this.layers.length;
-        const brightness = 0.5;
+        const brightness = 0.2 + (0.6 * index) / this.layers.length;
+        // const brightness = 0.5;
         // console.log('brightness :>> ', brightness);
 
         this._extrusionColor.getHSL(target);
