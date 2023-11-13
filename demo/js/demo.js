@@ -98,6 +98,7 @@ function initDemo() {
   });
   extrusionColor.addEventListener('input', () =>
     throttle(() => {
+      console.log('extrusionColor.value :>> ', extrusionColor.value);
       preview.extrusionColor = extrusionColor.value;
       preview.render();
     })
@@ -110,6 +111,7 @@ function initDemo() {
   );
 
   toggleTravel.addEventListener('click', function () {
+    console.log('toggleTravel.checked :>> ', toggleTravel.checked);
     preview.renderTravel = toggleTravel.checked;
     preview.render();
   });
