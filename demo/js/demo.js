@@ -50,6 +50,7 @@ function initDemo() {
     extrusionColor: 'hotpink',
     backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
     travelColor: new THREE.Color('lime')
+    // minLayerThreshold: 0.1
   }));
 
   // set default colors on inputs

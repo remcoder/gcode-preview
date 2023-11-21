@@ -36,10 +36,17 @@ declare class Parser {
     lines: string[];
     preamble: Layer;
     layers: Layer[];
-    currentLayer: Layer;
     curZ: number;
     maxZ: number;
     metadata: Metadata;
+    tolerance: number;
+    /**
+     * Create a new Parser instance.
+     *
+     * @param minLayerThreshold - If specified, the minimum layer height to be considered a new layer. If not specified, the default value is 0.
+     * @returns A new Parser instance.
+     */
+    constructor(minLayerThreshold: number);
     parseGCode(input: string | string[]): {
         layers: Layer[];
         metadata: Metadata;
@@ -50,6 +57,7 @@ declare class Parser {
     private isAlpha;
     private parseParams;
     private groupIntoLayers;
+    get maxLayer(): Layer;
     parseMetadata(metadata: GCodeCommand[]): Metadata;
 }
 interface Parser {
@@ -83,12 +91,14 @@ declare type GCodePreviewOptions = {
     lastSegmentColor?: ColorRepresentation;
     lineWidth?: number;
     nonTravelMoves?: string[];
+    minLayerThreshold?: number;
     startLayer?: number;
     targetId?: string;
     topLayerColor?: ColorRepresentation;
     travelColor?: ColorRepresentation;
 };
 declare class WebGLPreview {
+    minLayerThreshold: number;
     parser: Parser;
     targetId: string;
     scene: Scene;
