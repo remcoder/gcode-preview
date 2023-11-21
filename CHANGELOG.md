@@ -1,5 +1,14 @@
 ## next
 
+## 2.11 🏺 Vase Mode 🏺
+- new option: `minLayerTreshold`
+If the difference in Z exceeds the threshold a new layer is allocated.
+If not specified, the default value is 0. (0 meaning a new layer is allocated for each and every increase in Z, however tiny.)
+
+Setting a non-zero value helps to reduce the number of layers that are allocated in memory, which would otherwise cause lagging or even a lock up for spiral vases and such.
+   
+Thanks to @raulodev for the initial fix.
+
 ## 2.10 🎃 Halloween release 🎃
 
 This release is all about colors!
