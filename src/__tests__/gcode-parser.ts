@@ -94,7 +94,7 @@ test('2 extrusion moves with a z difference below the threshold should result in
   expect(parsed.layers[0].commands.length).toEqual(2);
 });
 
-test('2 extrusion moves with a z difference above the threshold should result in only 2 layers', () => {
+test('2 extrusion moves with a z difference above the threshold should result in 2 layers', () => {
   const threshold = 1;
   const parser = new Parser(threshold);
   const gcode = `G1 X0 Y0 Z1 E1
@@ -107,4 +107,17 @@ test('2 extrusion moves with a z difference above the threshold should result in
   expect(parsed.layers[0].commands.length).toEqual(1);
   expect(parsed.layers[0].commands).not.toBeNull();
   expect(parsed.layers[0].commands.length).toEqual(1);
+});
+
+test('2 extrusion moves with a z diff exactly at the threshold should result in 1 layer', () => {
+  const threshold = 1;
+  const parser = new Parser(threshold);
+  const gcode = `G1 X0 Y0 Z1 E1
+  G1 X10 Y10 Z2 E2`;
+  const parsed = parser.parseGCode(gcode);
+  expect(parsed).not.toBeNull();
+  expect(parsed.layers).not.toBeNull();
+  expect(parsed.layers.length).toEqual(1);
+  expect(parsed.layers[0].commands).not.toBeNull();
+  expect(parsed.layers[0].commands.length).toEqual(2);
 });
