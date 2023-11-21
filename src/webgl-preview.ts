@@ -40,6 +40,7 @@ export type GCodePreviewOptions = {
   lastSegmentColor?: ColorRepresentation;
   lineWidth?: number;
   nonTravelMoves?: string[];
+  minLayerTreshold?: number;
   startLayer?: number;
   targetId?: string;
   topLayerColor?: ColorRepresentation;
@@ -53,7 +54,8 @@ const target = {
 };
 
 export class WebGLPreview {
-  parser = new Parser();
+  minLayerTreshold = 0.05;
+  parser: Parser;
   targetId: string;
   scene: Scene;
   camera: PerspectiveCamera;
@@ -75,6 +77,7 @@ export class WebGLPreview {
   beyondFirstMove = false;
   inches = false;
   nonTravelmoves: string[] = [];
+
   private disposables: { dispose(): void }[] = [];
   private _extrusionColor = new Color(0xffff00);
   private _backgroundColor = new Color(0xe0e0e0);
@@ -83,6 +86,8 @@ export class WebGLPreview {
   private _lastSegmentColor?: Color;
 
   constructor(opts: GCodePreviewOptions) {
+    this.minLayerTreshold = opts.minLayerTreshold ?? this.minLayerTreshold;
+    this.parser = new Parser(this.minLayerTreshold);
     this.scene = new Scene();
     this.scene.background = this._backgroundColor;
     if (opts.backgroundColor !== undefined) {
@@ -342,7 +347,7 @@ export class WebGLPreview {
     this.startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
-    this.parser = new Parser();
+    this.parser = new Parser(this.minLayerTreshold);
     this.beyondFirstMove = false;
   }
 
