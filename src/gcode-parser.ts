@@ -96,7 +96,7 @@ export class Parser {
   layers: Layer[] = [];
   currentLayer: Layer;
   curZ = 0;
-  maxZ = 0;
+  maxZ = -Infinity; // cannot start at 0 because of tolerance. first layer will always be created
   metadata: Metadata = { thumbnails: {} };
   tolerance = 0; // The higher the tolerance, the fewer layers are created, so performance will improve.
 
