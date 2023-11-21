@@ -40,7 +40,7 @@ export type GCodePreviewOptions = {
   lastSegmentColor?: ColorRepresentation;
   lineWidth?: number;
   nonTravelMoves?: string[];
-  minLayerTreshold?: number;
+  minLayerThreshold?: number;
   startLayer?: number;
   targetId?: string;
   topLayerColor?: ColorRepresentation;
@@ -54,7 +54,7 @@ const target = {
 };
 
 export class WebGLPreview {
-  minLayerTreshold = 0.05;
+  minLayerThreshold = 0.05;
   parser: Parser;
   targetId: string;
   scene: Scene;
@@ -86,8 +86,8 @@ export class WebGLPreview {
   private _lastSegmentColor?: Color;
 
   constructor(opts: GCodePreviewOptions) {
-    this.minLayerTreshold = opts.minLayerTreshold ?? this.minLayerTreshold;
-    this.parser = new Parser(this.minLayerTreshold);
+    this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
+    this.parser = new Parser(this.minLayerThreshold);
     this.scene = new Scene();
     this.scene.background = this._backgroundColor;
     if (opts.backgroundColor !== undefined) {
@@ -347,7 +347,7 @@ export class WebGLPreview {
     this.startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
-    this.parser = new Parser(this.minLayerTreshold);
+    this.parser = new Parser(this.minLayerThreshold);
     this.beyondFirstMove = false;
   }
 
