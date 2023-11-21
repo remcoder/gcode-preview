@@ -98,8 +98,12 @@ export class Parser {
   curZ = 0;
   maxZ = 0;
   metadata: Metadata = { thumbnails: {} };
+  tolerance = 1; // The higher the tolerance, the fewer layers are created, so performance will improve.
 
-  parseGCode(input: string | string[]): { layers: Layer[]; metadata: Metadata } {
+  parseGCode(input: string | string[] , tolerance? : number): { layers: Layer[]; metadata: Metadata } {
+    
+    this.tolerance = tolerance ?? this.tolerance
+    
     const lines = Array.isArray(input) ? input : input.split('\n');
 
     this.lines = this.lines.concat(lines);
@@ -186,7 +190,7 @@ export class Parser {
         this.curZ = params.z;
       }
 
-      if (params.e > 0 && (params.x != undefined || params.y != undefined) && this.curZ > this.maxZ) {
+      if (params.e > 0 && (params.x != undefined || params.y != undefined) && Math.abs(this.curZ - this.maxZ) > this.tolerance) {
         this.maxZ = this.curZ;
         this.currentLayer = new Layer(this.layers.length, [cmd], lineNumber);
         this.layers.push(this.currentLayer);
