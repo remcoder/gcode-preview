@@ -11,7 +11,7 @@
 
     if (document.location.host == 'gcode-preview.web.app') {
       loadAnalytics();
-  
+
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
@@ -24,10 +24,10 @@
 
 <body>
   <canvas id="renderer" class="gcode-previewer"></canvas>
-  
+
   <div class="dnd">☝️ Drop a gcode file here to view it</div>
   <div class="version-box">
-    
+
     <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="remcoder" data-color="#303030" data-emoji=""  data-font="Lato" data-text="Buy me a coffee" data-outline-color="#ffffff" data-font-color="#ffffff" data-coffee-color="#FFDD00" ></script>
 </div>
   <div class="sidebar">
@@ -53,6 +53,15 @@
             min="1"
             value="0"
             id="start-layer"
+          />
+        </div>
+        <div class="controls">
+          <label>Line width</label>&nbsp;<input
+            type="range"
+            min="1"
+            max="50"
+            value="1"
+            id="line-width"
           />
         </div>
         <div class="controls">
@@ -109,7 +118,7 @@
           <label for="buildVolumeZ">Build volume (z)&nbsp;</label
           ><input type="number" id="buildVolumeZ" step=10 value=150 />
         </div>
-        
+
       </section>
       <section style="display: none;">
         <button id=snapshot>Create snapshot</button>
@@ -119,7 +128,7 @@
     <div>
       <section>
         <div><a href="http://twitter.com/remcoder">@remcoder</a> ©2020 - 2023</div>
-        
+
         <div>
           <a href="https://github.com/remcoder/gcode-preview">code</a> - MIT license
         </div>
@@ -131,7 +140,7 @@
       </section>
     </div>
   </div>
-  
+
   <script src="js/three.min.js"></script>
   <script src="js/canvas2image.js"></script>
   <script src="js/gcode-preview.js"></script>
