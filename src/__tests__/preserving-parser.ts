@@ -1,4 +1,4 @@
-/* eslint-env jest */
+import { test, expect } from 'vitest';
 
 import { Parser } from '../gcode-parser';
 
