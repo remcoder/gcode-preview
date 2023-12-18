@@ -240,78 +240,10 @@ export class WebGLPreview {
 
     this.group = new Group();
     this.group.name = 'gcode';
-    const state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
+    const state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
 
     for (let index = 0; index < this.layers.length; index++) {
-      if (index > this.maxLayerIndex) break;
-
-      const currentLayer: RenderLayer = {
-        extrusion: [],
-        travel: [],
-        z: state.z
-      };
-      const l = this.layers[index];
-      for (const cmd of l.commands) {
-        if (cmd.gcode == 'g20') {
-          this.setInches();
-        } else if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
-          const g = cmd as MoveCommand;
-          const next: State = {
-            x: g.params.x ?? state.x,
-            y: g.params.y ?? state.y,
-            z: g.params.z ?? state.z,
-            r: g.params.r ?? state.r,
-            e: g.params.e ?? state.e,
-            i: g.params.i ?? state.i,
-            j: g.params.j ?? state.j
-          };
-
-          if (index >= this.minLayerIndex) {
-            const extrude = g.params.e > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
-            const moving = next.x != state.x || next.y != state.y || next.z != state.z;
-            if (moving) {
-              if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
-                if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
-                  this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
-                } else {
-                  this.addLineSegment(currentLayer, state, next, extrude);
-                }
-              }
-            }
-          }
-
-          // update state
-          state.x = next.x ?? state.x;
-          state.y = next.y ?? state.y;
-          state.z = next.z ?? state.z;
-
-          // if (next.e) state.e = next.e; // where not really tracking e as distance (yet) but we only check if some commands are extruding (positive e)
-          if (!this.beyondFirstMove) this.beyondFirstMove = true;
-        }
-      }
-
-      if (this.renderExtrusion) {
-        const brightness = 0.1 + (0.7 * index) / this.layers.length;
-
-        this._extrusionColor.getHSL(target);
-        const extrusionColor = new Color().setHSL(target.h, target.s, brightness);
-
-        if (index == this.layers.length - 1) {
-          const layerColor = this._topLayerColor ?? extrusionColor;
-          const lastSegmentColor = this._lastSegmentColor ?? layerColor;
-
-          const endPoint = currentLayer.extrusion.splice(-3);
-          const preendPoint = currentLayer.extrusion.splice(-3);
-          this.addLine(currentLayer.extrusion, layerColor.getHex());
-          this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
-        } else {
-          this.addLine(currentLayer.extrusion, extrusionColor.getHex());
-        }
-      }
-
-      if (this.renderTravel) {
-        this.addLine(currentLayer.travel, this._travelColor.getHex());
-      }
+      this.renderLayer(index, state);
     }
 
     this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
@@ -325,6 +257,82 @@ export class WebGLPreview {
 
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  renderLayer(index: number, state: State): void {
+    if (index > this.maxLayerIndex) return;
+
+    const currentLayer: RenderLayer = {
+      extrusion: [],
+      travel: [],
+      z: state.z
+    };
+    const l = this.layers[index];
+    for (const cmd of l.commands) {
+      if (cmd.gcode == 'g20') {
+        this.setInches();
+      } else if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
+        const g = cmd as MoveCommand;
+        const next: State = {
+          x: g.params.x ?? state.x,
+          y: g.params.y ?? state.y,
+          z: g.params.z ?? state.z,
+          r: g.params.r ?? state.r,
+          e: g.params.e ?? state.e,
+          i: g.params.i ?? state.i,
+          j: g.params.j ?? state.j
+        };
+
+        if (index >= this.minLayerIndex) {
+          const extrude = g.params.e > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
+          const moving = next.x != state.x || next.y != state.y || next.z != state.z;
+          if (moving) {
+            if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
+              if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
+                this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
+              } else {
+                this.addLineSegment(currentLayer, state, next, extrude);
+              }
+            }
+          }
+        }
+
+        // update state
+        state.x = next.x ?? state.x;
+        state.y = next.y ?? state.y;
+        state.z = next.z ?? state.z;
+
+        // if (next.e) state.e = next.e; // where not really tracking e as distance (yet) but we only check if some commands are extruding (positive e)
+        if (!this.beyondFirstMove) this.beyondFirstMove = true;
+      }
+    }
+
+    this.doRenderExtrusion(currentLayer, index);
+  }
+
+  doRenderExtrusion(layer: RenderLayer, index: number): void {
+    if (this.renderExtrusion) {
+      const brightness = 0.1 + (0.7 * index) / this.layers.length;
+
+      this._extrusionColor.getHSL(target);
+      const extrusionColor = new Color().setHSL(target.h, target.s, brightness);
+
+      if (index == this.layers.length - 1) {
+        const layerColor = this._topLayerColor ?? extrusionColor;
+        const lastSegmentColor = this._lastSegmentColor ?? layerColor;
+
+        const endPoint = layer.extrusion.splice(-3);
+        const preendPoint = layer.extrusion.splice(-3);
+        this.addLine(layer.extrusion, layerColor.getHex());
+        this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+      } else {
+        this.addLine(layer.extrusion, extrusionColor.getHex());
+      }
+    }
+
+    if (this.renderTravel) {
+      this.addLine(layer.travel, this._travelColor.getHex());
+    }
   }
 
   setInches(): void {
