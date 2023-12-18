@@ -268,7 +268,7 @@ export class WebGLPreview {
 
           if (index >= this.minLayerIndex) {
             const extrude = g.params.e > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
-            const moving = next.x != state.x || next.y != state.y;
+            const moving = next.x != state.x || next.y != state.y || next.z != state.z;
             if (moving) {
               if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
                 if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
