@@ -7,6 +7,7 @@ const chunkSize = 1000;
 
 const startLayer = document.getElementById('start-layer');
 const endLayer = document.getElementById('end-layer');
+const lineWidth = document.getElementById('line-width');
 const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
 const extrusionColor = document.getElementById('extrusion-color');
@@ -80,6 +81,11 @@ function initDemo() {
   endLayer.addEventListener('input', function () {
     preview.endLayer = +endLayer.value;
     startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
+    preview.render();
+  });
+
+  lineWidth.addEventListener('input', function() {
+    preview.lineWidth = +lineWidth.value;
     preview.render();
   });
 
