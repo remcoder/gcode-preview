@@ -283,7 +283,7 @@ export class WebGLPreview {
           // update state
           if (next.x) state.x = next.x;
           if (next.y) state.y = next.y;
-          if (next.z) state.z = next.z;
+          if (next.z >= 0) state.z = next.z;
           // if (next.e) state.e = next.e; // where not really tracking e as distance (yet) but we only check if some commands are extruding (positive e)
           if (!this.beyondFirstMove) this.beyondFirstMove = true;
         }
