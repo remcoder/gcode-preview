@@ -6,8 +6,11 @@ let thumb;
 const chunkSize = 1000;
 
 const startLayer = document.getElementById('start-layer');
+const startLayerValue = document.getElementById('start-layer-value');
 const endLayer = document.getElementById('end-layer');
+const endLayerValue = document.getElementById('end-layer-value');
 const lineWidth = document.getElementById('line-width');
+const lineWidthValue = document.getElementById('line-width-value');
 const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
 const extrusionColor = document.getElementById('extrusion-color');
@@ -74,18 +77,23 @@ function initDemo() {
 
   startLayer.addEventListener('input', function () {
     preview.startLayer = +startLayer.value;
+    startLayerValue.innerText = startLayer.value;
     endLayer.value = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
+    endLayerValue.innerText = endLayer.value;
     preview.render();
   });
 
   endLayer.addEventListener('input', function () {
     preview.endLayer = +endLayer.value;
+    endLayerValue.innerText = endLayer.value;
     startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
+    startLayerValue.innerText = startLayer.value;
     preview.render();
   });
 
-  lineWidth.addEventListener('input', function() {
+  lineWidth.addEventListener('input', function () {
     preview.lineWidth = +lineWidth.value;
+    lineWidthValue.innerText = lineWidth.value;
     preview.render();
   });
 
@@ -234,8 +242,13 @@ function updateUI() {
   startLayer.setAttribute('max', gcodePreview.layers.length);
   endLayer.setAttribute('max', gcodePreview.layers.length);
   endLayer.value = gcodePreview.layers.length;
+  endLayerValue.innerText = endLayer.value;
+
+  startLayerValue.innerText = startLayer.value;
 
   layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
+  // lineWidth.value = gcodePreview.lineWidth ?? null;
+  lineWidthValue.innerText = lineWidth.value;
 
   // console.log(gcodePreview.layers);
 
