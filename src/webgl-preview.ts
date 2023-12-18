@@ -465,7 +465,6 @@ export class WebGLPreview {
   }
 
   addLine(vertices: number[], color: number): void {
-    // TODO: remove this
     if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
       this.addThickLine(vertices, color);
       return;
@@ -481,7 +480,6 @@ export class WebGLPreview {
     this.group.add(lineSegments);
   }
 
-  // TODO: remove this
   addThickLine(vertices: number[], color: number): void {
     if (!vertices.length) return;
 
