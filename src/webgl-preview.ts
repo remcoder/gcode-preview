@@ -6,26 +6,33 @@ import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
 import {
-  Scene,
-  PerspectiveCamera,
-  WebGLRenderer,
-  Group,
-  Color,
-  REVISION,
-  Fog,
+  AmbientLight,
   AxesHelper,
-  Euler,
   BufferGeometry,
+  CatmullRomCurve3,
+  Color,
+  ColorRepresentation,
+  Euler,
   Float32BufferAttribute,
+  Fog,
+  Group,
   LineBasicMaterial,
   LineSegments,
-  ColorRepresentation
+  Mesh,
+  MeshLambertMaterial,
+  PerspectiveCamera,
+  PointLight,
+  REVISION,
+  Scene,
+  TubeGeometry,
+  Vector3,
+  WebGLRenderer
 } from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
-type Vector3 = { x: number; y: number; z: number; r: number; i: number; j: number };
-type Point = Vector3;
-type BuildVolume = Vector3;
+type GVector3 = { x: number; y: number; z: number; r: number; i: number; j: number };
+type Point = GVector3;
+type BuildVolume = GVector3;
 export type State = { x: number; y: number; z: number; r: number; e: number; i: number; j: number }; // feedrate?
 
 export type GCodePreviewOptions = {
@@ -41,6 +48,7 @@ export type GCodePreviewOptions = {
   lineWidth?: number;
   nonTravelMoves?: string[];
   minLayerThreshold?: number;
+  reaslisticExtrusion?: boolean;
   startLayer?: number;
   targetId?: string;
   topLayerColor?: ColorRepresentation;
@@ -65,6 +73,7 @@ export class WebGLPreview {
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
   renderTravel = false;
+  realisticExtrusion = false;
   lineWidth?: number;
   startLayer?: number;
   endLayer?: number;
@@ -103,6 +112,7 @@ export class WebGLPreview {
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
+    this.realisticExtrusion = opts.reaslisticExtrusion ?? this.realisticExtrusion;
 
     if (opts.extrusionColor != undefined) {
       this.extrusionColor = new Color(opts.extrusionColor);
@@ -238,6 +248,12 @@ export class WebGLPreview {
       this.drawBuildVolume();
     }
 
+    const light = new AmbientLight(0xcccccc, 1);
+    const dLight = new PointLight(0xffffff, 0.8);
+    dLight.position.set(0, 500, 500);
+    this.scene.add(light);
+    this.scene.add(dLight);
+
     this.group = new Group();
     this.group.name = 'gcode';
     const state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
@@ -311,10 +327,15 @@ export class WebGLPreview {
 
   doRenderExtrusion(layer: RenderLayer, index: number): void {
     if (this.renderExtrusion) {
-      const brightness = 0.1 + (0.7 * index) / this.layers.length;
+      let extrusionColor;
+      if (this.singleLayerMode || this.realisticExtrusion) {
+        extrusionColor = this._extrusionColor;
+      } else {
+        const brightness = 0.1 + (0.7 * index) / this.layers.length;
 
-      this._extrusionColor.getHSL(target);
-      const extrusionColor = new Color().setHSL(target.h, target.s, brightness);
+        this._extrusionColor.getHSL(target);
+        extrusionColor = new Color().setHSL(target.h, target.s, brightness);
+      }
 
       if (index == this.layers.length - 1) {
         const layerColor = this._topLayerColor ?? extrusionColor;
@@ -330,7 +351,7 @@ export class WebGLPreview {
     }
 
     if (this.renderTravel) {
-      this.addLine(layer.travel, this._travelColor.getHex());
+      this.addLine(layer.travel, this._travelColor.getHex(), true);
     }
   }
 
@@ -472,20 +493,59 @@ export class WebGLPreview {
     }
   }
 
-  addLine(vertices: number[], color: number): void {
-    if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
-      this.addThickLine(vertices, color);
-      return;
+  addLine(vertices: number[], color: number, forceLine = false): void {
+    if (this.realisticExtrusion && !forceLine) {
+      let curvePoints: Vector3[] = [];
+      const curves: CatmullRomCurve3[] = [];
+
+      // Merging into one curve for performance
+      for (let i = 0; i < vertices.length; i += 6) {
+        const v = vertices.slice(i, i + 6);
+        const startPoint = new Vector3(v[0], v[1], v[2]);
+        const endPoint = new Vector3(v[3], v[4], v[5]);
+
+        if (curvePoints.length === 0) {
+          curvePoints.push(startPoint);
+        }
+
+        if (!curvePoints[curvePoints.length - 1].equals(startPoint)) {
+          curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
+          curvePoints = [];
+          curvePoints.push(startPoint);
+        }
+
+        curvePoints.push(endPoint);
+      }
+
+      if (curvePoints.length > 2) {
+        curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
+      }
+
+      curves.forEach((curve) => {
+        const material = new MeshLambertMaterial({ color: color });
+        this.disposables.push(material);
+        const segments = Math.ceil(curve.getLength() * 2);
+        const geometry = new TubeGeometry(curve, segments, 0.3, 4, false);
+        this.disposables.push(geometry);
+        const lineSegments = new Mesh(geometry, material);
+
+        this.group.add(lineSegments);
+      });
+    } else {
+      if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
+        this.addThickLine(vertices, color);
+        return;
+      }
+
+      const geometry = new BufferGeometry();
+      geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+      this.disposables.push(geometry);
+      const material = new LineBasicMaterial({ color: color });
+      this.disposables.push(material);
+      const lineSegments = new LineSegments(geometry, material);
+
+      this.group.add(lineSegments);
     }
-
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
-    this.disposables.push(geometry);
-    const material = new LineBasicMaterial({ color: color });
-    this.disposables.push(material);
-    const lineSegments = new LineSegments(geometry, material);
-
-    this.group.add(lineSegments);
   }
 
   addThickLine(vertices: number[], color: number): void {
