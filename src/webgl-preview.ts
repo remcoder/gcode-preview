@@ -26,7 +26,7 @@ type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
 type Vector3 = { x: number; y: number; z: number; r: number; i: number; j: number };
 type Point = Vector3;
 type BuildVolume = Vector3;
-type State = { x: number; y: number; z: number; r: number; e: number; i: number; j: number }; // feedrate?
+export type State = { x: number; y: number; z: number; r: number; e: number; i: number; j: number }; // feedrate?
 
 export type GCodePreviewOptions = {
   allowDragNDrop?: boolean;
