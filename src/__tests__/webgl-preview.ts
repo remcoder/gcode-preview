@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-// @vitest-environment jsdom
 
 import { test, expect } from 'vitest';
 
