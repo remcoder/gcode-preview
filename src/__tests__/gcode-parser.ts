@@ -1,5 +1,4 @@
-/* eslint-env jest */
-
+import { test, expect } from 'vitest';
 import { Parser } from '../gcode-parser';
 
 test('a single extrusion cmd should result in 1 layer with 1 command', () => {

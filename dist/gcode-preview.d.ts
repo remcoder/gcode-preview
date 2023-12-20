@@ -79,6 +79,15 @@ declare type Vector3 = {
 };
 declare type Point = Vector3;
 declare type BuildVolume = Vector3;
+declare type State = {
+    x: number;
+    y: number;
+    z: number;
+    r: number;
+    e: number;
+    i: number;
+    j: number;
+};
 declare type GCodePreviewOptions = {
     allowDragNDrop?: boolean;
     buildVolume?: BuildVolume;
@@ -144,6 +153,8 @@ declare class WebGLPreview {
     animate(): void;
     processGCode(gcode: string | string[]): void;
     render(): void;
+    renderLayer(index: number, state: State): void;
+    doRenderExtrusion(layer: RenderLayer, index: number): void;
     setInches(): void;
     drawBuildVolume(): void;
     clear(): void;
