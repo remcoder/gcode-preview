@@ -285,7 +285,7 @@ export class WebGLPreview {
 
         if (index >= this.minLayerIndex) {
           const extrude = g.params.e > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
-          const moving = next.x != state.x || next.y != state.y;
+          const moving = next.x != state.x || next.y != state.y || next.z != state.z;
           if (moving) {
             if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
               if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
@@ -330,11 +330,7 @@ export class WebGLPreview {
     }
 
     if (this.renderTravel) {
-      const brightness = 0.1 + (0.7 * index) / this.layers.length;
-
-      this._travelColor.getHSL(target);
-      const travelColor = new Color().setHSL(target.h, target.s, brightness);
-      this.addLine(layer.travel, travelColor.getHex());
+      this.addLine(layer.travel, this._travelColor.getHex());
     }
   }
 
