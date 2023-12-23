@@ -248,11 +248,13 @@ export class WebGLPreview {
       this.drawBuildVolume();
     }
 
-    const light = new AmbientLight(0xcccccc, 1);
-    const dLight = new PointLight(0xffffff, 0.8);
-    dLight.position.set(0, 500, 500);
-    this.scene.add(light);
-    this.scene.add(dLight);
+    if (this.realisticExtrusion) {
+      const light = new AmbientLight(0xcccccc, 1);
+      const dLight = new PointLight(0xffffff, 0.8);
+      dLight.position.set(0, 500, 500);
+      this.scene.add(light);
+      this.scene.add(dLight);
+    }
 
     this.group = new Group();
     this.group.name = 'gcode';
