@@ -343,15 +343,24 @@ export class WebGLPreview {
 
         const endPoint = layer.extrusion.splice(-3);
         const preendPoint = layer.extrusion.splice(-3);
-        this.addLine(layer.extrusion, layerColor.getHex());
-        this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+        if (this.realisticExtrusion) {
+          this.addTubeLine(layer.extrusion, layerColor.getHex());
+          this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+        } else {
+          this.addLine(layer.extrusion, layerColor.getHex());
+          this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+        }
       } else {
-        this.addLine(layer.extrusion, extrusionColor.getHex());
+        if (this.realisticExtrusion) {
+          this.addTubeLine(layer.extrusion, extrusionColor.getHex());
+        } else {
+          this.addLine(layer.extrusion, extrusionColor.getHex());
+        }
       }
     }
 
     if (this.renderTravel) {
-      this.addLine(layer.travel, this._travelColor.getHex(), true);
+      this.addLine(layer.travel, this._travelColor.getHex());
     }
   }
 
@@ -493,59 +502,59 @@ export class WebGLPreview {
     }
   }
 
-  addLine(vertices: number[], color: number, forceLine = false): void {
-    if (this.realisticExtrusion && !forceLine) {
-      let curvePoints: Vector3[] = [];
-      const curves: CatmullRomCurve3[] = [];
+  addLine(vertices: number[], color: number): void {
+    if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
+      this.addThickLine(vertices, color);
+      return;
+    }
 
-      // Merging into one curve for performance
-      for (let i = 0; i < vertices.length; i += 6) {
-        const v = vertices.slice(i, i + 6);
-        const startPoint = new Vector3(v[0], v[1], v[2]);
-        const endPoint = new Vector3(v[3], v[4], v[5]);
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+    this.disposables.push(geometry);
+    const material = new LineBasicMaterial({ color: color });
+    this.disposables.push(material);
+    const lineSegments = new LineSegments(geometry, material);
 
-        if (curvePoints.length === 0) {
-          curvePoints.push(startPoint);
-        }
+    this.group.add(lineSegments);
+  }
 
-        if (!curvePoints[curvePoints.length - 1].equals(startPoint)) {
-          curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
-          curvePoints = [];
-          curvePoints.push(startPoint);
-        }
+  addTubeLine(vertices: number[], color: number): void {
+    let curvePoints: Vector3[] = [];
+    const curves: CatmullRomCurve3[] = [];
 
-        curvePoints.push(endPoint);
+    // Merging into one curve for performance
+    for (let i = 0; i < vertices.length; i += 6) {
+      const v = vertices.slice(i, i + 6);
+      const startPoint = new Vector3(v[0], v[1], v[2]);
+      const endPoint = new Vector3(v[3], v[4], v[5]);
+
+      if (curvePoints.length === 0) {
+        curvePoints.push(startPoint);
       }
 
-      if (curvePoints.length > 2) {
+      if (!curvePoints[curvePoints.length - 1].equals(startPoint)) {
         curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
+        curvePoints = [];
+        curvePoints.push(startPoint);
       }
 
-      curves.forEach((curve) => {
-        const material = new MeshLambertMaterial({ color: color });
-        this.disposables.push(material);
-        const segments = Math.ceil(curve.getLength() * 2);
-        const geometry = new TubeGeometry(curve, segments, 0.3, 4, false);
-        this.disposables.push(geometry);
-        const lineSegments = new Mesh(geometry, material);
+      curvePoints.push(endPoint);
+    }
 
-        this.group.add(lineSegments);
-      });
-    } else {
-      if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
-        this.addThickLine(vertices, color);
-        return;
-      }
+    if (curvePoints.length > 2) {
+      curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
+    }
 
-      const geometry = new BufferGeometry();
-      geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
-      this.disposables.push(geometry);
-      const material = new LineBasicMaterial({ color: color });
+    curves.forEach((curve) => {
+      const material = new MeshLambertMaterial({ color: color });
       this.disposables.push(material);
-      const lineSegments = new LineSegments(geometry, material);
+      const segments = Math.ceil(curve.getLength() * 2);
+      const geometry = new TubeGeometry(curve, segments, 0.3, 4, false);
+      this.disposables.push(geometry);
+      const lineSegments = new Mesh(geometry, material);
 
       this.group.add(lineSegments);
-    }
+    });
   }
 
   addThickLine(vertices: number[], color: number): void {
