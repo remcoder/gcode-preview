@@ -101,7 +101,7 @@ declare type GCodePreviewOptions = {
     lineWidth?: number;
     nonTravelMoves?: string[];
     minLayerThreshold?: number;
-    reaslisticExtrusion?: boolean;
+    renderTubes?: boolean;
     startLayer?: number;
     targetId?: string;
     topLayerColor?: ColorRepresentation;
@@ -119,7 +119,7 @@ declare class WebGLPreview {
     canvas: HTMLCanvasElement;
     renderExtrusion: boolean;
     renderTravel: boolean;
-    realisticExtrusion: boolean;
+    renderTubes: boolean;
     lineWidth?: number;
     startLayer?: number;
     endLayer?: number;

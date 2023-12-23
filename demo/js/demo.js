@@ -13,7 +13,7 @@ const lineWidth = document.getElementById('line-width');
 const lineWidthValue = document.getElementById('line-width-value');
 const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
-const toggleRealisticExtrusion = document.getElementById('realistic-extrusion');
+const toggleRenderTubes = document.getElementById('render-tubes');
 const extrusionColor = document.getElementById('extrusion-color');
 const backgroundColor = document.getElementById('background-color');
 const toggleTravel = document.getElementById('travel');
@@ -52,7 +52,7 @@ function initDemo() {
     allowDragNDrop: true,
     topLayerColor: 'rgb(0, 255, 255)',
     lastSegmentColor: '#fff',
-    realisticExtrusion: false,
+    renderTubes: false,
     extrusionColor: 'hotpink',
     backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
     travelColor: new THREE.Color('lime')
@@ -114,8 +114,8 @@ function initDemo() {
     preview.render();
   });
 
-  toggleRealisticExtrusion.addEventListener('click', function () {
-    preview.realisticExtrusion = toggleRealisticExtrusion.checked;
+  toggleRenderTubes.addEventListener('click', function () {
+    preview.renderTubes = toggleRenderTubes.checked;
     preview.render();
   });
 

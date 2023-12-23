@@ -48,7 +48,7 @@ export type GCodePreviewOptions = {
   lineWidth?: number;
   nonTravelMoves?: string[];
   minLayerThreshold?: number;
-  reaslisticExtrusion?: boolean;
+  renderTubes?: boolean;
   startLayer?: number;
   targetId?: string;
   topLayerColor?: ColorRepresentation;
@@ -73,7 +73,7 @@ export class WebGLPreview {
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
   renderTravel = false;
-  realisticExtrusion = false;
+  renderTubes = false;
   lineWidth?: number;
   startLayer?: number;
   endLayer?: number;
@@ -112,7 +112,7 @@ export class WebGLPreview {
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
-    this.realisticExtrusion = opts.reaslisticExtrusion ?? this.realisticExtrusion;
+    this.renderTubes = opts.renderTubes ?? this.renderTubes;
 
     if (opts.extrusionColor != undefined) {
       this.extrusionColor = new Color(opts.extrusionColor);
@@ -248,7 +248,7 @@ export class WebGLPreview {
       this.drawBuildVolume();
     }
 
-    if (this.realisticExtrusion) {
+    if (this.renderTubes) {
       const light = new AmbientLight(0xcccccc, 1);
       const dLight = new PointLight(0xffffff, 0.8);
       dLight.position.set(0, 500, 500);
@@ -330,7 +330,7 @@ export class WebGLPreview {
   doRenderExtrusion(layer: RenderLayer, index: number): void {
     if (this.renderExtrusion) {
       let extrusionColor;
-      if (this.singleLayerMode || this.realisticExtrusion) {
+      if (this.singleLayerMode || this.renderTubes) {
         extrusionColor = this._extrusionColor;
       } else {
         const brightness = 0.1 + (0.7 * index) / this.layers.length;
@@ -345,7 +345,7 @@ export class WebGLPreview {
 
         const endPoint = layer.extrusion.splice(-3);
         const preendPoint = layer.extrusion.splice(-3);
-        if (this.realisticExtrusion) {
+        if (this.renderTubes) {
           this.addTubeLine(layer.extrusion, layerColor.getHex());
           this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
         } else {
@@ -353,7 +353,7 @@ export class WebGLPreview {
           this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
         }
       } else {
-        if (this.realisticExtrusion) {
+        if (this.renderTubes) {
           this.addTubeLine(layer.extrusion, extrusionColor.getHex());
         } else {
           this.addLine(layer.extrusion, extrusionColor.getHex());
