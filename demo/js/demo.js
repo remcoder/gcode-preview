@@ -13,6 +13,7 @@ const lineWidth = document.getElementById('line-width');
 const lineWidthValue = document.getElementById('line-width-value');
 const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
+const toggleRenderTubes = document.getElementById('render-tubes');
 const extrusionColor = document.getElementById('extrusion-color');
 const backgroundColor = document.getElementById('background-color');
 const toggleTravel = document.getElementById('travel');
@@ -51,6 +52,7 @@ function initDemo() {
     allowDragNDrop: true,
     topLayerColor: 'rgb(0, 255, 255)',
     lastSegmentColor: '#fff',
+    renderTubes: false,
     extrusionColor: 'hotpink',
     backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
     travelColor: new THREE.Color('lime')
@@ -111,6 +113,12 @@ function initDemo() {
     preview.renderExtrusion = toggleExtrusion.checked;
     preview.render();
   });
+
+  toggleRenderTubes.addEventListener('click', function () {
+    preview.renderTubes = toggleRenderTubes.checked;
+    preview.render();
+  });
+
   extrusionColor.addEventListener('input', () =>
     throttle(() => {
       preview.extrusionColor = extrusionColor.value;

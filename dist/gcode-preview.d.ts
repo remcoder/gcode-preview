@@ -69,7 +69,7 @@ declare type RenderLayer = {
     travel: number[];
     z: number;
 };
-declare type Vector3 = {
+declare type GVector3 = {
     x: number;
     y: number;
     z: number;
@@ -77,8 +77,8 @@ declare type Vector3 = {
     i: number;
     j: number;
 };
-declare type Point = Vector3;
-declare type BuildVolume = Vector3;
+declare type Point = GVector3;
+declare type BuildVolume = GVector3;
 declare type State = {
     x: number;
     y: number;
@@ -101,6 +101,7 @@ declare type GCodePreviewOptions = {
     lineWidth?: number;
     nonTravelMoves?: string[];
     minLayerThreshold?: number;
+    renderTubes?: boolean;
     startLayer?: number;
     targetId?: string;
     topLayerColor?: ColorRepresentation;
@@ -118,6 +119,7 @@ declare class WebGLPreview {
     canvas: HTMLCanvasElement;
     renderExtrusion: boolean;
     renderTravel: boolean;
+    renderTubes: boolean;
     lineWidth?: number;
     startLayer?: number;
     endLayer?: number;
@@ -162,6 +164,7 @@ declare class WebGLPreview {
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
     addArcSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean, cw: boolean): void;
     addLine(vertices: number[], color: number): void;
+    addTubeLine(vertices: number[], color: number): void;
     addThickLine(vertices: number[], color: number): void;
     private _enableDropHandler;
     _readFromStream(stream: ReadableStream): Promise<void>;
