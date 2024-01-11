@@ -1,5 +1,17 @@
 ## next
 
+## 2.12 Tubular 🤙 
+- new experimental mode: tube rendering
+In this mode extrusion lines are rendered using volumetric tubes using THREEjs TubeGeometry. Currently this mode is still under development and considered experimental.
+
+To use it, pass the param `renderTubes: true`
+
+Known issues:
+ - performance: rendering takes several seconds or more for large models
+ - accuracy: line width and line height are not taken into account when setting the tube radius
+
+Thanks to @sophiedeziel for developing this feature.
+
 ## 2.11 🏺 Vase Mode 🏺
 - new option: `minLayerTreshold`
 If the difference in Z exceeds the threshold a new layer is allocated.
