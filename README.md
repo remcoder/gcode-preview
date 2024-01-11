@@ -23,7 +23,7 @@ or
   import * as GCodePreview from 'gcode-preview';
 
   const preview = GCodePreview.init({
-      document.querySelector('canvas'),
+      canvas: document.querySelector('canvas'),
       extrusionColor: 'hotpink'
   });
   
@@ -46,6 +46,11 @@ or
  There is a [Svelte example](https://github.com/remcoder/gcode-preview/tree/develop/svelte-demo) with a [Svelte component](https://github.com/remcoder/gcode-preview/blob/develop/svelte-demo/src/lib/GCodePreview.svelte).
 
 ## Features
+
+### Experimental: render extrusion as tubes
+```
+renderTubes : true
+```
 
 ### G2/G3 arc support
 Thanks to @Sindarius arc commands are now supported, which means gcode processed by ArcWelder should be rendered correctly.
@@ -98,8 +103,9 @@ It would be great if you want to help! Maybe you'd like to help out with:
    - unit tests
 
 ## Contributors 
-- ❤️ Thank you @Zeng95 for providing a React & Typescript example
-- ❤️ Thanks to @Sindarius for implementing G2/G3 arc support
+- ❤️ Thank you @sophiedeziel for rendering extrusion as tubes.
+- ❤️ Thank you @Sindarius for implementing G2/G3 arc support.
+- ❤️ Thank you @Zeng95 for providing a React & Typescript example.
 
 ## Changelog
 Jump to the [CHANGELOG](CHANGELOG.md)
