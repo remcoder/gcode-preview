@@ -1,5 +1,17 @@
 ## next
 
+## 2.13 maintenance release
+
+- new options: 
+ - renderExtrusion
+ - renderTravel
+
+These options toggle te rendering of extrusion/travel lines
+
+fixed:
+ - fat lines incorrecty rendering lines between extrusion lines
+ - [demo] sidebar doesn't update after loading a new gcode file
+
 ## 2.12 Tubular 🤙 
 - new experimental mode: tube rendering
 In this mode extrusion lines are rendered using volumetric tubes using THREEjs TubeGeometry. Currently this mode is still under development and considered experimental.
