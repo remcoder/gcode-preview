@@ -50,7 +50,6 @@ function initDemo() {
     canvas: canvasElement,
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
-    // allowDragNDrop: true,
     topLayerColor: 'rgb(0, 255, 255)',
     lastSegmentColor: '#fff',
     renderTubes: false,
@@ -198,7 +197,6 @@ function initDemo() {
 
     preview.clear();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await preview._readFromStream(file.stream());
     updateUI();
     preview.render();
