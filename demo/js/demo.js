@@ -194,7 +194,7 @@ function initDemo() {
     const file = files[0];
 
     fileName.innerText = file.name;
-    fileSize.innerText = '??';
+    fileSize.innerText = humanFileSize(file.size);
 
     preview.clear();
 
