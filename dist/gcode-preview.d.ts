@@ -101,6 +101,8 @@ declare type GCodePreviewOptions = {
     lineWidth?: number;
     nonTravelMoves?: string[];
     minLayerThreshold?: number;
+    renderExtrusion?: boolean;
+    renderTravel?: boolean;
     renderTubes?: boolean;
     startLayer?: number;
     targetId?: string;

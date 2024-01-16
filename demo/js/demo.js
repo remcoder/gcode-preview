@@ -52,6 +52,8 @@ function initDemo() {
     allowDragNDrop: true,
     topLayerColor: 'rgb(0, 255, 255)',
     lastSegmentColor: '#fff',
+    renderExtrusion: true,
+    renderTravel: false,
     renderTubes: false,
     extrusionColor: 'hotpink',
     backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
@@ -73,8 +75,6 @@ function initDemo() {
     backgroundColor.value = '#' + new THREE.Color(preview.backgroundColor).getHexString();
   });
 
-  preview.renderExtrusion = true;
-  preview.renderTravel = false;
   // preview.controls.autoRotate = true;
 
   startLayer.addEventListener('input', function () {
