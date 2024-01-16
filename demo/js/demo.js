@@ -187,6 +187,8 @@ function initDemo() {
   canvasElement.addEventListener('drop', async (evt) => {
     evt.stopPropagation();
     evt.preventDefault();
+    preview.topLayerColor = undefined;
+    preview.lastSegmentColor = undefined;
     canvasElement.classList.remove('dragging');
     const files = evt.dataTransfer.files;
     const file = files[0];
