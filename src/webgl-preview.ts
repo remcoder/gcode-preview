@@ -578,6 +578,7 @@ export class WebGLPreview {
   }
 
   private _enableDropHandler() {
+    console.warn('Drag and drop is deprecated as a library feature. See the demo how to implement your own.');
     this.canvas.addEventListener('dragover', (evt) => {
       evt.stopPropagation();
       evt.preventDefault();
