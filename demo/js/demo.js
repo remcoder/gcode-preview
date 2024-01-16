@@ -5,6 +5,7 @@ let favIcon;
 let thumb;
 const chunkSize = 1000;
 
+const canvasElement = document.querySelector('.gcode-previewer');
 const startLayer = document.getElementById('start-layer');
 const startLayerValue = document.getElementById('start-layer-value');
 const endLayer = document.getElementById('end-layer');
@@ -46,12 +47,13 @@ function initDemo() {
   console.debug('settings', settings);
 
   const preview = (window.preview = new GCodePreview.init({
-    canvas: document.querySelector('.gcode-previewer'),
+    canvas: canvasElement,
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
-    allowDragNDrop: true,
     topLayerColor: 'rgb(0, 255, 255)',
     lastSegmentColor: '#fff',
+    renderExtrusion: true,
+    renderTravel: false,
     renderTubes: false,
     extrusionColor: 'hotpink',
     backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
@@ -73,8 +75,6 @@ function initDemo() {
     backgroundColor.value = '#' + new THREE.Color(preview.backgroundColor).getHexString();
   });
 
-  preview.renderExtrusion = true;
-  preview.renderTravel = false;
   // preview.controls.autoRotate = true;
 
   startLayer.addEventListener('input', function () {
@@ -169,6 +169,38 @@ function initDemo() {
       preview.render();
     })
   );
+
+  canvasElement.addEventListener('dragover', (evt) => {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy';
+    canvasElement.classList.add('dragging');
+  });
+
+  canvasElement.addEventListener('dragleave', (evt) => {
+    evt.stopPropagation();
+    evt.preventDefault();
+    canvasElement.classList.remove('dragging');
+  });
+
+  canvasElement.addEventListener('drop', async (evt) => {
+    evt.stopPropagation();
+    evt.preventDefault();
+    preview.topLayerColor = undefined;
+    preview.lastSegmentColor = undefined;
+    canvasElement.classList.remove('dragging');
+    const files = evt.dataTransfer.files;
+    const file = files[0];
+
+    fileName.innerText = file.name;
+    fileSize.innerText = humanFileSize(file.size);
+
+    preview.clear();
+
+    await preview._readFromStream(file.stream());
+    updateUI();
+    preview.render();
+  });
 
   function updateBuildVolume() {
     const x = parseInt(buildVolumeX.value, 10);

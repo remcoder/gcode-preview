@@ -48,6 +48,8 @@ export type GCodePreviewOptions = {
   lineWidth?: number;
   nonTravelMoves?: string[];
   minLayerThreshold?: number;
+  renderExtrusion?: boolean;
+  renderTravel?: boolean;
   renderTubes?: boolean;
   startLayer?: number;
   targetId?: string;
@@ -111,6 +113,8 @@ export class WebGLPreview {
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
+    this.renderExtrusion = opts.renderExtrusion ?? this.renderExtrusion;
+    this.renderTravel = opts.renderTravel ?? this.renderTravel;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
     this.renderTubes = opts.renderTubes ?? this.renderTubes;
 
@@ -578,6 +582,7 @@ export class WebGLPreview {
   }
 
   private _enableDropHandler() {
+    console.warn('Drag and drop is deprecated as a library feature. See the demo how to implement your own.');
     this.canvas.addEventListener('dragover', (evt) => {
       evt.stopPropagation();
       evt.preventDefault();
