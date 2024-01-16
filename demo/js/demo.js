@@ -191,10 +191,14 @@ function initDemo() {
     const files = evt.dataTransfer.files;
     const file = files[0];
 
+    fileName.innerText = file.name;
+    fileSize.innerText = '??';
+
     preview.clear();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await preview._readFromStream(file.stream());
+    updateUI();
     preview.render();
   });
 
