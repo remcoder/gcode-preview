@@ -118,9 +118,9 @@ https://github.com/mrdoob/three.js/issues/16904
 
 A big thanks to these sponsors for their contributions. 
 
-[<img width=42 src="http://logo.q42.com/q42-logo.svg" /> Q42 ](http://q42.com)
+[<img width=42 src="http://logo.q42.com/q42-logo.svg" />](http://q42.com)
 
-[<img width=42 src="https://www.duet3d.com/image/catalog/logo/50_blue_wifi.png"> Duet3D](https://www.duet3d.com/)
+[<img  src="https://duet3d-media.fra1.digitaloceanspaces.com/strapi/c1d3c11cd0e71c45981cedaa2a9170ee.png">](https://www.duet3d.com/)
 
 
 ### Donate
