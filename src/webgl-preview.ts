@@ -1,7 +1,7 @@
 import { Parser, MoveCommand, Layer } from './gcode-parser';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
-import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
+import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
@@ -562,7 +562,7 @@ export class WebGLPreview {
   addThickLine(vertices: number[], color: number): void {
     if (!vertices.length) return;
 
-    const geometry = new LineGeometry();
+    const geometry = new LineSegmentsGeometry();
     this.disposables.push(geometry);
 
     const matLine = new LineMaterial({
