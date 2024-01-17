@@ -39,6 +39,7 @@
     "watch": "watch 'npm run build && copyfiles -f dist/gcode-preview.js demo/js' src ",
     "predemo": "npm run build && copyfiles -f node_modules/three/build/three.min.js dist/gcode-preview.js demo/js",
     "demo": "live-server demo --watch=.,js",
+    "benchmark": "live-server benchmark --watch=.,js --mount=/js:node_modules",
     "lint": "prettier --check . && eslint .",
     "lint:fix": "eslint . --fix",
     "prettier:fix": "prettier --plugin-search-dir . --write .",

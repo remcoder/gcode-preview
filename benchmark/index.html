@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<head>
+  <title>GCode Preview Benchmark Suite</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div>
+    <h1>Benchmark Suite</h1>
+
+    <h1>Versions</h1>
+    <label><input type="checkbox" checked>v2.13</label>
+    <label><input type="checkbox" checked>develop</label>
+    <h1>Options</h1>
+    <label><input type="checkbox" checked>Lines</label>
+    <label><input type="checkbox">Tubes</label>
+
+    <h1>Cases</h1>
+    <section>
+      <h2>Benchy</h2>
+      <button class="case-run" id="benchy">Run</button>
+      <canvas class="gcode-previewer"></canvas>
+      <div>
+        <h3>Results</h3>
+        <ul>
+          <li>Total time: <span id="benchy-total"></span></li>
+          <li>process time: <span id="benchy-process"></span></li>
+          <li>Render time: <span id="benchy-render"></span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script src="/js/three/build/three.min.js"></script>
+  <script src="js/gcode-preview.js"></script>
+  <script src="js/benchmark.js"></script>
+  <script>
+    
+    // loadGCodeFromServer('benchy.gcode');
+
+  </script>
+</body>
