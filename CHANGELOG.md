@@ -1,5 +1,38 @@
 ## next
 
+## 2.13 maintenance release
+
+- new options: 
+ - renderExtrusion
+ - renderTravel
+
+These options toggle te rendering of extrusion/travel lines
+
+fixed:
+ - fat lines incorrecty rendering lines between extrusion lines
+ - [demo] sidebar doesn't update after loading a new gcode file
+
+## 2.12 Tubular 🤙 
+- new experimental mode: tube rendering
+In this mode extrusion lines are rendered using volumetric tubes using THREEjs TubeGeometry. Currently this mode is still under development and considered experimental.
+
+To use it, pass the param `renderTubes: true`
+
+Known issues:
+ - performance: rendering takes several seconds or more for large models
+ - accuracy: line width and line height are not taken into account when setting the tube radius
+
+Thanks to @sophiedeziel for developing this feature.
+
+## 2.11 🏺 Vase Mode 🏺
+- new option: `minLayerTreshold`
+If the difference in Z exceeds the threshold a new layer is allocated.
+If not specified, the default value is 0. (0 meaning a new layer is allocated for each and every increase in Z, however tiny.)
+
+Setting a non-zero value helps to reduce the number of layers that are allocated in memory, which would otherwise cause lagging or even a lock up for spiral vases and such.
+   
+Thanks to @raulodev for the initial fix.
+
 ## 2.10 🎃 Halloween release 🎃
 
 This release is all about colors!

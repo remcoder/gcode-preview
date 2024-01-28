@@ -94,10 +94,20 @@ export class Parser {
   lines: string[] = [];
   preamble = new Layer(-1, [], 0); // TODO: remove preamble and treat as a regular layer? Unsure of the benefit
   layers: Layer[] = [];
-  currentLayer: Layer;
   curZ = 0;
-  maxZ = 0;
+  maxZ = -Infinity; // cannot start at 0 because of tolerance. first layer will always be created
   metadata: Metadata = { thumbnails: {} };
+  tolerance = 0; // The higher the tolerance, the fewer layers are created, so performance will improve.
+
+  /**
+   * Create a new Parser instance.
+   *
+   * @param minLayerThreshold - If specified, the minimum layer height to be considered a new layer. If not specified, the default value is 0.
+   * @returns A new Parser instance.
+   */
+  constructor(minLayerThreshold: number) {
+    this.tolerance = minLayerThreshold ?? this.tolerance;
+  }
 
   parseGCode(input: string | string[]): { layers: Layer[]; metadata: Metadata } {
     const lines = Array.isArray(input) ? input : input.split('\n');
@@ -176,29 +186,32 @@ export class Parser {
     for (let lineNumber = 0; lineNumber < commands.length; lineNumber++) {
       const cmd = commands[lineNumber];
 
-      if (!(cmd instanceof MoveCommand)) {
-        if (this.currentLayer) this.currentLayer.commands.push(cmd);
-        else this.preamble.commands.push(cmd);
-        continue;
-      }
-      const params = cmd.params;
-      if (params.z) {
-        // abs mode
-        this.curZ = params.z;
+      if (cmd instanceof MoveCommand) {
+        const params = cmd.params;
+
+        // update current z?
+        if (params.z) {
+          this.curZ = params.z; // abs mode
+        }
+
+        if (
+          params.e > 0 && // extruding?
+          (params.x != undefined || params.y != undefined) && // moving?
+          Math.abs(this.curZ - this.maxZ) > this.tolerance // new layer?
+        ) {
+          this.maxZ = this.curZ;
+          this.layers.push(new Layer(this.layers.length, [], lineNumber));
+        }
       }
 
-      if (params.e > 0 && (params.x != undefined || params.y != undefined) && this.curZ > this.maxZ) {
-        this.maxZ = this.curZ;
-        this.currentLayer = new Layer(this.layers.length, [cmd], lineNumber);
-        this.layers.push(this.currentLayer);
-        continue;
-      }
-
-      if (this.currentLayer) this.currentLayer.commands.push(cmd);
-      else this.preamble.commands.push(cmd);
+      this.maxLayer.commands.push(cmd);
     }
 
     return this.layers;
+  }
+
+  get maxLayer(): Layer {
+    return this.layers[this.layers.length - 1] ?? this.preamble;
   }
 
   parseMetadata(metadata: GCodeCommand[]): Metadata {

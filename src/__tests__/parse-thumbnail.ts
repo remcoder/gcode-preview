@@ -1,4 +1,4 @@
-/* eslint-env jest */
+import { test, expect } from 'vitest';
 
 import { Parser } from '../gcode-parser';
 import { Thumbnail } from '../thumbnail';
@@ -42,7 +42,7 @@ test('not matching size should be invalid', () => {
 });
 
 test('well-formatted thumbnail should be parsed', () => {
-  const parser = new Parser();
+  const parser = new Parser(0);
   const parsed = parser.parseGCode(gcodeCommentsWithThumbnail);
 
   expect(parsed).not.toBeNull();
@@ -52,21 +52,21 @@ test('well-formatted thumbnail should be parsed', () => {
 });
 
 test('no thumbnail should be parsed if none present', () => {
-  const parser = new Parser();
+  const parser = new Parser(0);
   const parsed = parser.parseGCode('; no thumbnail');
 
   expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(0);
 });
 
 test('thumbnail with incorrect size should be ignored', () => {
-  const parser = new Parser();
+  const parser = new Parser(0);
   const parsed = parser.parseGCode(gcodeCommentsWithThumbnail.replace('856', '857'));
 
   expect(Object.keys(parsed.metadata.thumbnails).length).toEqual(0);
 });
 
 test('no thumbnail should be parsed if "end thumbnail" is missing', () => {
-  const parser = new Parser();
+  const parser = new Parser(0);
   const parts = gcodeCommentsWithThumbnail.split(';');
   parts.pop();
   const parsed = parser.parseGCode(parts.join(';'));
@@ -75,7 +75,7 @@ test('no thumbnail should be parsed if "end thumbnail" is missing', () => {
 });
 
 test('only 1 thumbnail should be parsed if "end thumbnail" is missing for the first but not the second', () => {
-  const parser = new Parser();
+  const parser = new Parser(0);
   const parts = gcodeCommentsWithThumbnail.split(';');
   parts.pop();
   const parts2 = gcodeCommentsWithThumbnail.split(';');
@@ -90,7 +90,7 @@ test('only 1 thumbnail should be parsed if "end thumbnail" is missing for the fi
 });
 
 test('skip thumb if not base64', () => {
-  const parser = new Parser();
+  const parser = new Parser(0);
   const gcodeWithIllegalBase64 =
     `
   ; thumbnail begin 16x16 123

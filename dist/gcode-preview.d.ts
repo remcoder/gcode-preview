@@ -36,10 +36,17 @@ declare class Parser {
     lines: string[];
     preamble: Layer;
     layers: Layer[];
-    currentLayer: Layer;
     curZ: number;
     maxZ: number;
     metadata: Metadata;
+    tolerance: number;
+    /**
+     * Create a new Parser instance.
+     *
+     * @param minLayerThreshold - If specified, the minimum layer height to be considered a new layer. If not specified, the default value is 0.
+     * @returns A new Parser instance.
+     */
+    constructor(minLayerThreshold: number);
     parseGCode(input: string | string[]): {
         layers: Layer[];
         metadata: Metadata;
@@ -50,6 +57,7 @@ declare class Parser {
     private isAlpha;
     private parseParams;
     private groupIntoLayers;
+    get maxLayer(): Layer;
     parseMetadata(metadata: GCodeCommand[]): Metadata;
 }
 interface Parser {
@@ -61,7 +69,7 @@ declare type RenderLayer = {
     travel: number[];
     z: number;
 };
-declare type Vector3 = {
+declare type GVector3 = {
     x: number;
     y: number;
     z: number;
@@ -69,8 +77,17 @@ declare type Vector3 = {
     i: number;
     j: number;
 };
-declare type Point = Vector3;
-declare type BuildVolume = Vector3;
+declare type Point = GVector3;
+declare type BuildVolume = GVector3;
+declare type State = {
+    x: number;
+    y: number;
+    z: number;
+    r: number;
+    e: number;
+    i: number;
+    j: number;
+};
 declare type GCodePreviewOptions = {
     allowDragNDrop?: boolean;
     buildVolume?: BuildVolume;
@@ -83,12 +100,17 @@ declare type GCodePreviewOptions = {
     lastSegmentColor?: ColorRepresentation;
     lineWidth?: number;
     nonTravelMoves?: string[];
+    minLayerThreshold?: number;
+    renderExtrusion?: boolean;
+    renderTravel?: boolean;
+    renderTubes?: boolean;
     startLayer?: number;
     targetId?: string;
     topLayerColor?: ColorRepresentation;
     travelColor?: ColorRepresentation;
 };
 declare class WebGLPreview {
+    minLayerThreshold: number;
     parser: Parser;
     targetId: string;
     scene: Scene;
@@ -99,6 +121,7 @@ declare class WebGLPreview {
     canvas: HTMLCanvasElement;
     renderExtrusion: boolean;
     renderTravel: boolean;
+    renderTubes: boolean;
     lineWidth?: number;
     startLayer?: number;
     endLayer?: number;
@@ -134,6 +157,8 @@ declare class WebGLPreview {
     animate(): void;
     processGCode(gcode: string | string[]): void;
     render(): void;
+    renderLayer(index: number, state: State): void;
+    doRenderExtrusion(layer: RenderLayer, index: number): void;
     setInches(): void;
     drawBuildVolume(): void;
     clear(): void;
@@ -141,6 +166,7 @@ declare class WebGLPreview {
     addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void;
     addArcSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean, cw: boolean): void;
     addLine(vertices: number[], color: number): void;
+    addTubeLine(vertices: number[], color: number): void;
     addThickLine(vertices: number[], color: number): void;
     private _enableDropHandler;
     _readFromStream(stream: ReadableStream): Promise<void>;

@@ -1,32 +1,39 @@
 import { Parser, MoveCommand, Layer } from './gcode-parser';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
-import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
+import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
 import {
-  Scene,
-  PerspectiveCamera,
-  WebGLRenderer,
-  Group,
-  Color,
-  REVISION,
-  Fog,
+  AmbientLight,
   AxesHelper,
-  Euler,
   BufferGeometry,
+  CatmullRomCurve3,
+  Color,
+  ColorRepresentation,
+  Euler,
   Float32BufferAttribute,
+  Fog,
+  Group,
   LineBasicMaterial,
   LineSegments,
-  ColorRepresentation
+  Mesh,
+  MeshLambertMaterial,
+  PerspectiveCamera,
+  PointLight,
+  REVISION,
+  Scene,
+  TubeGeometry,
+  Vector3,
+  WebGLRenderer
 } from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
-type Vector3 = { x: number; y: number; z: number; r: number; i: number; j: number };
-type Point = Vector3;
-type BuildVolume = Vector3;
-type State = { x: number; y: number; z: number; r: number; e: number; i: number; j: number }; // feedrate?
+type GVector3 = { x: number; y: number; z: number; r: number; i: number; j: number };
+type Point = GVector3;
+type BuildVolume = GVector3;
+export type State = { x: number; y: number; z: number; r: number; e: number; i: number; j: number }; // feedrate?
 
 export type GCodePreviewOptions = {
   allowDragNDrop?: boolean;
@@ -40,6 +47,10 @@ export type GCodePreviewOptions = {
   lastSegmentColor?: ColorRepresentation;
   lineWidth?: number;
   nonTravelMoves?: string[];
+  minLayerThreshold?: number;
+  renderExtrusion?: boolean;
+  renderTravel?: boolean;
+  renderTubes?: boolean;
   startLayer?: number;
   targetId?: string;
   topLayerColor?: ColorRepresentation;
@@ -53,7 +64,8 @@ const target = {
 };
 
 export class WebGLPreview {
-  parser = new Parser();
+  minLayerThreshold = 0.05;
+  parser: Parser;
   targetId: string;
   scene: Scene;
   camera: PerspectiveCamera;
@@ -63,6 +75,7 @@ export class WebGLPreview {
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
   renderTravel = false;
+  renderTubes = false;
   lineWidth?: number;
   startLayer?: number;
   endLayer?: number;
@@ -75,6 +88,7 @@ export class WebGLPreview {
   beyondFirstMove = false;
   inches = false;
   nonTravelmoves: string[] = [];
+
   private disposables: { dispose(): void }[] = [];
   private _extrusionColor = new Color(0xffff00);
   private _backgroundColor = new Color(0xe0e0e0);
@@ -83,6 +97,8 @@ export class WebGLPreview {
   private _lastSegmentColor?: Color;
 
   constructor(opts: GCodePreviewOptions) {
+    this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
+    this.parser = new Parser(this.minLayerThreshold);
     this.scene = new Scene();
     this.scene.background = this._backgroundColor;
     if (opts.backgroundColor !== undefined) {
@@ -97,7 +113,10 @@ export class WebGLPreview {
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
+    this.renderExtrusion = opts.renderExtrusion ?? this.renderExtrusion;
+    this.renderTravel = opts.renderTravel ?? this.renderTravel;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
+    this.renderTubes = opts.renderTubes ?? this.renderTubes;
 
     if (opts.extrusionColor != undefined) {
       this.extrusionColor = new Color(opts.extrusionColor);
@@ -233,86 +252,20 @@ export class WebGLPreview {
       this.drawBuildVolume();
     }
 
+    if (this.renderTubes) {
+      const light = new AmbientLight(0xcccccc, 1);
+      const dLight = new PointLight(0xffffff, 0.8);
+      dLight.position.set(0, 500, 500);
+      this.scene.add(light);
+      this.scene.add(dLight);
+    }
+
     this.group = new Group();
     this.group.name = 'gcode';
-    const state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
+    const state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
 
     for (let index = 0; index < this.layers.length; index++) {
-      if (index > this.maxLayerIndex) break;
-
-      const currentLayer: RenderLayer = {
-        extrusion: [],
-        travel: [],
-        z: state.z
-      };
-      // console.log('currentLayer :>> ', currentLayer);
-      const l = this.layers[index];
-      for (const cmd of l.commands) {
-        if (cmd.gcode == 'g20') {
-          this.setInches();
-        } else if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
-          const g = cmd as MoveCommand;
-          const next: State = {
-            x: g.params.x ?? state.x,
-            y: g.params.y ?? state.y,
-            z: g.params.z ?? state.z,
-            r: g.params.r ?? state.r,
-            e: g.params.e ?? state.e,
-            i: g.params.i ?? state.i,
-            j: g.params.j ?? state.j
-          };
-
-          if (index >= this.minLayerIndex) {
-            const extrude = g.params.e > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
-            const moving = next.x != state.x || next.y != state.y;
-            if (moving) {
-              if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
-                if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
-                  this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
-                } else {
-                  this.addLineSegment(currentLayer, state, next, extrude);
-                }
-              }
-            }
-          }
-
-          // update state
-          if (next.x) state.x = next.x;
-          if (next.y) state.y = next.y;
-          if (next.z) state.z = next.z;
-          // if (next.e) state.e = next.e; // where not really tracking e as distance (yet) but we only check if some commands are extruding (positive e)
-          if (!this.beyondFirstMove) this.beyondFirstMove = true;
-        }
-      }
-
-      if (this.renderExtrusion) {
-        // const brightness = 0.1 + (0.7 * index) / this.layers.length;
-        const brightness = 0.2 + (0.6 * index) / this.layers.length;
-        // const brightness = 0.5;
-        // console.log('brightness :>> ', brightness);
-
-        this._extrusionColor.getHSL(target);
-        //  console.log('target :>> ', target);
-        const extrusionColor = new Color().setHSL(target.h, target.s, brightness);
-
-        if (index == this.layers.length - 1) {
-          const layerColor = this._topLayerColor ?? extrusionColor;
-          const lastSegmentColor = this._lastSegmentColor ?? layerColor;
-
-          const endPoint = currentLayer.extrusion.splice(-3);
-          const preendPoint = currentLayer.extrusion.splice(-3);
-          this.addLine(currentLayer.extrusion, layerColor.getHex());
-          this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
-        } else {
-          this.addLine(currentLayer.extrusion, extrusionColor.getHex());
-        }
-      }
-
-      if (this.renderTravel) {
-        console.warn('adding travel line');
-        // console.error('adding travel line')
-        this.addLine(currentLayer.travel, this._travelColor.getHex());
-      }
+      this.renderLayer(index, state);
     }
 
     this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
@@ -326,6 +279,95 @@ export class WebGLPreview {
 
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  renderLayer(index: number, state: State): void {
+    if (index > this.maxLayerIndex) return;
+
+    const currentLayer: RenderLayer = {
+      extrusion: [],
+      travel: [],
+      z: state.z
+    };
+    const l = this.layers[index];
+    for (const cmd of l.commands) {
+      if (cmd.gcode == 'g20') {
+        this.setInches();
+      } else if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
+        const g = cmd as MoveCommand;
+        const next: State = {
+          x: g.params.x ?? state.x,
+          y: g.params.y ?? state.y,
+          z: g.params.z ?? state.z,
+          r: g.params.r ?? state.r,
+          e: g.params.e ?? state.e,
+          i: g.params.i ?? state.i,
+          j: g.params.j ?? state.j
+        };
+
+        if (index >= this.minLayerIndex) {
+          const extrude = g.params.e > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
+          const moving = next.x != state.x || next.y != state.y || next.z != state.z;
+          if (moving) {
+            if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
+              if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
+                this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
+              } else {
+                this.addLineSegment(currentLayer, state, next, extrude);
+              }
+            }
+          }
+        }
+
+        // update state
+        state.x = next.x;
+        state.y = next.y;
+        state.z = next.z;
+        // if (next.e) state.e = next.e; // where not really tracking e as distance (yet) but we only check if some commands are extruding (positive e)
+        if (!this.beyondFirstMove) this.beyondFirstMove = true;
+      }
+    }
+
+    this.doRenderExtrusion(currentLayer, index);
+  }
+
+  doRenderExtrusion(layer: RenderLayer, index: number): void {
+    if (this.renderExtrusion) {
+      let extrusionColor;
+      if (this.singleLayerMode || this.renderTubes) {
+        extrusionColor = this._extrusionColor;
+      } else {
+        const brightness = 0.1 + (0.7 * index) / this.layers.length;
+
+        this._extrusionColor.getHSL(target);
+        extrusionColor = new Color().setHSL(target.h, target.s, brightness);
+      }
+
+      if (index == this.layers.length - 1) {
+        const layerColor = this._topLayerColor ?? extrusionColor;
+        const lastSegmentColor = this._lastSegmentColor ?? layerColor;
+
+        const endPoint = layer.extrusion.splice(-3);
+        const preendPoint = layer.extrusion.splice(-3);
+        if (this.renderTubes) {
+          this.addTubeLine(layer.extrusion, layerColor.getHex());
+          this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+        } else {
+          this.addLine(layer.extrusion, layerColor.getHex());
+          this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+        }
+      } else {
+        if (this.renderTubes) {
+          this.addTubeLine(layer.extrusion, extrusionColor.getHex());
+        } else {
+          this.addLine(layer.extrusion, extrusionColor.getHex());
+        }
+      }
+    }
+
+    if (this.renderTravel) {
+      this.addLine(layer.travel, this._travelColor.getHex());
+    }
   }
 
   setInches(): void {
@@ -349,7 +391,7 @@ export class WebGLPreview {
     this.startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
-    this.parser = new Parser();
+    this.parser = new Parser(this.minLayerThreshold);
     this.beyondFirstMove = false;
   }
 
@@ -467,7 +509,6 @@ export class WebGLPreview {
   }
 
   addLine(vertices: number[], color: number): void {
-    // TODO: remove this
     if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
       this.addThickLine(vertices, color);
       return;
@@ -483,11 +524,49 @@ export class WebGLPreview {
     this.group.add(lineSegments);
   }
 
-  // TODO: remove this
+  addTubeLine(vertices: number[], color: number): void {
+    let curvePoints: Vector3[] = [];
+    const curves: CatmullRomCurve3[] = [];
+
+    // Merging into one curve for performance
+    for (let i = 0; i < vertices.length; i += 6) {
+      const v = vertices.slice(i, i + 6);
+      const startPoint = new Vector3(v[0], v[1], v[2]);
+      const endPoint = new Vector3(v[3], v[4], v[5]);
+
+      if (curvePoints.length === 0) {
+        curvePoints.push(startPoint);
+      }
+
+      if (!curvePoints[curvePoints.length - 1].equals(startPoint)) {
+        curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
+        curvePoints = [];
+        curvePoints.push(startPoint);
+      }
+
+      curvePoints.push(endPoint);
+    }
+
+    if (curvePoints.length > 2) {
+      curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
+    }
+
+    curves.forEach((curve) => {
+      const material = new MeshLambertMaterial({ color: color });
+      this.disposables.push(material);
+      const segments = Math.ceil(curve.getLength() * 2);
+      const geometry = new TubeGeometry(curve, segments, 0.3, 4, false);
+      this.disposables.push(geometry);
+      const lineSegments = new Mesh(geometry, material);
+
+      this.group.add(lineSegments);
+    });
+  }
+
   addThickLine(vertices: number[], color: number): void {
     if (!vertices.length) return;
 
-    const geometry = new LineGeometry();
+    const geometry = new LineSegmentsGeometry();
     this.disposables.push(geometry);
 
     const matLine = new LineMaterial({
@@ -503,6 +582,7 @@ export class WebGLPreview {
   }
 
   private _enableDropHandler() {
+    console.warn('Drag and drop is deprecated as a library feature. See the demo how to implement your own.');
     this.canvas.addEventListener('dragover', (evt) => {
       evt.stopPropagation();
       evt.preventDefault();

@@ -5,10 +5,16 @@ let favIcon;
 let thumb;
 const chunkSize = 1000;
 
+const canvasElement = document.querySelector('.gcode-previewer');
 const startLayer = document.getElementById('start-layer');
+const startLayerValue = document.getElementById('start-layer-value');
 const endLayer = document.getElementById('end-layer');
+const endLayerValue = document.getElementById('end-layer-value');
+const lineWidth = document.getElementById('line-width');
+const lineWidthValue = document.getElementById('line-width-value');
 const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
+const toggleRenderTubes = document.getElementById('render-tubes');
 const extrusionColor = document.getElementById('extrusion-color');
 const backgroundColor = document.getElementById('background-color');
 const toggleTravel = document.getElementById('travel');
@@ -41,15 +47,18 @@ function initDemo() {
   console.debug('settings', settings);
 
   const preview = (window.preview = new GCodePreview.init({
-    canvas: document.querySelector('.gcode-previewer'),
+    canvas: canvasElement,
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
-    allowDragNDrop: true,
     topLayerColor: 'rgb(0, 255, 255)',
     lastSegmentColor: '#fff',
+    renderExtrusion: true,
+    renderTravel: false,
+    renderTubes: false,
     extrusionColor: 'hotpink',
     backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
     travelColor: new THREE.Color('lime')
+    // minLayerThreshold: 0.1
   }));
 
   // set default colors on inputs
@@ -66,19 +75,27 @@ function initDemo() {
     backgroundColor.value = '#' + new THREE.Color(preview.backgroundColor).getHexString();
   });
 
-  preview.renderExtrusion = true;
-  preview.renderTravel = false;
   // preview.controls.autoRotate = true;
 
   startLayer.addEventListener('input', function () {
     preview.startLayer = +startLayer.value;
+    startLayerValue.innerText = startLayer.value;
     endLayer.value = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
+    endLayerValue.innerText = endLayer.value;
     preview.render();
   });
 
   endLayer.addEventListener('input', function () {
     preview.endLayer = +endLayer.value;
+    endLayerValue.innerText = endLayer.value;
     startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
+    startLayerValue.innerText = startLayer.value;
+    preview.render();
+  });
+
+  lineWidth.addEventListener('input', function () {
+    preview.lineWidth = +lineWidth.value;
+    lineWidthValue.innerText = lineWidth.value;
     preview.render();
   });
 
@@ -96,6 +113,12 @@ function initDemo() {
     preview.renderExtrusion = toggleExtrusion.checked;
     preview.render();
   });
+
+  toggleRenderTubes.addEventListener('click', function () {
+    preview.renderTubes = toggleRenderTubes.checked;
+    preview.render();
+  });
+
   extrusionColor.addEventListener('input', () =>
     throttle(() => {
       console.log('extrusionColor.value :>> ', extrusionColor.value);
@@ -148,6 +171,38 @@ function initDemo() {
       preview.render();
     })
   );
+
+  canvasElement.addEventListener('dragover', (evt) => {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy';
+    canvasElement.classList.add('dragging');
+  });
+
+  canvasElement.addEventListener('dragleave', (evt) => {
+    evt.stopPropagation();
+    evt.preventDefault();
+    canvasElement.classList.remove('dragging');
+  });
+
+  canvasElement.addEventListener('drop', async (evt) => {
+    evt.stopPropagation();
+    evt.preventDefault();
+    preview.topLayerColor = undefined;
+    preview.lastSegmentColor = undefined;
+    canvasElement.classList.remove('dragging');
+    const files = evt.dataTransfer.files;
+    const file = files[0];
+
+    fileName.innerText = file.name;
+    fileSize.innerText = humanFileSize(file.size);
+
+    preview.clear();
+
+    await preview._readFromStream(file.stream());
+    updateUI();
+    preview.render();
+  });
 
   function updateBuildVolume() {
     const x = parseInt(buildVolumeX.value, 10);
@@ -229,8 +284,13 @@ function updateUI() {
   startLayer.setAttribute('max', gcodePreview.layers.length);
   endLayer.setAttribute('max', gcodePreview.layers.length);
   endLayer.value = gcodePreview.layers.length;
+  endLayerValue.innerText = endLayer.value;
+
+  startLayerValue.innerText = startLayer.value;
 
   layerCount.innerText = gcodePreview.layers && gcodePreview.layers.length + ' layers';
+  // lineWidth.value = gcodePreview.lineWidth ?? null;
+  lineWidthValue.innerText = lineWidth.value;
 
   // console.log(gcodePreview.layers);
 
