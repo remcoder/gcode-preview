@@ -101,6 +101,7 @@ export class Parser {
 
   parseGCode(input: string | string[]): { layers: Layer[]; metadata: Metadata } {
     const lines = Array.isArray(input) ? input : input.split('\n');
+    console.log('lines :>> ', lines);
 
     this.lines = this.lines.concat(lines);
 

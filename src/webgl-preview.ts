@@ -292,7 +292,7 @@ export class WebGLPreview {
         // console.log('brightness :>> ', brightness);
 
         this._extrusionColor.getHSL(target);
-         console.log('target :>> ', target);
+        //  console.log('target :>> ', target);
         const extrusionColor = new Color().setHSL(target.h, target.s, brightness);
 
         if (index == this.layers.length - 1) {
