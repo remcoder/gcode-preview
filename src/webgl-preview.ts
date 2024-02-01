@@ -88,6 +88,7 @@ export class WebGLPreview {
   beyondFirstMove = false;
   inches = false;
   nonTravelmoves: string[] = [];
+  _animationFrameId?: number;
 
   private disposables: { dispose(): void }[] = [];
   private _extrusionColor = new Color(0xffff00);
@@ -223,7 +224,7 @@ export class WebGLPreview {
   }
 
   animate(): void {
-    requestAnimationFrame(() => this.animate());
+    this._animationFrameId = requestAnimationFrame(() => this.animate());
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
   }
@@ -579,6 +580,15 @@ export class WebGLPreview {
     const line = new LineSegments2(geometry, matLine);
 
     this.group.add(line);
+  }
+
+  destroy(): void {
+    this.disposables.forEach((d) => d.dispose());
+    this.disposables = [];
+    this.controls.dispose();
+    this.renderer.dispose();
+
+    if (this._animationFrameId !== undefined) cancelAnimationFrame(this._animationFrameId);
   }
 
   private _enableDropHandler() {
