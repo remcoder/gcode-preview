@@ -9,7 +9,7 @@
   ],
   "main": "src/index.tsx",
   "dependencies": {
-    "gcode-preview": "2.8.2",
+    "gcode-preview": "file:..",
     "react": "18.0.0",
     "react-dom": "18.0.0",
     "react-scripts": "4.0.3"
