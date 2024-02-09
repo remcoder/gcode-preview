@@ -3,21 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "cd ../.. && npm run build",
+    "preinstall": "cd ../.. && npm run build",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build"
-  },
-  "engines": {
-    "node": ">=16.0.0 <17.0.0"
   },
   "dependencies": {
     "gcode-preview": "file:../..",
     "minimist": "^1.2.3",
     "three": "^0.145.0",
-    "vue": "^2.6.11"
+    "vue": "^2.7"
   },
   "devDependencies": {
-    "@vue/cli-service": "^3.12.1",
-    "vue-template-compiler": "^2.6.11"
+    "@vue/cli-service": "^5.0.8",
+    "vue-template-compiler": "^2.7"
   }
 }
