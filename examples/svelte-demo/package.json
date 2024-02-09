@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "postinstall": "cd ../.. && npm run build"
+    "preinstall": "cd ../.. && npm run build"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^1.0.2",
