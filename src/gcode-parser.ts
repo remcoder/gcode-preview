@@ -65,7 +65,7 @@ export class GCodeCommand {
     public src: string,
     public gcode: string,
     public params: CommandParams,
-    public comment?: string
+    public comment: string | undefined
   ) {}
 }
 
@@ -109,7 +109,10 @@ export class Parser {
     this.tolerance = minLayerThreshold ?? this.tolerance;
   }
 
-  parseGCode(input: string | string[]): { layers: Layer[]; metadata: Metadata } {
+  parseGCode(input: string | string[]): {
+    layers: Layer[];
+    metadata: Metadata;
+  } {
     const lines = Array.isArray(input) ? input : input.split('\n');
 
     this.lines = this.lines.concat(lines);
@@ -128,14 +131,14 @@ export class Parser {
   }
 
   private lines2commands(lines: string[]) {
-    return lines.map((l) => this.parseCommand(l));
+    return lines.map((l) => this.parseCommand(l)).filter((cmd) => cmd != null) as GCodeCommand[];
   }
 
   private parseCommand(line: string, keepComments = true): GCodeCommand | null {
     const input = line.trim();
     const splitted = input.split(';');
     const cmd = splitted[0];
-    const comment = (keepComments && splitted[1]) || null;
+    const comment = (keepComments && splitted[1]) || undefined;
 
     const parts = cmd.split(/ +/g);
     const gcode = parts[0].toLowerCase();
@@ -194,7 +197,7 @@ export class Parser {
         }
 
         if (
-          params.e > 0 && // extruding?
+          (params.e ?? 0) > 0 && // extruding?
           (params.x != undefined || params.y != undefined) && // moving?
           Math.abs(this.curZ - this.maxZ) > this.tolerance // new layer?
         ) {
@@ -216,10 +219,11 @@ export class Parser {
   parseMetadata(metadata: GCodeCommand[]): Metadata {
     const thumbnails: Record<string, Thumbnail> = {};
 
-    let thumb: Thumbnail = null;
+    let thumb: Thumbnail | undefined;
 
     for (const cmd of metadata) {
       const comment = cmd.comment;
+      if (!comment) continue;
       const idxThumbBegin = comment.indexOf('thumbnail begin');
       const idxThumbEnd = comment.indexOf('thumbnail end');
 
@@ -232,7 +236,7 @@ export class Parser {
           if (thumb.isValid) {
             thumbnails[thumb.size] = thumb;
           }
-          thumb = null;
+          thumb = undefined;
         }
       }
     }
