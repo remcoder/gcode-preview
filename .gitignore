@@ -10,3 +10,4 @@ TODO.md
 .DS_Store
 examples/files
 react-typescript-demo/.env
+dist/*
