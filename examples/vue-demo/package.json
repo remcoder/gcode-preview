@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "cd .. && npm run build",
+    "postinstall": "cd ../.. && npm run build",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build"
   },
@@ -11,7 +11,7 @@
     "node": ">=16.0.0 <17.0.0"
   },
   "dependencies": {
-    "gcode-preview": "file:..",
+    "gcode-preview": "file:../..",
     "minimist": "^1.2.3",
     "three": "^0.145.0",
     "vue": "^2.6.11"
