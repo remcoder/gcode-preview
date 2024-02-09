@@ -231,10 +231,6 @@ export class Parser {
         } else {
           if (thumb.isValid) {
             thumbnails[thumb.size] = thumb;
-            console.debug('thumb found', thumb.size);
-            console.debug('declared length', thumb.charLength, 'actual length', thumb.chars.length);
-          } else {
-            console.warn('thumb found but seems to be invalid');
           }
           thumb = null;
         }
