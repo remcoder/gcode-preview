@@ -1,6 +1,5 @@
 /*eslint prefer-const: "error"*/
 /* global THREE, GCodePreview, Canvas2Image */
-let gcodePreview;
 let favIcon;
 let thumb;
 const chunkSize = 1000;
@@ -15,8 +14,7 @@ const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 function initDemo() {
-
-  const preview = (window.preview = new GCodePreview.init({
+  const preview = new GCodePreview.init({
     canvas: canvasElement,
     buildVolume: { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
@@ -24,12 +22,12 @@ function initDemo() {
     lastSegmentColor: '#fff',
     renderExtrusion: true,
     renderTravel: false,
-    renderTubes: false,
+    renderTubes: true,
     extrusionColor: 'hotpink',
     backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
     travelColor: new THREE.Color('lime')
     // minLayerThreshold: 0.1
-  }));
+  });
 
   preferDarkMode.addEventListener('change', (e) => {
     if (e.matches) {
@@ -44,46 +42,41 @@ function initDemo() {
     preview.resize();
   });
 
-  gcodePreview = preview;
-
   return preview;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-async function loadGCodeFromServer(file) {
-  const response = await fetch(file);
+async function runBenchy() {
+  const response = await fetch('benchy.gcode');
 
   if (response.status !== 200) {
     console.error('ERROR. Status Code: ' + response.status);
     return;
   }
-
   const gcode = await response.text();
-  preview.clear();
+
+  const initStart = performance.now();
+  let preview = initDemo();
+  const initEnd = performance.now();
 
   const processStart = performance.now();
   await preview.processGCode(gcode);
   const processEnd = performance.now();
 
-  const renderStart = performance.now();
-  preview.render();
-  const renderEnd = performance.now();
+  const destroyStart = performance.now();
+  delete preview
+  const destroyEnd = performance.now();
   return ({
     process: processEnd - processStart,
-    render: renderEnd - renderStart,
-    total: renderEnd - processStart
+    init: initEnd - initStart,
+    destroy: destroyEnd - destroyStart,
+    total: destroyEnd - initStart
   })
 }
 
-
-
-async function runBenchy() {
-  const gcodeDemo = initDemo();
-  return loadGCodeFromServer('benchy.gcode')
-}
-
 const runBenchyBtn = document.getElementById('benchy');
+
 runBenchyBtn.addEventListener('click', function () {
+
   let benchyResults = Promise.all(([...Array(10)]).map(async () => {
     return await runBenchy();
   }));
@@ -92,16 +85,13 @@ runBenchyBtn.addEventListener('click', function () {
 
   benchyResults.then ((r) => {
     console.log(r)
-    const processTime = r.map((v) => v.process).reduce((a, b) => a + b, 0)
-    const renderTime = r.map((v) => v.render).reduce((a, b) => a + b, 0)
-    const totalTime = r.map((v) => v.total).reduce((a, b) => a + b, 0)
+    const processTime = r.map((v) => v.process).reduce((a, b) => a + b, 0).toFixed(2)
+    const initTime = r.map((v) => v.init).reduce((a, b) => a + b, 0).toFixed(2)
+    const destroyTime = r.map((v) => v.destroy).reduce((a, b) => a + b, 0).toFixed(2)
+    const totalTime = r.map((v) => v.total).reduce((a, b) => a + b, 0).toFixed(2)
+    document.getElementById('benchy-init').innerHTML = initTime
     document.getElementById('benchy-process').innerHTML = processTime
-    document.getElementById('benchy-render').innerHTML = renderTime
+    document.getElementById('benchy-destroy').innerHTML = destroyTime
     document.getElementById('benchy-total').innerHTML = totalTime
   })
-  
-
-  
-    
-
 })
