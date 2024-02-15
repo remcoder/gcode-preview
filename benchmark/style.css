@@ -41,3 +41,21 @@ a {
     color: #d9d9d9;
   }
 }
+
+table {
+  font-family: 'Courier New', Courier, monospace;
+  width: 90%;
+  text-align: right;
+}
+
+thead, tfoot {
+  font-weight: 900;
+}
+
+thead th, tfoot td {
+  padding: 10px 0px;
+}
+
+.hidden {
+  display: none;
+}

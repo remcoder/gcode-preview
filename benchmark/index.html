@@ -14,26 +14,38 @@
     <h1>Options</h1>
     <label><input type="checkbox" checked>Lines</label>
     <label><input type="checkbox">Tubes</label> -->
+    <label>Iterations : <input type="number" value="10" id="iterations"></label>
 
     <h1>Cases</h1>
     <section>
       <h2>Benchy</h2>
       <button class="case-run" id="benchy">Run</button>
-      <canvas class="gcode-previewer"></canvas>
+      <div id="progress" class="hidden">Progress: <span id="it"></span>/<span id="num"></span></div>
+      <div id="preview-container"></div>
       <div>
         <h3>Results</h3>
-        <ul>
-          <li>Init time: <span id="benchy-init"></span></li>
-          <li>Process time: <span id="benchy-process"></span></li>
-          <li>Destroy time: <span id="benchy-destroy"></span></li>
-          <li><b>Total time: <span id="benchy-total"></span></b></li>
-        </ul>
+
+        <table id="results">
+          <thead>
+            <tr>
+              <th>Iteration</th>
+              <th>Total</th>
+              <th>Init</th>
+              <th>Process</th>
+              <th>Destroy</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+          <tfoot>
+          </tfoot>
+        </table>
       </div>
     </section>
   </div>
 
   <script src="/js/three/build/three.min.js"></script>
-  <script src="js/gcode-preview.js"></script>
+  <script src="/dist/gcode-preview.js"></script>
   <script src="js/benchmark.js"></script>
   <script>
 
