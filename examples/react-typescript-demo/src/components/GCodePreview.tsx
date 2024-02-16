@@ -58,7 +58,7 @@ function GCodePreviewUI(
         lineWidth,
         topLayerColor: new THREE.Color(topLayerColor).getHex(),
         lastSegmentColor: new THREE.Color(lastSegmentColor).getHex(),
-        buildVolume: { x: 250, y: 220, z: 150 },
+        buildVolume: { x: 250, y: 220, z: 150, r: 0, i: 0, j: 0 },
         initialCameraPosition: [0, 400, 450],
         allowDragNDrop: false
       })
