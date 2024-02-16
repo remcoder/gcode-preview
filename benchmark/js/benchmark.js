@@ -52,7 +52,7 @@ function initDemo() {
 }
 
 async function runBenchy() {
-  const response = await fetch('benchy.gcode');
+  const response = await fetch('small.gcode');
 
   if (response.status !== 200) {
     console.error('ERROR. Status Code: ' + response.status);
