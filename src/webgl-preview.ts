@@ -30,10 +30,25 @@ import {
 } from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
-type GVector3 = { x: number; y: number; z: number; r: number; i: number; j: number };
+type GVector3 = {
+  x: number;
+  y: number;
+  z: number;
+  r: number;
+  i: number;
+  j: number;
+};
 type Point = GVector3;
 type BuildVolume = GVector3;
-export type State = { x: number; y: number; z: number; r: number; e: number; i: number; j: number }; // feedrate?
+export type State = {
+  x: number;
+  y: number;
+  z: number;
+  r: number;
+  e: number;
+  i: number;
+  j: number;
+}; // feedrate?
 
 export type GCodePreviewOptions = {
   allowDragNDrop?: boolean;
@@ -66,12 +81,12 @@ const target = {
 export class WebGLPreview {
   minLayerThreshold = 0.05;
   parser: Parser;
-  targetId: string;
+  targetId?: string; // deprecated
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
-  group: Group;
-  container: HTMLElement;
+  group?: Group;
+  container?: HTMLElement;
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
   renderTravel = false;
@@ -80,7 +95,7 @@ export class WebGLPreview {
   startLayer?: number;
   endLayer?: number;
   singleLayerMode = false;
-  buildVolume: BuildVolume;
+  buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
   debug = false;
   allowDragNDrop = false;
@@ -104,7 +119,6 @@ export class WebGLPreview {
     if (opts.backgroundColor !== undefined) {
       this.backgroundColor = new Color(opts.backgroundColor);
     }
-    this.canvas = opts.canvas;
     this.targetId = opts.targetId;
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
@@ -138,11 +152,10 @@ export class WebGLPreview {
       console.warn('`targetId` is deprecated and will removed in the future. Use `canvas` instead.');
     }
 
-    if (!this.canvas && !this.targetId) {
-      throw Error('Set either opts.canvas or opts.targetId');
-    }
-
-    if (!this.canvas) {
+    if (!opts.canvas) {
+      if (!this.targetId) {
+        throw Error('Set either opts.canvas or opts.targetId');
+      }
       const container = document.getElementById(this.targetId);
       if (!container) throw new Error('Unable to find element ' + this.targetId);
 
@@ -151,6 +164,7 @@ export class WebGLPreview {
 
       container.appendChild(this.canvas);
     } else {
+      this.canvas = opts.canvas;
       this.renderer = new WebGLRenderer({
         canvas: this.canvas,
         preserveDrawingBuffer: true
@@ -239,10 +253,11 @@ export class WebGLPreview {
     }
 
     while (this.disposables.length > 0) {
-      this.disposables.pop().dispose();
+      const disposable = this.disposables.pop();
+      if (disposable) disposable.dispose();
     }
 
-    if (this.debug) {
+    if (this.debug && this.buildVolume) {
       // show webgl axes
       const axesHelper = new AxesHelper(Math.max(this.buildVolume.x / 2, this.buildVolume.y / 2) + 20);
       this.scene.add(axesHelper);
@@ -306,7 +321,7 @@ export class WebGLPreview {
         };
 
         if (index >= this.minLayerIndex) {
-          const extrude = g.params.e > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
+          const extrude = (g.params.e ?? 0) > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
           const moving = next.x != state.x || next.y != state.y || next.z != state.z;
           if (moving) {
             if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
@@ -379,6 +394,8 @@ export class WebGLPreview {
   }
 
   drawBuildVolume(): void {
+    if (!this.buildVolume) return;
+
     this.scene.add(new GridHelper(this.buildVolume.x, 10, this.buildVolume.y, 10));
 
     const geometryBox = LineBox(this.buildVolume.x, this.buildVolume.z, this.buildVolume.y, 0x888888);
@@ -469,7 +486,7 @@ export class WebGLPreview {
         totalArc += 2 * Math.PI;
       }
     }
-    let totalSegments = (arcRadius * totalArc) / 1.8; //arcSegLength + 0.8;
+    let totalSegments = (arcRadius * totalArc) / 1.8;
     if (this.inches) {
       totalSegments *= 25;
     }
@@ -486,11 +503,11 @@ export class WebGLPreview {
     const zDist = currZ - z;
     const zStep = zDist / totalSegments;
 
-    //get points for the arc
+    // get points for the arc
     let px = currX;
     let py = currY;
     let pz = currZ;
-    //calculate segments
+    // calculate segments
     let currentAngle = arcCurrentAngle;
 
     for (let moveIdx = 0; moveIdx < totalSegments - 1; moveIdx++) {
@@ -521,7 +538,7 @@ export class WebGLPreview {
     this.disposables.push(material);
     const lineSegments = new LineSegments(geometry, material);
 
-    this.group.add(lineSegments);
+    this.group?.add(lineSegments);
   }
 
   addTubeLine(vertices: number[], color: number): void {
@@ -559,12 +576,12 @@ export class WebGLPreview {
       this.disposables.push(geometry);
       const lineSegments = new Mesh(geometry, material);
 
-      this.group.add(lineSegments);
+      this.group?.add(lineSegments);
     });
   }
 
   addThickLine(vertices: number[], color: number): void {
-    if (!vertices.length) return;
+    if (!vertices.length || !this.lineWidth) return;
 
     const geometry = new LineSegmentsGeometry();
     this.disposables.push(geometry);
@@ -578,7 +595,7 @@ export class WebGLPreview {
     geometry.setPositions(vertices);
     const line = new LineSegments2(geometry, matLine);
 
-    this.group.add(line);
+    this.group?.add(line);
   }
 
   private _enableDropHandler() {
@@ -586,7 +603,7 @@ export class WebGLPreview {
     this.canvas.addEventListener('dragover', (evt) => {
       evt.stopPropagation();
       evt.preventDefault();
-      evt.dataTransfer.dropEffect = 'copy';
+      if (evt.dataTransfer) evt.dataTransfer.dropEffect = 'copy';
       this.canvas.classList.add('dragging');
     });
 
@@ -600,7 +617,7 @@ export class WebGLPreview {
       evt.stopPropagation();
       evt.preventDefault();
       this.canvas.classList.remove('dragging');
-      const files = evt.dataTransfer.files;
+      const files: FileList | [] = evt.dataTransfer?.files ?? [];
       const file = files[0];
 
       this.clear();
