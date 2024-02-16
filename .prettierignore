@@ -4,3 +4,4 @@
 *.json
 dist
 canvas2image.js
+build

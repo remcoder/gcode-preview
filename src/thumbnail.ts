@@ -1,21 +1,20 @@
 const prefix = 'data:image/jpeg;base64,';
 
 export class Thumbnail {
-  public size: string;
-  public width: number;
-  public height: number;
-  public charLength: number;
   public chars = '';
 
+  constructor(
+    public size: string,
+    public width: number,
+    public height: number,
+    public charLength: number
+  ) {}
+
   public static parse(thumbInfo: string): Thumbnail {
-    const thumb = new Thumbnail();
     const infoParts = thumbInfo.split(' ');
-    thumb.size = infoParts[0];
-    const sizeParts = thumb.size.split('x');
-    thumb.width = +sizeParts[0];
-    thumb.height = +sizeParts[1];
-    thumb.charLength = +infoParts[1];
-    return thumb;
+    const size = infoParts[0];
+    const sizeParts = size.split('x');
+    return new Thumbnail(size, +sizeParts[0], +sizeParts[1], +infoParts[1]);
   }
 
   get src(): string {
