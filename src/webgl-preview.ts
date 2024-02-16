@@ -617,7 +617,7 @@ export class WebGLPreview {
       evt.stopPropagation();
       evt.preventDefault();
       this.canvas.classList.remove('dragging');
-      const files: never[] | FileList = evt.dataTransfer?.files ?? [];
+      const files: FileList | [] = evt.dataTransfer?.files ?? [];
       const file = files[0];
 
       this.clear();
