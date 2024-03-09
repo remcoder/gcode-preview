@@ -50,7 +50,7 @@ function initDemo() {
     canvas: canvasElement,
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
-    topLayerColor: 'rgb(0, 255, 255)',
+    // topLayerColor: 'rgb(0, 255, 255)',
     lastSegmentColor: '#fff',
     renderExtrusion: true,
     renderTravel: false,

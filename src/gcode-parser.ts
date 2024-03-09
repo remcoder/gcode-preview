@@ -80,6 +80,17 @@ export class MoveCommand extends GCodeCommand {
   }
 }
 
+export class SelectToolCommand extends GCodeCommand {
+  constructor(
+    src: string,
+    gcode: string,
+    comment?: string,
+    public toolIndex?: number
+  ) {
+    super(src, gcode, undefined, comment);
+  }
+}
+
 type Metadata = { thumbnails: Record<string, Thumbnail> };
 
 export class Layer {
@@ -142,7 +153,7 @@ export class Parser {
 
     const parts = cmd.split(/ +/g);
     const gcode = parts[0].toLowerCase();
-    let params;
+    const params = this.parseParams(parts.slice(1));
     switch (gcode) {
       case 'g0':
       case 'g00':
@@ -152,10 +163,16 @@ export class Parser {
       case 'g02':
       case 'g3':
       case 'g03':
-        params = this.parseMove(parts.slice(1));
         return new MoveCommand(line, gcode, params, comment);
+      case 't0':
+        return new SelectToolCommand(line, gcode, comment, 0);
+      case 't1':
+        return new SelectToolCommand(line, gcode, comment, 1);
+      case 't2':
+        return new SelectToolCommand(line, gcode, comment, 2);
+      case 't3':
+        return new SelectToolCommand(line, gcode, comment, 3);
       default:
-        params = this.parseParams(parts.slice(1));
         // console.warn(`non-move code: ${gcode} ${params}`);
         return new GCodeCommand(line, gcode, params, comment);
     }
