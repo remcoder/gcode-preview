@@ -2,7 +2,7 @@
 
 import { test, expect } from 'vitest';
 
-import { State, WebGLPreview } from '../webgl-preview';
+import { WebGLPreview } from '../webgl-preview';
 import { GCodeCommand } from '../gcode-parser';
 
 test('in gcode x,y,z params should update the state', () => {
