@@ -65,7 +65,7 @@ export class GCodeCommand {
     public src: string,
     public gcode: string,
     public params: CommandParams,
-    public comment: string | undefined
+    public comment?: string
   ) {}
 }
 
