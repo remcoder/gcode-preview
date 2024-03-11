@@ -172,6 +172,14 @@ export class Parser {
         return new SelectToolCommand(line, gcode, comment, 2);
       case 't3':
         return new SelectToolCommand(line, gcode, comment, 3);
+      case 't4':
+        return new SelectToolCommand(line, gcode, comment, 4);
+      case 't5':
+        return new SelectToolCommand(line, gcode, comment, 5);
+      case 't6':
+        return new SelectToolCommand(line, gcode, comment, 6);
+      case 't7':
+        return new SelectToolCommand(line, gcode, comment, 7);
       default:
         // console.warn(`non-move code: ${gcode} ${params}`);
         return new GCodeCommand(line, gcode, params, comment);
