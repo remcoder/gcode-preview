@@ -1,6 +1,5 @@
 import { test, expect } from 'vitest';
 import { Parser, SelectToolCommand } from '../gcode-parser';
-import { e } from 'vitest/dist/reporters-OH1c16Kq';
 
 test('a single extrusion cmd should result in 1 layer with 1 command', () => {
   const parser = new Parser(0);
