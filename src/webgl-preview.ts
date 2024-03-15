@@ -71,6 +71,7 @@ export type GCodePreviewOptions = {
   targetId?: string;
   topLayerColor?: ColorRepresentation;
   travelColor?: ColorRepresentation;
+  toolColors?: Record<number, ColorRepresentation>;
 };
 
 const target = {
@@ -104,12 +105,7 @@ export class WebGLPreview {
   beyondFirstMove = false;
   inches = false;
   nonTravelmoves: string[] = [];
-  toolColors: Record<number, Color> = {
-    0: new Color(0xff8000),
-    1: new Color(0xffff00),
-    2: new Color(0x0000ff),
-    3: new Color(0x00ff00)
-  };
+
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
   private disposables: { dispose(): void }[] = [];
@@ -118,6 +114,7 @@ export class WebGLPreview {
   private _travelColor = new Color(0x990000);
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
+  private _toolColors: Record<number, Color> = {};
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -151,6 +148,12 @@ export class WebGLPreview {
     }
     if (opts.lastSegmentColor != undefined) {
       this.lastSegmentColor = new Color(opts.lastSegmentColor);
+    }
+    if (opts.toolColors) {
+      this._toolColors = {};
+      for (const [key, value] of Object.entries(opts.toolColors)) {
+        this._toolColors[parseInt(key)] = new Color(value);
+      }
     }
 
     console.info('Using THREE r' + REVISION);
@@ -198,6 +201,17 @@ export class WebGLPreview {
   }
   set extrusionColor(value: number | string | Color) {
     this._extrusionColor = new Color(value);
+  }
+
+  // get / set toolColors
+  get toolColors(): Record<number, Color> {
+    return this._toolColors;
+  }
+  set toolColors(value: Record<number, ColorRepresentation>) {
+    this._toolColors = {};
+    for (const [key, color] of Object.entries(value)) {
+      this._toolColors[parseInt(key)] = new Color(color);
+    }
   }
 
   get backgroundColor(): Color {
@@ -371,7 +385,8 @@ export class WebGLPreview {
     if (this.renderExtrusion) {
       let extrusionColor;
       console.warn(`tool color: ${this.state.t}`);
-      if (this.toolColors && this.toolColors[this.state.t]) {
+
+      if (this._toolColors && this._toolColors[this.state.t]) {
         extrusionColor = this.toolColors[this.state.t];
       } else if (this.singleLayerMode || this.renderTubes) {
         extrusionColor = this._extrusionColor;
