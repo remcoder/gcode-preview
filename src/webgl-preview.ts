@@ -397,9 +397,7 @@ export class WebGLPreview {
 
   doRenderExtrusion(layer: RenderLayer, index: number): void {
     if (this.renderExtrusion) {
-      let extrusionColor: Color;
-      console.warn(`tool color: ${this.state.t}`);
-      extrusionColor = this.currentToolColor;
+      let extrusionColor = this.currentToolColor;
 
       if (!this.singleLayerMode && !this.renderTubes) {
         const brightness = 0.1 + (0.7 * index) / this.layers.length;
