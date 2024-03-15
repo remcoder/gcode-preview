@@ -1,9 +1,12 @@
 /*eslint prefer-const: "error"*/
+
 /* global THREE, GCodePreview, Canvas2Image */
 let gcodePreview;
 let favIcon;
 let thumb;
-const chunkSize = 1000;
+const chunkSize = 10000;
+const maxToolCount = 8;
+let toolCount = 4;
 
 const canvasElement = document.querySelector('.gcode-previewer');
 const startLayer = document.getElementById('start-layer');
@@ -15,7 +18,13 @@ const lineWidthValue = document.getElementById('line-width-value');
 const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
 const toggleRenderTubes = document.getElementById('render-tubes');
-const extrusionColor = document.getElementById('extrusion-color');
+const extrusionColor = {};
+for (let i = 0; i < maxToolCount; i++) {
+  extrusionColor[i] = document.getElementById(`extrusion-color-t${i}`);
+}
+const addColorButton = document.getElementById('add-color');
+const removeColorButton = document.getElementById('remove-color');
+
 const backgroundColor = document.getElementById('background-color');
 const toggleTravel = document.getElementById('travel');
 const toggleHighlight = document.getElementById('highlight');
@@ -67,7 +76,12 @@ function initDemo() {
   }));
 
   // set default colors on inputs
-  extrusionColor.value = '#' + new THREE.Color(preview.extrusionColor).getHexString();
+
+  // loop through the extrusionColor object and set the value of the input
+  for (let i = 0; i < maxToolCount; i++) {
+    extrusionColor[i].value = '#' + new THREE.Color(preview.extrusionColor[i]).getHexString();
+  }
+
   backgroundColor.value = '#' + new THREE.Color(preview.backgroundColor).getHexString();
   travelColor.value = '#' + new THREE.Color(preview.travelColor).getHexString();
 
@@ -124,12 +138,29 @@ function initDemo() {
     preview.render();
   });
 
-  extrusionColor.addEventListener('input', () =>
-    throttle(() => {
-      preview.extrusionColor = extrusionColor.value;
-      preview.render();
-    })
-  );
+  for (let i = 0; i < 8; i++) {
+    extrusionColor[i].addEventListener('input', () =>
+      debounce(() => {
+        const colors = preview.extrusionColor;
+        colors[i] = extrusionColor[i].value;
+        preview.extrusionColor = colors;
+        preview.render();
+      })
+    );
+  }
+
+  addColorButton.addEventListener('click', function () {
+    if (toolCount >= maxToolCount) return;
+    toolCount++;
+    showExtrusionColors();
+  });
+
+  removeColorButton.addEventListener('click', function () {
+    if (toolCount <= 1) return;
+    toolCount--;
+    showExtrusionColors();
+  });
+
   backgroundColor.addEventListener('input', () =>
     throttle(() => {
       preview.backgroundColor = backgroundColor.value;
@@ -315,6 +346,8 @@ function updateUI() {
     thumb = gcodePreview.parser.metadata.thumbnails['220x124'];
     document.getElementById('thumb').src = thumb?.src ?? 'https://via.placeholder.com/120x60?text=noThumbnail';
   }
+
+  showExtrusionColors();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
@@ -391,3 +424,23 @@ const throttle = (callback, time) => {
     throttleTimer = false;
   }, time);
 };
+
+// debounce function
+let debounceTimer;
+const debounce = (callback) => {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(callback, 300);
+};
+
+function showExtrusionColors() {
+  // loop through inputs and show/hide them
+  for (let i = 0; i < 8; i++) {
+    // find parent element
+    const parent = extrusionColor[i].parentNode;
+    if (i < toolCount) {
+      parent.style.display = 'flex';
+    } else {
+      parent.style.display = 'none';
+    }
+  }
+}
