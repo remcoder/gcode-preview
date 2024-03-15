@@ -55,9 +55,9 @@ function initDemo() {
     renderExtrusion: true,
     renderTravel: false,
     renderTubes: false,
-    toolColors: {
+    extrusionColor: {
       0: 'purple',
-      1: 'blue',
+      1: 'hotpink',
       2: 'green',
       3: 'yellow'
     },

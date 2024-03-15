@@ -51,6 +51,9 @@ export type State = {
   t: number; // tool index
 }; // feedrate?
 
+export type ColorMap = Record<number, Color>;
+export type ColorRepresentatonMap = Record<number, ColorRepresentation>;
+
 export type GCodePreviewOptions = {
   allowDragNDrop?: boolean;
   buildVolume?: BuildVolume;
@@ -58,7 +61,7 @@ export type GCodePreviewOptions = {
   canvas?: HTMLCanvasElement;
   debug?: boolean;
   endLayer?: number;
-  extrusionColor?: ColorRepresentation;
+  extrusionColor?: ColorRepresentation | ColorRepresentatonMap;
   initialCameraPosition?: number[];
   lastSegmentColor?: ColorRepresentation;
   lineWidth?: number;
@@ -108,8 +111,10 @@ export class WebGLPreview {
 
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
+  static readonly defaultExtrusionColor = new Color('hotpink');
+
   private disposables: { dispose(): void }[] = [];
-  private _extrusionColor = new Color(0xffff00);
+  private _extrusionColor: Color | ColorMap = WebGLPreview.defaultExtrusionColor;
   private _backgroundColor = new Color(0xe0e0e0);
   private _travelColor = new Color(0x990000);
   private _topLayerColor?: Color;
@@ -137,16 +142,16 @@ export class WebGLPreview {
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
     this.renderTubes = opts.renderTubes ?? this.renderTubes;
 
-    if (opts.extrusionColor != undefined) {
-      this.extrusionColor = new Color(opts.extrusionColor);
+    if (opts.extrusionColor !== undefined) {
+      this.extrusionColor = opts.extrusionColor;
     }
-    if (opts.travelColor != undefined) {
+    if (opts.travelColor !== undefined) {
       this.travelColor = new Color(opts.travelColor);
     }
-    if (opts.topLayerColor != undefined) {
+    if (opts.topLayerColor !== undefined) {
       this.topLayerColor = new Color(opts.topLayerColor);
     }
-    if (opts.lastSegmentColor != undefined) {
+    if (opts.lastSegmentColor !== undefined) {
       this.lastSegmentColor = new Color(opts.lastSegmentColor);
     }
     if (opts.toolColors) {
@@ -196,22 +201,31 @@ export class WebGLPreview {
     if (this.allowDragNDrop) this._enableDropHandler();
   }
 
-  get extrusionColor(): Color {
+  get extrusionColor(): Color | ColorMap {
     return this._extrusionColor;
   }
-  set extrusionColor(value: number | string | Color) {
+  set extrusionColor(value: number | string | Color | ColorRepresentatonMap) {
+    if (typeof value === 'object') {
+      this._extrusionColor = {};
+      // loop over the object and convert all colors to Color
+      for (const [key, color] of Object.entries(value)) {
+        this._extrusionColor[parseInt(key, 10)] = new Color(color);
+      }
+      return;
+    }
     this._extrusionColor = new Color(value);
   }
 
   // get / set toolColors
-  get toolColors(): Record<number, Color> {
-    return this._toolColors;
-  }
-  set toolColors(value: Record<number, ColorRepresentation>) {
-    this._toolColors = {};
-    for (const [key, color] of Object.entries(value)) {
-      this._toolColors[parseInt(key)] = new Color(color);
+  get currentToolColor(): Color {
+    if (this._extrusionColor === undefined) {
+      return WebGLPreview.defaultExtrusionColor;
     }
+    if (this._extrusionColor instanceof Color) {
+      return this._extrusionColor;
+    }
+
+    return this._extrusionColor[this.state.t] ?? WebGLPreview.defaultExtrusionColor;
   }
 
   get backgroundColor(): Color {
@@ -383,17 +397,14 @@ export class WebGLPreview {
 
   doRenderExtrusion(layer: RenderLayer, index: number): void {
     if (this.renderExtrusion) {
-      let extrusionColor;
+      let extrusionColor: Color;
       console.warn(`tool color: ${this.state.t}`);
+      extrusionColor = this.currentToolColor;
 
-      if (this._toolColors && this._toolColors[this.state.t]) {
-        extrusionColor = this.toolColors[this.state.t];
-      } else if (this.singleLayerMode || this.renderTubes) {
-        extrusionColor = this._extrusionColor;
-      } else {
+      if (!this.singleLayerMode && !this.renderTubes) {
         const brightness = 0.1 + (0.7 * index) / this.layers.length;
 
-        this._extrusionColor.getHSL(target);
+        extrusionColor.getHSL(target);
         extrusionColor = new Color().setHSL(target.h, target.s, brightness);
       }
 
