@@ -74,6 +74,7 @@ export type GCodePreviewOptions = {
   topLayerColor?: ColorRepresentation;
   travelColor?: ColorRepresentation;
   toolColors?: Record<number, ColorRepresentation>;
+  disableGradient?: boolean;
 };
 
 const target = {
@@ -108,6 +109,7 @@ export class WebGLPreview {
   inches = false;
   nonTravelmoves: string[] = [];
   _animationFrameId?: number;
+  disableGradient = false;
 
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
@@ -159,6 +161,10 @@ export class WebGLPreview {
       for (const [key, value] of Object.entries(opts.toolColors)) {
         this._toolColors[parseInt(key)] = new Color(value);
       }
+    }
+
+    if (opts.disableGradient !== undefined) {
+      this.disableGradient = opts.disableGradient;
     }
 
     console.info('Using THREE r' + REVISION);
@@ -401,7 +407,7 @@ export class WebGLPreview {
     if (this.renderExtrusion) {
       let extrusionColor = this.currentToolColor;
 
-      if (!this.singleLayerMode && !this.renderTubes) {
+      if (!this.singleLayerMode && !this.renderTubes && !this.disableGradient) {
         const brightness = 0.1 + (0.7 * index) / this.layers.length;
 
         extrusionColor.getHSL(target);
