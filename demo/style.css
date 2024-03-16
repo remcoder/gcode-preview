@@ -1,12 +1,30 @@
-html, body {
+html,
+body {
   margin: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 body {
   font-family: Verdana;
   color: #eee;
   background: #eee;
+}
+
+/* Light mode */
+@media (prefers-color-scheme: light) {
+  body {
+    background-color: #eee;
+    /* color: #111; */
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #111;
+    /* color: #eee; */
+  }
 }
 
 .sidebar {
@@ -22,7 +40,8 @@ body {
   flex-direction: column;
   justify-content: space-between;
   transform: translateZ(0);
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .description {
@@ -38,7 +57,7 @@ body {
   padding: 10px;
   color: #808080;
 
-  animation: slideInUp .3s ease-out;
+  animation: slideInUp 0.3s ease-out;
   animation-delay: 2s;
   animation-fill-mode: backwards;
 }
@@ -59,16 +78,13 @@ body {
   top: 0;
   right: 0;
   padding: 10px;
-  color: #808080;
   transform: translateZ(0);
   filter: grayscale(1);
 }
 
 .version-box a {
-  color: #808080;
   text-decoration: none;
 }
-
 
 .controls {
   display: flex;
@@ -112,7 +128,7 @@ canvas:focus {
 
 .experimental {
   padding: 5px;
-  background-color: rgba(20, 55, 80, 0.5);;
+  background-color: rgba(20, 55, 80, 0.5);
   font-size: 90%;
 }
 
@@ -127,6 +143,24 @@ canvas:focus {
 }
 
 /* for performance & stacking */
-canvas#renderer, .sidebar, .dnd, .version-box {
+canvas#renderer,
+.sidebar,
+.dnd,
+.version-box {
   transform: translateZ(0);
+}
+
+.bmc-btn-container {
+  transform: scale(0.6);
+}
+
+output {
+  font-size: 90%;
+  color: #808080;
+}
+
+@media (prefers-color-scheme: light) {
+  output {
+    color: #d9d9d9;
+  }
 }

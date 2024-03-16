@@ -1,122 +1,229 @@
 import { Parser, MoveCommand, Layer } from './gcode-parser';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
-import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry';
+import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
-import { Scene, PerspectiveCamera, WebGLRenderer, Group, Color, REVISION, Fog, AxesHelper, Euler, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, LineSegments } from 'three';
+import {
+  AmbientLight,
+  AxesHelper,
+  BufferGeometry,
+  CatmullRomCurve3,
+  Color,
+  ColorRepresentation,
+  Euler,
+  Float32BufferAttribute,
+  Fog,
+  Group,
+  LineBasicMaterial,
+  LineSegments,
+  Mesh,
+  MeshLambertMaterial,
+  PerspectiveCamera,
+  PointLight,
+  REVISION,
+  Scene,
+  TubeGeometry,
+  Vector3,
+  WebGLRenderer
+} from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
-type Vector3 = { x: number; y: number; z: number; r: number; i: number; j: number };
-type Point = Vector3;
-type BuildVolume = Vector3;
-type State = { x: number; y: number; z: number; r: number; e: number; i: number; j: number; }; // feedrate?
+type GVector3 = {
+  x: number;
+  y: number;
+  z: number;
+  r: number;
+  i: number;
+  j: number;
+};
+type Point = GVector3;
+type BuildVolume = GVector3;
+export type State = {
+  x: number;
+  y: number;
+  z: number;
+  r: number;
+  e: number;
+  i: number;
+  j: number;
+}; // feedrate?
 
 export type GCodePreviewOptions = {
+  allowDragNDrop?: boolean;
+  buildVolume?: BuildVolume;
+  backgroundColor?: ColorRepresentation;
   canvas?: HTMLCanvasElement;
+  debug?: boolean;
   endLayer?: number;
+  extrusionColor?: ColorRepresentation;
+  initialCameraPosition?: number[];
+  lastSegmentColor?: ColorRepresentation;
+  lineWidth?: number;
+  nonTravelMoves?: string[];
+  minLayerThreshold?: number;
+  renderExtrusion?: boolean;
+  renderTravel?: boolean;
+  renderTubes?: boolean;
   startLayer?: number;
   targetId?: string;
-  // limit?: number;
-  topLayerColor?: number;
-  lastSegmentColor?: number;
-  lineWidth?: number;
-  buildVolume?: BuildVolume;
-  initialCameraPosition?: number[];
-  debug?: boolean;
-  allowDragNDrop?: boolean;
+  topLayerColor?: ColorRepresentation;
+  travelColor?: ColorRepresentation;
+};
+
+const target = {
+  h: 0,
+  s: 0,
+  l: 0
 };
 
 export class WebGLPreview {
-  parser = new Parser();
-  // limit?: number;
-  targetId: string;
+  minLayerThreshold = 0.05;
+  parser: Parser;
+  targetId?: string; // deprecated
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
-  group: Group;
-  backgroundColor = 0xe0e0e0;
-  travelColor = 0x990000;
-  extrusionColor = 0x00ff00;
-  topLayerColor?: number;
-  lastSegmentColor?: number;
-  container: HTMLElement;
+  group?: Group;
+  container?: HTMLElement;
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
   renderTravel = false;
+  renderTubes = false;
   lineWidth?: number;
   startLayer?: number;
   endLayer?: number;
   singleLayerMode = false;
-  buildVolume: BuildVolume;
+  buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
   debug = false;
   allowDragNDrop = false;
   controls: OrbitControls;
+  beyondFirstMove = false;
+  inches = false;
+  nonTravelmoves: string[] = [];
+
   private disposables: { dispose(): void }[] = [];
+  private _extrusionColor = new Color(0xffff00);
+  private _backgroundColor = new Color(0xe0e0e0);
+  private _travelColor = new Color(0x990000);
+  private _topLayerColor?: Color;
+  private _lastSegmentColor?: Color;
 
   constructor(opts: GCodePreviewOptions) {
+    this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
+    this.parser = new Parser(this.minLayerThreshold);
     this.scene = new Scene();
-    this.scene.background = new Color(this.backgroundColor);
-    this.canvas = opts.canvas;
+    this.scene.background = this._backgroundColor;
+    if (opts.backgroundColor !== undefined) {
+      this.backgroundColor = new Color(opts.backgroundColor);
+    }
     this.targetId = opts.targetId;
-    // this.endLayer = opts.limit;
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
-    this.topLayerColor = opts.topLayerColor;
-    this.lastSegmentColor = opts.lastSegmentColor;
     this.lineWidth = opts.lineWidth;
     this.buildVolume = opts.buildVolume;
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
+    this.renderExtrusion = opts.renderExtrusion ?? this.renderExtrusion;
+    this.renderTravel = opts.renderTravel ?? this.renderTravel;
+    this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
+    this.renderTubes = opts.renderTubes ?? this.renderTubes;
+
+    if (opts.extrusionColor != undefined) {
+      this.extrusionColor = new Color(opts.extrusionColor);
+    }
+    if (opts.travelColor != undefined) {
+      this.travelColor = new Color(opts.travelColor);
+    }
+    if (opts.topLayerColor != undefined) {
+      this.topLayerColor = new Color(opts.topLayerColor);
+    }
+    if (opts.lastSegmentColor != undefined) {
+      this.lastSegmentColor = new Color(opts.lastSegmentColor);
+    }
 
     console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
 
     if (this.targetId) {
-      console.warn('`targetId` is deprecated and will removed in the future. Use `canvas` instead.')
+      console.warn('`targetId` is deprecated and will removed in the future. Use `canvas` instead.');
     }
 
-    if (!this.canvas && !this.targetId) {
-      throw Error('Set either opts.canvas or opts.targetId');
-    }
-
-    if (!this.canvas) {
+    if (!opts.canvas) {
+      if (!this.targetId) {
+        throw Error('Set either opts.canvas or opts.targetId');
+      }
       const container = document.getElementById(this.targetId);
-      if (!container)
-        throw new Error('Unable to find element ' + this.targetId);
+      if (!container) throw new Error('Unable to find element ' + this.targetId);
 
       this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true });
       this.canvas = this.renderer.domElement;
 
       container.appendChild(this.canvas);
-    }
-    else {
+    } else {
+      this.canvas = opts.canvas;
       this.renderer = new WebGLRenderer({
         canvas: this.canvas,
         preserveDrawingBuffer: true
       });
     }
 
-    this.camera = new PerspectiveCamera( 25, this.canvas.offsetWidth/this.canvas.offsetHeight, 10, 5000 );
+    this.camera = new PerspectiveCamera(25, this.canvas.offsetWidth / this.canvas.offsetHeight, 10, 5000);
     this.camera.position.fromArray(this.initialCameraPosition);
     const fogFar = (this.camera as PerspectiveCamera).far;
     const fogNear = fogFar * 0.8;
-    this.scene.fog = new Fog(this.scene.background, fogNear, fogFar);
+    this.scene.fog = new Fog(this._backgroundColor, fogNear, fogFar);
 
     this.resize();
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.animate();
 
-    if (this.allowDragNDrop)
-      this._enableDropHandler();
+    if (this.allowDragNDrop) this._enableDropHandler();
+  }
+
+  get extrusionColor(): Color {
+    return this._extrusionColor;
+  }
+  set extrusionColor(value: number | string | Color) {
+    this._extrusionColor = new Color(value);
+  }
+
+  get backgroundColor(): Color {
+    return this._backgroundColor;
+  }
+
+  set backgroundColor(value: number | string | Color) {
+    this._backgroundColor = new Color(value);
+    this.scene.background = this._backgroundColor;
+  }
+
+  get travelColor(): Color {
+    return this._travelColor;
+  }
+  set travelColor(value: number | string | Color) {
+    this._travelColor = new Color(value);
+  }
+
+  get topLayerColor(): ColorRepresentation | undefined {
+    return this._topLayerColor;
+  }
+  set topLayerColor(value: ColorRepresentation | undefined) {
+    this._topLayerColor = value !== undefined ? new Color(value) : undefined;
+  }
+
+  get lastSegmentColor(): ColorRepresentation | undefined {
+    return this._lastSegmentColor;
+  }
+  set lastSegmentColor(value: ColorRepresentation | undefined) {
+    this._lastSegmentColor = value !== undefined ? new Color(value) : undefined;
   }
 
   get layers(): Layer[] {
-    return this.parser.layers;
+    return [this.parser.preamble].concat(this.parser.layers.concat());
   }
 
   // convert from 1-based to 0-based
@@ -146,12 +253,13 @@ export class WebGLPreview {
     }
 
     while (this.disposables.length > 0) {
-      this.disposables.pop().dispose();
+      const disposable = this.disposables.pop();
+      if (disposable) disposable.dispose();
     }
 
-    if (this.debug) {
+    if (this.debug && this.buildVolume) {
       // show webgl axes
-      const axesHelper = new AxesHelper( Math.max(this.buildVolume.x/2, this.buildVolume.y/2) + 20 );
+      const axesHelper = new AxesHelper(Math.max(this.buildVolume.x / 2, this.buildVolume.y / 2) + 20);
       this.scene.add(axesHelper);
     }
 
@@ -159,89 +267,27 @@ export class WebGLPreview {
       this.drawBuildVolume();
     }
 
+    if (this.renderTubes) {
+      const light = new AmbientLight(0xcccccc, 1);
+      const dLight = new PointLight(0xffffff, 0.8);
+      dLight.position.set(0, 500, 500);
+      this.scene.add(light);
+      this.scene.add(dLight);
+    }
+
     this.group = new Group();
     this.group.name = 'gcode';
-    const state = { x: 0, y: 0, z: 0, r: 0, e: 0, i:0, j:0 };
+    const state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
 
     for (let index = 0; index < this.layers.length; index++) {
-      if (index > this.maxLayerIndex) break;
-
-      const currentLayer: RenderLayer = {
-        extrusion: [],
-        travel: [],
-        z: state.z,
-      };
-      const l = this.layers[index];
-      for (const cmd of l.commands) {
-        if (cmd.gcode == 'g0' || cmd.gcode == 'g1' || cmd.gcode == 'g2' || cmd.gcode == 'g3') {
-          const g = cmd as MoveCommand;
-          const next: State = {
-            x: g.params.x !== undefined ? g.params.x : state.x,
-            y: g.params.y !== undefined ? g.params.y : state.y,
-            z: g.params.z !== undefined ? g.params.z : state.z,
-            r: g.params.r !== undefined ? g.params.r : state.r,
-            e: g.params.e !== undefined ? g.params.e : state.e,
-            i: g.params.i !== undefined ? g.params.i : state.i,
-            j: g.params.j !== undefined ? g.params.j : state.j,
-          };
-
-          if (index >= this.minLayerIndex) {
-            const extrude = g.params.e > 0;
-            if (
-              (extrude && this.renderExtrusion) ||
-              (!extrude && this.renderTravel)
-            ) {
-              if (cmd.gcode == 'g2' || cmd.gcode == 'g3') {
-                
-                this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2');
-              } else {
-                this.addLineSegment(currentLayer, state, next, extrude);
-              }
-            }
-          }
-
-          // update state
-          if (g.params.x) state.x = g.params.x;
-          if (g.params.y) state.y = g.params.y;
-          if (g.params.z) state.z = g.params.z;
-          if (g.params.r) state.r = g.params.r;
-          if (g.params.e) state.e = g.params.e;
-          state.i = 0;
-          state.j = 0;
-
-        }
-      }
-
-      if (this.renderExtrusion) {
-        const brightness = Math.round((80 * index) / this.layers.length);
-        const extrusionColor = new Color(
-          `hsl(0, 0%, ${brightness}%)`
-        ).getHex();
-
-        if (index == this.layers.length - 1) {
-          const layerColor = this.topLayerColor ?? extrusionColor;
-          const lastSegmentColor = this.lastSegmentColor ?? layerColor;
-
-          const endPoint = currentLayer.extrusion.splice(-3);
-          this.addLine(currentLayer.extrusion, layerColor);
-          const preendPoint = currentLayer.extrusion.splice(-3);
-          this.addLine([...preendPoint, ...endPoint], lastSegmentColor);
-        } else {
-          this.addLine(currentLayer.extrusion, extrusionColor);
-        }
-      }
-
-      if (this.renderTravel) {
-        this.addLine(currentLayer.travel, this.travelColor);
-      }
+      this.renderLayer(index, state);
     }
 
     this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
 
     if (this.buildVolume) {
-      this.group.position.set(-this.buildVolume.x/2, 0, this.buildVolume.y/2);
-    }
-    else {
+      this.group.position.set(-this.buildVolume.x / 2, 0, this.buildVolume.y / 2);
+    } else {
       // FIXME: this is just a very crude approximation for centering
       this.group.position.set(-100, 0, 100);
     }
@@ -250,14 +296,109 @@ export class WebGLPreview {
     this.renderer.render(this.scene, this.camera);
   }
 
-  drawBuildVolume(): void {
-    this.scene.add( new GridHelper( this.buildVolume.x, 10, this.buildVolume.y, 10 ));
+  renderLayer(index: number, state: State): void {
+    if (index > this.maxLayerIndex) return;
 
-    const geometryBox = LineBox(
-      this.buildVolume.x,
-      this.buildVolume.z,
-      this.buildVolume.y,
-      0x888888);
+    const currentLayer: RenderLayer = {
+      extrusion: [],
+      travel: [],
+      z: state.z
+    };
+    const l = this.layers[index];
+    for (const cmd of l.commands) {
+      if (cmd.gcode == 'g20') {
+        this.setInches();
+      } else if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
+        const g = cmd as MoveCommand;
+        const next: State = {
+          x: g.params.x ?? state.x,
+          y: g.params.y ?? state.y,
+          z: g.params.z ?? state.z,
+          r: g.params.r ?? state.r,
+          e: g.params.e ?? state.e,
+          i: g.params.i ?? state.i,
+          j: g.params.j ?? state.j
+        };
+
+        if (index >= this.minLayerIndex) {
+          const extrude = (g.params.e ?? 0) > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
+          const moving = next.x != state.x || next.y != state.y || next.z != state.z;
+          if (moving) {
+            if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
+              if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
+                this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
+              } else {
+                this.addLineSegment(currentLayer, state, next, extrude);
+              }
+            }
+          }
+        }
+
+        // update state
+        state.x = next.x;
+        state.y = next.y;
+        state.z = next.z;
+        // if (next.e) state.e = next.e; // where not really tracking e as distance (yet) but we only check if some commands are extruding (positive e)
+        if (!this.beyondFirstMove) this.beyondFirstMove = true;
+      }
+    }
+
+    this.doRenderExtrusion(currentLayer, index);
+  }
+
+  doRenderExtrusion(layer: RenderLayer, index: number): void {
+    if (this.renderExtrusion) {
+      let extrusionColor;
+      if (this.singleLayerMode || this.renderTubes) {
+        extrusionColor = this._extrusionColor;
+      } else {
+        const brightness = 0.1 + (0.7 * index) / this.layers.length;
+
+        this._extrusionColor.getHSL(target);
+        extrusionColor = new Color().setHSL(target.h, target.s, brightness);
+      }
+
+      if (index == this.layers.length - 1) {
+        const layerColor = this._topLayerColor ?? extrusionColor;
+        const lastSegmentColor = this._lastSegmentColor ?? layerColor;
+
+        const endPoint = layer.extrusion.splice(-3);
+        const preendPoint = layer.extrusion.splice(-3);
+        if (this.renderTubes) {
+          this.addTubeLine(layer.extrusion, layerColor.getHex());
+          this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+        } else {
+          this.addLine(layer.extrusion, layerColor.getHex());
+          this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+        }
+      } else {
+        if (this.renderTubes) {
+          this.addTubeLine(layer.extrusion, extrusionColor.getHex());
+        } else {
+          this.addLine(layer.extrusion, extrusionColor.getHex());
+        }
+      }
+    }
+
+    if (this.renderTravel) {
+      this.addLine(layer.travel, this._travelColor.getHex());
+    }
+  }
+
+  setInches(): void {
+    if (this.beyondFirstMove) {
+      console.warn('Switching units after movement is already made is discouraged and is not supported.');
+      return;
+    }
+    this.inches = true;
+  }
+
+  drawBuildVolume(): void {
+    if (!this.buildVolume) return;
+
+    this.scene.add(new GridHelper(this.buildVolume.x, 10, this.buildVolume.y, 10));
+
+    const geometryBox = LineBox(this.buildVolume.x, this.buildVolume.z, this.buildVolume.y, 0x888888);
 
     geometryBox.position.setY(this.buildVolume.z / 2);
     this.scene.add(geometryBox);
@@ -267,7 +408,8 @@ export class WebGLPreview {
     this.startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
-    this.parser = new Parser();
+    this.parser = new Parser(this.minLayerThreshold);
+    this.beyondFirstMove = false;
   }
 
   resize(): void {
@@ -278,18 +420,12 @@ export class WebGLPreview {
     this.renderer.setSize(w, h, false);
   }
 
-  addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean) : void {
+  addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void {
     const line = extrude ? layer.extrusion : layer.travel;
     line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
 
-  addArcSegment(
-    layer: RenderLayer,
-    p1: Point,
-    p2: Point,
-    extrude: boolean,
-    cw: boolean
-  ): void {
+  addArcSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean, cw: boolean): void {
     const line = extrude ? layer.extrusion : layer.travel;
 
     const currX = p1.x,
@@ -297,15 +433,21 @@ export class WebGLPreview {
       currZ = p1.z,
       x = p2.x,
       y = p2.y,
-      z = p2.z,
-      r = p2.r;
-    
+      z = p2.z;
+    let r = p2.r;
+
     let i = p2.i,
       j = p2.j;
-    
+
     if (r) {
-      const deltaX = x - currX;
+      // in r mode a minimum radius will be applied if the distance can otherwise not be bridged
+      const deltaX = x - currX; // assume abs mode
       const deltaY = y - currY;
+
+      // apply a minimal radius to bridge the distance
+      const minR = Math.sqrt(Math.pow(deltaX / 2, 2) + Math.pow(deltaY / 2, 2));
+      r = Math.max(r, minR);
+
       const dSquared = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
       const hSquared = Math.pow(r, 2) - dSquared / 4;
       // if (dSquared == 0 || hSquared < 0) {
@@ -327,31 +469,30 @@ export class WebGLPreview {
       //     }
     }
 
-    const wholeCircle = currX == i && currY == y;
+    const wholeCircle = currX == x && currY == y;
     const centerX = currX + i;
     const centerY = currY + j;
 
     const arcRadius = Math.sqrt(i * i + j * j);
     const arcCurrentAngle = Math.atan2(-j, -i);
     const finalTheta = Math.atan2(y - centerY, x - centerX);
-    
+
     let totalArc;
     if (wholeCircle) {
       totalArc = 2 * Math.PI;
     } else {
-      totalArc = cw
-        ? arcCurrentAngle - finalTheta
-        : finalTheta - arcCurrentAngle;
+      totalArc = cw ? arcCurrentAngle - finalTheta : finalTheta - arcCurrentAngle;
       if (totalArc < 0.0) {
         totalArc += 2 * Math.PI;
       }
     }
-
-    let totalSegments = (arcRadius * totalArc) / 1.8; //arcSegLength + 0.8;
+    let totalSegments = (arcRadius * totalArc) / 1.8;
+    if (this.inches) {
+      totalSegments *= 25;
+    }
     if (totalSegments < 1) {
       totalSegments = 1;
     }
-
     let arcAngleIncrement = totalArc / totalSegments;
     arcAngleIncrement *= cw ? -1 : 1;
 
@@ -362,11 +503,11 @@ export class WebGLPreview {
     const zDist = currZ - z;
     const zStep = zDist / totalSegments;
 
-    //get points for the arc
+    // get points for the arc
     let px = currX;
     let py = currY;
     let pz = currZ;
-    //calculate segments
+    // calculate segments
     let currentAngle = arcCurrentAngle;
 
     for (let moveIdx = 0; moveIdx < totalSegments - 1; moveIdx++) {
@@ -374,15 +515,14 @@ export class WebGLPreview {
       px = centerX + arcRadius * Math.cos(currentAngle);
       py = centerY + arcRadius * Math.sin(currentAngle);
       pz += zStep;
-      points.push({ x: px, y: py, z: pz })
+      points.push({ x: px, y: py, z: pz });
     }
-    
-    points.push({ x: p2.x, y: p2.y, z: p2.z })
 
-    for (let idx = 0; idx < points.length - 1; idx++) { 
-      line.push(points[idx].x, points[idx].y , points[idx].z, points[idx+1].x, points[idx+1].y, points[idx + 1].z);
+    points.push({ x: p2.x, y: p2.y, z: p2.z });
+
+    for (let idx = 0; idx < points.length - 1; idx++) {
+      line.push(points[idx].x, points[idx].y, points[idx].z, points[idx + 1].x, points[idx + 1].y, points[idx + 1].z);
     }
-        
   }
 
   addLine(vertices: number[], color: number): void {
@@ -392,42 +532,78 @@ export class WebGLPreview {
     }
 
     const geometry = new BufferGeometry();
-    geometry.setAttribute(
-      'position',
-      new Float32BufferAttribute(vertices, 3)
-    );
+    geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
     this.disposables.push(geometry);
     const material = new LineBasicMaterial({ color: color });
     this.disposables.push(material);
     const lineSegments = new LineSegments(geometry, material);
 
-    this.group.add(lineSegments);
+    this.group?.add(lineSegments);
+  }
+
+  addTubeLine(vertices: number[], color: number): void {
+    let curvePoints: Vector3[] = [];
+    const curves: CatmullRomCurve3[] = [];
+
+    // Merging into one curve for performance
+    for (let i = 0; i < vertices.length; i += 6) {
+      const v = vertices.slice(i, i + 6);
+      const startPoint = new Vector3(v[0], v[1], v[2]);
+      const endPoint = new Vector3(v[3], v[4], v[5]);
+
+      if (curvePoints.length === 0) {
+        curvePoints.push(startPoint);
+      }
+
+      if (!curvePoints[curvePoints.length - 1].equals(startPoint)) {
+        curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
+        curvePoints = [];
+        curvePoints.push(startPoint);
+      }
+
+      curvePoints.push(endPoint);
+    }
+
+    if (curvePoints.length > 2) {
+      curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
+    }
+
+    curves.forEach((curve) => {
+      const material = new MeshLambertMaterial({ color: color });
+      this.disposables.push(material);
+      const segments = Math.ceil(curve.getLength() * 2);
+      const geometry = new TubeGeometry(curve, segments, 0.3, 4, false);
+      this.disposables.push(geometry);
+      const lineSegments = new Mesh(geometry, material);
+
+      this.group?.add(lineSegments);
+    });
   }
 
   addThickLine(vertices: number[], color: number): void {
-    if (!vertices.length) return;
+    if (!vertices.length || !this.lineWidth) return;
 
-    const geometry = new LineGeometry();
-    this.disposables.push(geometry)
+    const geometry = new LineSegmentsGeometry();
+    this.disposables.push(geometry);
 
     const matLine = new LineMaterial({
       color: color,
       linewidth: this.lineWidth / (1000 * window.devicePixelRatio)
     });
-    this.disposables.push(matLine)
+    this.disposables.push(matLine);
 
     geometry.setPositions(vertices);
     const line = new LineSegments2(geometry, matLine);
 
-    this.group.add(line);
+    this.group?.add(line);
   }
 
-  // experimental DnD support
   private _enableDropHandler() {
+    console.warn('Drag and drop is deprecated as a library feature. See the demo how to implement your own.');
     this.canvas.addEventListener('dragover', (evt) => {
       evt.stopPropagation();
       evt.preventDefault();
-      evt.dataTransfer.dropEffect = 'copy';
+      if (evt.dataTransfer) evt.dataTransfer.dropEffect = 'copy';
       this.canvas.classList.add('dragging');
     });
 
@@ -441,13 +617,13 @@ export class WebGLPreview {
       evt.stopPropagation();
       evt.preventDefault();
       this.canvas.classList.remove('dragging');
-      const files = evt.dataTransfer.files;
+      const files: FileList | [] = evt.dataTransfer?.files ?? [];
       const file = files[0];
 
       this.clear();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await this._readFromStream(file.stream()as unknown as ReadableStream<any>);
+      await this._readFromStream(file.stream() as unknown as ReadableStream<any>);
       this.render();
     });
   }

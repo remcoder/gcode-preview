@@ -1,0 +1,7 @@
+*.md
+*.html
+*.yml
+*.json
+dist
+canvas2image.js
+build

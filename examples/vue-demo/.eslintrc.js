@@ -1,7 +1,7 @@
 /* eslint-env node */
 module.exports = {
   extends: ['eslint:recommended'],
-  ignorePatterns: ['three-line2'],
+  ignorePatterns: ['dist'],
   env: {
     browser: true
   }

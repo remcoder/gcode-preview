@@ -1,17 +1,17 @@
 <template>
   <div>
     <canvas ref="preview"></canvas>
-    
-    <div>topLayerColor: {{topLayerColor}}</div>
-    <div>lastSegmentColor: {{lastSegmentColor}}</div>
-    <div>endLayer: {{endLayer}}</div>
-    <div>startLayer: {{startLayer}}</div>
-    <div>lineWidth: {{lineWidth}}</div>
+
+    <div>topLayerColor: {{ topLayerColor }}</div>
+    <div>lastSegmentColor: {{ lastSegmentColor }}</div>
+    <div>endLayer: {{ endLayer }}</div>
+    <div>startLayer: {{ startLayer }}</div>
+    <div>lineWidth: {{ lineWidth }}</div>
   </div>
 </template>
 
 <script>
-'use strict'
+'use strict';
 
 import * as GCodePreview from 'gcode-preview';
 import * as THREE from 'three';
@@ -28,7 +28,7 @@ export default {
   data() {
     return {
       layerCount: 0
-    }
+    };
   },
 
   mounted() {
@@ -39,8 +39,9 @@ export default {
       topLayerColor: new THREE.Color(this.topLayerColor).getHex(),
       lastSegmentColor: new THREE.Color(this.lastSegmentColor).getHex(),
       lineWidth: this.lineWidth,
-      buildVolume: {x: 250, y:220, z: 150},
-      initialCameraPosition: [0, 400, 450]
+      buildVolume: { x: 250, y: 220, z: 150 },
+      initialCameraPosition: [0, 400, 450],
+      extrusionColor: 'cyan'
     });
 
     window.addEventListener('resize', () => {
@@ -54,12 +55,12 @@ export default {
       this.layerCount = this.preview.layers.length;
     }
   }
-}
+};
 </script>
 <style scoped>
-  canvas {
-    outline: none;
-    width: 100%;
-    height: 100%;
-  }
+canvas {
+  outline: none;
+  width: 100%;
+  height: 100%;
+}
 </style>

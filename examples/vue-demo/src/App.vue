@@ -1,15 +1,9 @@
 <template>
   <div id="app">
     <h1>GCode Preview Vue Demo</h1>
-    <GCodePreview ref="gcodePreview1" class="gcode-preview"
-      :topLayerColor="'lime'"
-      :lastSegmentColor="'red'"
-    />
-    
-    <GCodePreview ref="gcodePreview2" class="gcode-preview"
-      :topLayerColor="'purple'"
-      :lastSegmentColor="'cyan'"
-    />
+    <GCodePreview ref="gcodePreview1" class="gcode-preview" :topLayerColor="'lime'" :lastSegmentColor="'red'" />
+
+    <GCodePreview ref="gcodePreview2" class="gcode-preview" :topLayerColor="'purple'" :lastSegmentColor="'cyan'" />
 
     <!-- <div># layers loaded: {{ layersLoaded }}</div> -->
   </div>
@@ -26,12 +20,11 @@ export default {
 
   data() {
     return {
-      layersLoaded : layersLoaded
-    }
+      layersLoaded: layersLoaded
+    };
   },
 
   async mounted() {
-    
     const lines1 = await this.fetchGcode('/benchy arcs.gcode');
     this.loadPreviewChunked(this.$refs.gcodePreview1, lines1, 50);
 
@@ -39,8 +32,7 @@ export default {
     this.loadPreviewChunked(this.$refs.gcodePreview2, lines2, 50);
   },
 
-  methods : {
-
+  methods: {
     async fetchGcode(url) {
       const response = await fetch(url);
 
@@ -51,28 +43,28 @@ export default {
       const file = await response.text();
       return file.split('\n');
     },
-    
+
     loadPreviewChunked(target, lines, delay) {
       let c = 0;
       const id = '__animationTimer__' + Math.random().toString(36).substr(2, 9);
       const loadProgressive = (preview) => {
-        const start = c*chunkSize;
-        const end = (c+1)*chunkSize;
+        const start = c * chunkSize;
+        const end = (c + 1) * chunkSize;
         const chunk = lines.slice(start, end);
-        target.processGCode(chunk)
+        target.processGCode(chunk);
         // this.layersLoaded = target.layerCount;
         c++;
-        if (c*chunkSize < lines.length) { 
+        if (c * chunkSize < lines.length) {
           window[id] = setTimeout(loadProgressive, delay);
         }
-      }
+      };
       // cancel loading process if one is still in progress
       // mostly when hot reloading
       window.clearTimeout(window[id]);
       loadProgressive(target);
     }
   }
-}
+};
 </script>
 
 <style>

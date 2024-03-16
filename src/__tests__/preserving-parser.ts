@@ -1,10 +1,10 @@
-/* eslint-env jest */
+import { test, expect } from 'vitest';
 
-import { Parser } from "../gcode-parser";
+import { Parser } from '../gcode-parser';
 
 test('all input should be preserved', () => {
-  const parser = new Parser();
-  const gcode =`G1 X0 Y0 Z1 E1`;
+  const parser = new Parser(0);
+  const gcode = `G1 X0 Y0 Z1 E1`;
   const parsed = parser.parseGCode(gcode);
   expect(parsed).not.toBeNull();
   const unparsed = parser.lines.join('\n');
@@ -12,8 +12,8 @@ test('all input should be preserved', () => {
 });
 
 test('multiple lines should be preserved', () => {
-  const parser = new Parser();
-  const gcode =`G1 X0 Y0 Z1 E1\nG1 X10 Y10 E10`;
+  const parser = new Parser(0);
+  const gcode = `G1 X0 Y0 Z1 E1\nG1 X10 Y10 E10`;
   const parsed = parser.parseGCode(gcode);
   expect(parsed).not.toBeNull();
   const unparsed = parser.lines.join('\n');
@@ -21,8 +21,8 @@ test('multiple lines should be preserved', () => {
 });
 
 test('comments should be preserved', () => {
-  const parser = new Parser();
-  const gcode =`G1 X0 Y0 Z1 E1; this is a comment`;
+  const parser = new Parser(0);
+  const gcode = `G1 X0 Y0 Z1 E1; this is a comment`;
   const parsed = parser.parseGCode(gcode);
   expect(parsed).not.toBeNull();
   const unparsed = parser.lines.join('\n');

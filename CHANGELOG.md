@@ -1,4 +1,66 @@
 ## next
+
+## 2.13 maintenance release
+
+- new options: 
+ - renderExtrusion
+ - renderTravel
+
+These options toggle te rendering of extrusion/travel lines
+
+fixed:
+ - fat lines incorrecty rendering lines between extrusion lines
+ - [demo] sidebar doesn't update after loading a new gcode file
+
+## 2.12 Tubular 🤙 
+- new experimental mode: tube rendering
+In this mode extrusion lines are rendered using volumetric tubes using THREEjs TubeGeometry. Currently this mode is still under development and considered experimental.
+
+To use it, pass the param `renderTubes: true`
+
+Known issues:
+ - performance: rendering takes several seconds or more for large models
+ - accuracy: line width and line height are not taken into account when setting the tube radius
+
+Thanks to @sophiedeziel for developing this feature.
+
+## 2.11 🏺 Vase Mode 🏺
+- new option: `minLayerTreshold`
+If the difference in Z exceeds the threshold a new layer is allocated.
+If not specified, the default value is 0. (0 meaning a new layer is allocated for each and every increase in Z, however tiny.)
+
+Setting a non-zero value helps to reduce the number of layers that are allocated in memory, which would otherwise cause lagging or even a lock up for spiral vases and such.
+   
+Thanks to @raulodev for the initial fix.
+
+## 2.10 🎃 Halloween release 🎃
+
+This release is all about colors!
+- Allow custom colors to be set for:
+     - extrusion
+     - travel
+     - top layer
+     - last segment
+     - background
+- DEMO
+     - supports light/dark mode
+
+Colors can be any valid THREE.Color value: css string, color name, hex value, or Color instance.
+
+## 2.9.4
+- Custom non travel moves for CNC'ing
+
+## 2.9.3
+- fixed a bug where the start of the gcode was skipped
+
+## 2.9.2
+- Some Mach3 compatibility changes:
+     - allow g00,g01,g02,g03
+     - when g2/g3 are given an r too small to bridge the gap, the radius is automatically set to the minimum needed.
+- Rudimentary support for G20 (inches). It is basically ignored after any movement is done.
+
+## 2.9.0
+- G2/G3 arcs are supported thanks to @Sindarius
 - .d.ts files are bundled into one: gcode-preview.d.ts
 ## 2.8.1
 - fix ES module 
