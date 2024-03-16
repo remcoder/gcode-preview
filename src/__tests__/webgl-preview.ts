@@ -36,7 +36,7 @@ test('destroying the preview should dispose renderer and controls', async () => 
   await new Promise((resolve) => setTimeout(resolve, 50));
 
   // destroy the preview
-  WebGLPreview.prototype.destroy.call(mock);
+  WebGLPreview.prototype.dispose.call(mock);
 
   expect(mock.renderer.dispose).toHaveBeenCalledTimes(1);
   expect(mock.controls.dispose).toHaveBeenCalledTimes(1);
@@ -62,7 +62,7 @@ test('destroying the preview should call cancelAnimation', async () => {
   assert(callCount > 2, 'callCount > 2');
 
   // destroy the preview
-  WebGLPreview.prototype.destroy.call(mock);
+  WebGLPreview.prototype.dispose.call(mock);
   expect(mock.cancelAnimation).toHaveBeenCalledTimes(1);
 });
 

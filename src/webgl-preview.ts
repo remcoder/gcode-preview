@@ -599,7 +599,7 @@ export class WebGLPreview {
     this.group?.add(line);
   }
 
-  destroy(): void {
+  dispose(): void {
     this.disposables.forEach((d) => d.dispose());
     this.disposables = [];
     this.controls.dispose();
