@@ -605,7 +605,12 @@ export class WebGLPreview {
     this.controls.dispose();
     this.renderer.dispose();
 
+    this.cancelAnimation();
+  }
+
+  cancelAnimation(): void {
     if (this._animationFrameId !== undefined) cancelAnimationFrame(this._animationFrameId);
+    this._animationFrameId = undefined;
   }
 
   private _enableDropHandler() {

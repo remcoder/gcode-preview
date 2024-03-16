@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 
-import { test, expect } from 'vitest';
+import { test, expect, vi, assert } from 'vitest';
 
 import { State, WebGLPreview } from '../webgl-preview';
 import { GCodeCommand } from '../gcode-parser';
@@ -27,15 +27,72 @@ test('x,y,z params can go to 0', () => {
   expect(state.z).toBe(0);
 });
 
+// add a test for destroying the preview which should cancel the render loop.
+test('destroying the preview should call cancelAnimation', async () => {
+  const mock = createMockPreview();
+
+  WebGLPreview.prototype.animate.call(mock);
+
+  // wait 50ms
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  let callCount = mock.renderer.render.mock.calls.length;
+  assert(callCount > 2, 'callCount > 2');
+  callCount = mock.controls.update.mock.calls.length;
+  assert(callCount > 2, 'callCount > 2');
+
+  // destroy the preview
+  WebGLPreview.prototype.destroy.call(mock);
+  expect(mock.cancelAnimation).toHaveBeenCalledTimes(1);
+});
+
+test('cancelAnimation should cancel the render loop', async () => {
+  const mock = createMockPreview();
+
+  WebGLPreview.prototype.animate.call(mock);
+
+  // wait 50ms
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  mock.cancelAnimation();
+
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  const callCountAfterDestroy = mock.renderer.render.mock.calls.length;
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const callCountAfterDestroy2 = mock.renderer.render.mock.calls.length;
+
+  // expect no more calls to render
+  expect(callCountAfterDestroy).toBe(callCountAfterDestroy2);
+});
+
 function createMockPreview() {
   return {
     minLayerIndex: 0,
     maxLayerIndex: Infinity,
+    disposables: [],
     layers: [
       {
         commands: [] as GCodeCommand[]
       }
     ],
+    scene: {},
+    camera: {},
+    renderer: {
+      render: vi.fn(() => {
+        // console.log('render');
+      }),
+      dispose: vi.fn(() => {
+        // console.log('dispose');
+      })
+    },
+    controls: {
+      update: vi.fn(() => {
+        // console.log('update');
+      }),
+      dispose: vi.fn(() => {
+        // console.log('dispose');
+      })
+    },
     setInches: () => {
       // console.log('setInches');
     },
@@ -52,6 +109,11 @@ function createMockPreview() {
     },
     doRenderExtrusion: () => {
       // console.log('doRenderExtrusion');
-    }
+    },
+    render: vi.fn(() => {
+      // console.log('render');
+    }),
+    animate: vi.fn(WebGLPreview.prototype.animate),
+    cancelAnimation: vi.fn(WebGLPreview.prototype.cancelAnimation)
   };
 }
