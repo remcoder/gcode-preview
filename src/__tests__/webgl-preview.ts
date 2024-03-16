@@ -28,6 +28,27 @@ test('x,y,z params can go to 0', () => {
 });
 
 // add a test for destroying the preview which should cancel the render loop.
+test('destroying the preview should dispose renderer and controls', async () => {
+  const mock = createMockPreview();
+
+  WebGLPreview.prototype.animate.call(mock);
+  // wait 50ms
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  // destroy the preview
+  WebGLPreview.prototype.destroy.call(mock);
+
+  expect(mock.renderer.dispose).toHaveBeenCalledTimes(1);
+  expect(mock.controls.dispose).toHaveBeenCalledTimes(1);
+
+  expect(mock.disposables.length).toBe(0);
+  // all disposables should be disposed
+  mock.disposables.forEach((d) => {
+    expect(d.dispose).toHaveBeenCalledTimes(1);
+  });
+});
+
+// add a test for destroying the preview which should cancel the render loop.
 test('destroying the preview should call cancelAnimation', async () => {
   const mock = createMockPreview();
 
@@ -69,7 +90,13 @@ function createMockPreview() {
   return {
     minLayerIndex: 0,
     maxLayerIndex: Infinity,
-    disposables: [],
+    disposables: [
+      {
+        dispose: vi.fn(() => {
+          // console.log('dispose');
+        })
+      }
+    ],
     layers: [
       {
         commands: [] as GCodeCommand[]
