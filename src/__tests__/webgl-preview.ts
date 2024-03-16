@@ -105,41 +105,21 @@ function createMockPreview() {
     scene: {},
     camera: {},
     renderer: {
-      render: vi.fn(() => {
-        // console.log('render');
-      }),
-      dispose: vi.fn(() => {
-        // console.log('dispose');
-      })
+      render: vi.fn(() => {}),
+      dispose: vi.fn(() => {})
     },
     controls: {
-      update: vi.fn(() => {
-        // console.log('update');
-      }),
-      dispose: vi.fn(() => {
-        // console.log('dispose');
-      })
+      update: vi.fn(() => {}),
+      dispose: vi.fn(() => {})
     },
-    setInches: () => {
-      // console.log('setInches');
-    },
+    setInches: () => {},
     nonTravelmoves: [],
-    renderExtrusion: () => {
-      // console.log('renderExtrusion');
-    },
+    renderExtrusion: () => {},
     renderTravel: () => {},
-    addArcSegment: () => {
-      // console.log('addArcSegment');
-    },
-    addLineSegment: () => {
-      // console.log('addLineSegment');
-    },
-    doRenderExtrusion: () => {
-      // console.log('doRenderExtrusion');
-    },
-    render: vi.fn(() => {
-      // console.log('render');
-    }),
+    addArcSegment: () => {},
+    addLineSegment: () => {},
+    doRenderExtrusion: () => {},
+    render: vi.fn(() => {}),
     animate: vi.fn(WebGLPreview.prototype.animate),
     cancelAnimation: vi.fn(WebGLPreview.prototype.cancelAnimation)
   };
