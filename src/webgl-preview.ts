@@ -1,4 +1,4 @@
-import { Parser, MoveCommand, Layer } from './gcode-parser';
+import { Parser, MoveCommand, Layer, SelectToolCommand } from './gcode-parser';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry';
@@ -48,7 +48,11 @@ export type State = {
   e: number;
   i: number;
   j: number;
+  t: number; // tool index
 }; // feedrate?
+
+export type ColorMap = Record<number, Color>;
+export type ColorRepresentatonMap = Record<number, ColorRepresentation>;
 
 export type GCodePreviewOptions = {
   allowDragNDrop?: boolean;
@@ -57,7 +61,7 @@ export type GCodePreviewOptions = {
   canvas?: HTMLCanvasElement;
   debug?: boolean;
   endLayer?: number;
-  extrusionColor?: ColorRepresentation;
+  extrusionColor?: ColorRepresentation | ColorRepresentatonMap;
   initialCameraPosition?: number[];
   lastSegmentColor?: ColorRepresentation;
   lineWidth?: number;
@@ -70,6 +74,7 @@ export type GCodePreviewOptions = {
   targetId?: string;
   topLayerColor?: ColorRepresentation;
   travelColor?: ColorRepresentation;
+  toolColors?: Record<number, ColorRepresentation>;
 };
 
 const target = {
@@ -104,12 +109,17 @@ export class WebGLPreview {
   inches = false;
   nonTravelmoves: string[] = [];
 
+  state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
+
+  static readonly defaultExtrusionColor = new Color('hotpink');
+
   private disposables: { dispose(): void }[] = [];
-  private _extrusionColor = new Color(0xffff00);
+  private _extrusionColor: Color | ColorMap = WebGLPreview.defaultExtrusionColor;
   private _backgroundColor = new Color(0xe0e0e0);
   private _travelColor = new Color(0x990000);
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
+  private _toolColors: Record<number, Color> = {};
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -132,17 +142,23 @@ export class WebGLPreview {
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
     this.renderTubes = opts.renderTubes ?? this.renderTubes;
 
-    if (opts.extrusionColor != undefined) {
-      this.extrusionColor = new Color(opts.extrusionColor);
+    if (opts.extrusionColor !== undefined) {
+      this.extrusionColor = opts.extrusionColor;
     }
-    if (opts.travelColor != undefined) {
+    if (opts.travelColor !== undefined) {
       this.travelColor = new Color(opts.travelColor);
     }
-    if (opts.topLayerColor != undefined) {
+    if (opts.topLayerColor !== undefined) {
       this.topLayerColor = new Color(opts.topLayerColor);
     }
-    if (opts.lastSegmentColor != undefined) {
+    if (opts.lastSegmentColor !== undefined) {
       this.lastSegmentColor = new Color(opts.lastSegmentColor);
+    }
+    if (opts.toolColors) {
+      this._toolColors = {};
+      for (const [key, value] of Object.entries(opts.toolColors)) {
+        this._toolColors[parseInt(key)] = new Color(value);
+      }
     }
 
     console.info('Using THREE r' + REVISION);
@@ -185,11 +201,31 @@ export class WebGLPreview {
     if (this.allowDragNDrop) this._enableDropHandler();
   }
 
-  get extrusionColor(): Color {
+  get extrusionColor(): Color | ColorMap {
     return this._extrusionColor;
   }
-  set extrusionColor(value: number | string | Color) {
+  set extrusionColor(value: number | string | Color | ColorRepresentatonMap) {
+    if (typeof value === 'object') {
+      this._extrusionColor = {};
+      // loop over the object and convert all colors to Color
+      for (const [key, color] of Object.entries(value)) {
+        this._extrusionColor[parseInt(key, 10)] = new Color(color);
+      }
+      return;
+    }
     this._extrusionColor = new Color(value);
+  }
+
+  // get / set toolColors
+  get currentToolColor(): Color {
+    if (this._extrusionColor === undefined) {
+      return WebGLPreview.defaultExtrusionColor;
+    }
+    if (this._extrusionColor instanceof Color) {
+      return this._extrusionColor;
+    }
+
+    return this._extrusionColor[this.state.t] ?? WebGLPreview.defaultExtrusionColor;
   }
 
   get backgroundColor(): Color {
@@ -277,10 +313,9 @@ export class WebGLPreview {
 
     this.group = new Group();
     this.group.name = 'gcode';
-    const state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
 
     for (let index = 0; index < this.layers.length; index++) {
-      this.renderLayer(index, state);
+      this.renderLayer(index);
     }
 
     this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
@@ -296,48 +331,62 @@ export class WebGLPreview {
     this.renderer.render(this.scene, this.camera);
   }
 
-  renderLayer(index: number, state: State): void {
+  renderLayer(index: number): void {
     if (index > this.maxLayerIndex) return;
 
     const currentLayer: RenderLayer = {
       extrusion: [],
       travel: [],
-      z: state.z
+      z: this.state.z
     };
     const l = this.layers[index];
     for (const cmd of l.commands) {
       if (cmd.gcode == 'g20') {
         this.setInches();
-      } else if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
+        continue;
+      }
+
+      if (['t0', 't1', 't2', 't3'].includes(cmd.gcode)) {
+        // flush render queue
+        this.doRenderExtrusion(currentLayer, index);
+        currentLayer.extrusion = [];
+
+        const tool = cmd as SelectToolCommand;
+        this.state.t = tool.toolIndex;
+        continue;
+      }
+
+      if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
         const g = cmd as MoveCommand;
         const next: State = {
-          x: g.params.x ?? state.x,
-          y: g.params.y ?? state.y,
-          z: g.params.z ?? state.z,
-          r: g.params.r ?? state.r,
-          e: g.params.e ?? state.e,
-          i: g.params.i ?? state.i,
-          j: g.params.j ?? state.j
+          x: g.params.x ?? this.state.x,
+          y: g.params.y ?? this.state.y,
+          z: g.params.z ?? this.state.z,
+          r: g.params.r ?? this.state.r,
+          e: g.params.e ?? this.state.e,
+          i: g.params.i ?? this.state.i,
+          j: g.params.j ?? this.state.j,
+          t: this.state.t
         };
 
         if (index >= this.minLayerIndex) {
           const extrude = (g.params.e ?? 0) > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
-          const moving = next.x != state.x || next.y != state.y || next.z != state.z;
+          const moving = next.x != this.state.x || next.y != this.state.y || next.z != this.state.z;
           if (moving) {
             if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
               if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
-                this.addArcSegment(currentLayer, state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
+                this.addArcSegment(currentLayer, this.state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
               } else {
-                this.addLineSegment(currentLayer, state, next, extrude);
+                this.addLineSegment(currentLayer, this.state, next, extrude);
               }
             }
           }
         }
 
-        // update state
-        state.x = next.x;
-        state.y = next.y;
-        state.z = next.z;
+        // update this.state
+        this.state.x = next.x;
+        this.state.y = next.y;
+        this.state.z = next.z;
         // if (next.e) state.e = next.e; // where not really tracking e as distance (yet) but we only check if some commands are extruding (positive e)
         if (!this.beyondFirstMove) this.beyondFirstMove = true;
       }
@@ -348,13 +397,12 @@ export class WebGLPreview {
 
   doRenderExtrusion(layer: RenderLayer, index: number): void {
     if (this.renderExtrusion) {
-      let extrusionColor;
-      if (this.singleLayerMode || this.renderTubes) {
-        extrusionColor = this._extrusionColor;
-      } else {
+      let extrusionColor = this.currentToolColor;
+
+      if (!this.singleLayerMode && !this.renderTubes) {
         const brightness = 0.1 + (0.7 * index) / this.layers.length;
 
-        this._extrusionColor.getHSL(target);
+        extrusionColor.getHSL(target);
         extrusionColor = new Color().setHSL(target.h, target.s, brightness);
       }
 
@@ -410,6 +458,7 @@ export class WebGLPreview {
     this.singleLayerMode = false;
     this.parser = new Parser(this.minLayerThreshold);
     this.beyondFirstMove = false;
+    this.state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
   }
 
   resize(): void {

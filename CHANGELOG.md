@@ -1,5 +1,7 @@
 ## next
 
+- Multi-color support for T0-T7 commands.
+
 ## 2.13 maintenance release
 
 - new options: 
