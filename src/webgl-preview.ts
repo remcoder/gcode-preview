@@ -34,10 +34,9 @@ type GVector3 = {
   x: number;
   y: number;
   z: number;
-  r: number;
-  i: number;
-  j: number;
 };
+type Arc = GVector3 & { r: number; i: number; j: number };
+
 type Point = GVector3;
 type BuildVolume = GVector3;
 export type State = {
@@ -426,7 +425,7 @@ export class WebGLPreview {
     line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
 
-  addArcSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean, cw: boolean): void {
+  addArcSegment(layer: RenderLayer, p1: Point, p2: Arc, extrude: boolean, cw: boolean): void {
     const line = extrude ? layer.extrusion : layer.travel;
 
     const currX = p1.x,
