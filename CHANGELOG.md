@@ -1,5 +1,7 @@
 ## next
 
+- api: added `dispose` method to stop requestAnimationFrame and free memory
+
 ## 2.13 maintenance release
 
 - new options: 
