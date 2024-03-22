@@ -121,6 +121,8 @@ function createMockPreview() {
     doRenderExtrusion: () => {},
     render: vi.fn(() => {}),
     animate: vi.fn(WebGLPreview.prototype.animate),
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     cancelAnimation: vi.fn(WebGLPreview.prototype.cancelAnimation)
   };
 }
