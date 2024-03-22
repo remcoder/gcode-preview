@@ -8,7 +8,7 @@ import { GCodeCommand } from '../gcode-parser';
 test('in gcode x,y,z params should update the state', () => {
   const state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
   const mock = createMockPreview();
-  mock.layers[0].commands.push(new GCodeCommand('', 'g0', { x: 1, y: 1, z: 1, e: 1 }));
+  mock.layers[0].commands.push(new GCodeCommand('', 'g0', { x: 1, y: 1, z: 1, e: 1 }, undefined));
   const layerIndex = 0;
   WebGLPreview.prototype.renderLayer.call(mock, layerIndex, state);
   expect(state.x).toBe(1);
@@ -19,7 +19,7 @@ test('in gcode x,y,z params should update the state', () => {
 test('x,y,z params can go to 0', () => {
   const state: State = { x: 1, y: 1, z: 1, r: 0, e: 1, i: 0, j: 0 };
   const mock = createMockPreview();
-  mock.layers[0].commands.push(new GCodeCommand('', 'g0', { x: 0, y: 0, z: 0, e: 0 }));
+  mock.layers[0].commands.push(new GCodeCommand('', 'g0', { x: 0, y: 0, z: 0, e: 0 }, undefined));
   const layerIndex = 0;
   WebGLPreview.prototype.renderLayer.call(mock, layerIndex, state);
   expect(state.x).toBe(0);
