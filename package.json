@@ -54,6 +54,6 @@
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
-    "three": "^0.144.0"
+    "three": "^0.155.0"
   }
 }
