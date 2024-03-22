@@ -608,7 +608,7 @@ export class WebGLPreview {
     this.cancelAnimation();
   }
 
-  cancelAnimation(): void {
+  private cancelAnimation(): void {
     if (this._animationFrameId !== undefined) cancelAnimationFrame(this._animationFrameId);
     this._animationFrameId = undefined;
   }
