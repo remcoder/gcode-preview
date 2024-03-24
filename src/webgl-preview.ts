@@ -180,6 +180,7 @@ export class WebGLPreview {
     this.resize();
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.initScene();
     this.animate();
 
     if (this.allowDragNDrop) this._enableDropHandler();
@@ -247,7 +248,7 @@ export class WebGLPreview {
     this.render();
   }
 
-  render(): void {
+  initScene() {
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
@@ -276,26 +277,27 @@ export class WebGLPreview {
       this.scene.add(light);
       this.scene.add(dLight);
     }
+  }
 
-    this.group = new Group();
-    this.group.name = 'gcode';
+  render(): void {
     const state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
 
     for (let index = 0; index < this.layers.length; index++) {
+      this.group = new Group();
+      this.group.name = 'layer' + index;
       this.renderLayer(index, state);
+      this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
+
+      if (this.buildVolume) {
+        this.group.position.set(-this.buildVolume.x / 2, 0, this.buildVolume.y / 2);
+      } else {
+        // FIXME: this is just a very crude approximation for centering
+        this.group.position.set(-100, 0, 100);
+      }
+
+      this.scene.add(this.group);
+      this.renderer.render(this.scene, this.camera);
     }
-
-    this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
-
-    if (this.buildVolume) {
-      this.group.position.set(-this.buildVolume.x / 2, 0, this.buildVolume.y / 2);
-    } else {
-      // FIXME: this is just a very crude approximation for centering
-      this.group.position.set(-100, 0, 100);
-    }
-
-    this.scene.add(this.group);
-    this.renderer.render(this.scene, this.camera);
   }
 
   renderLayer(index: number, state: State): void {
