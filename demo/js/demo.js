@@ -44,7 +44,7 @@ const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 function initDemo() {
   // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const settings = JSON.parse(localStorage.getItem('settings'));
-  console.debug('settings', settings);
+  console.debug('settings loaded', settings);
 
   const preview = (window.preview = new GCodePreview.init({
     canvas: canvasElement,
@@ -290,8 +290,6 @@ function updateUI() {
   // lineWidth.value = gcodePreview.lineWidth ?? null;
   lineWidthValue.innerText = lineWidth.value;
 
-  // console.log(gcodePreview.layers);
-
   if (gcodePreview.renderExtrusion) toggleExtrusion.setAttribute('checked', 'checked');
   else toggleExtrusion.removeAttribute('checked');
 
@@ -351,7 +349,6 @@ function startLoadingProgressive(gcode) {
     } else {
       startLayer.removeAttribute('disabled');
       endLayer.removeAttribute('disabled');
-      console.debug(gcodePreview.parser.metadata.thumbnails);
     }
     gcodePreview.processGCode(chunk);
     updateUI();
