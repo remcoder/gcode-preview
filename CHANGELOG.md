@@ -1,6 +1,7 @@
 ## next
 
 - api: added `dispose` method to stop requestAnimationFrame and free memory
+- fix: Threejs Lighting was updated to use candela as per r155
 
 ## 2.13 maintenance release
 
