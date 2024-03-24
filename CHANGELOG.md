@@ -1,7 +1,20 @@
 ## next
 
+## 2.14
+
 - api: added `dispose` method to stop requestAnimationFrame and free memory
 - fix: Threejs Lighting was updated to use candela as per r155
+- fix: the type for the build volume setting was incorrect, leading to a compilation failure in certain cases
+
+Apart from these changes to the lib, some other changes have been made to the repo, including:
+- generated files were removed from the repo
+- the examples were grouped together
+- the examples received node and security updates
+- linting and type checking was added to the github action (running unit tests were already being run)
+- a roadmap was created in Github to provide some more focus
+
+I want to thank @sophiedeziel for their help in getting a bit more organized, the sparring on Discord and answering issues over the past few months 🖖
+
 
 ## 2.13 maintenance release
 
