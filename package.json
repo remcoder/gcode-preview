@@ -40,7 +40,7 @@
     "build": "rollup -c",
     "watch": "watch 'npm run build && copyfiles -f dist/gcode-preview.js demo/js' src ",
     "predemo": "npm run build && copyfiles -f node_modules/three/build/three.min.js dist/gcode-preview.js demo/js",
-    "demo": "bun run live-server demo --watch=.,js",
+    "demo": "live-server demo --watch=.,js",
     "lint": "prettier --check . && eslint -c .eslintrc.js .",
     "lint:fix": "eslint -c .eslintrc.js . --fix",
     "prettier:fix": "prettier --plugin-search-dir . --write .",
