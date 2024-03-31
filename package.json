@@ -1,6 +1,6 @@
 {
   "name": "gcode-preview",
-  "version": "2.13.0",
+  "version": "2.14.0",
   "description": "Preview a 3d print from a gcode file",
   "author": "remcoder@gmail.com",
   "license": "MIT",
@@ -22,7 +22,7 @@
     "copyfiles": "^2.4.1",
     "del-cli": "^5.0.0",
     "eslint": "^8.56.0",
-    "live-server": "^1.2.1",
+    "live-server": "1.2.1",
     "prettier": "^3.0.3",
     "rollup": "2.79",
     "rollup-plugin-dts": "^4.2.3",
@@ -30,7 +30,9 @@
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.34.0",
     "typescript": "4.4",
-    "watch": "^1.0.2"
+    "watch": "^1.0.2",
+    "happy-dom": "^13.8.6",
+    "vitest": "^1.0.4"
   },
   "scripts": {
     "prebuild": "del-cli dist/**/*",
@@ -52,7 +54,6 @@
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
-    "three": "^0.144.0",
-    "vitest": "^1.0.4"
+    "three": "^0.155.0"
   }
 }

@@ -34,10 +34,9 @@ type GVector3 = {
   x: number;
   y: number;
   z: number;
-  r: number;
-  i: number;
-  j: number;
 };
+type Arc = GVector3 & { r: number; i: number; j: number };
+
 type Point = GVector3;
 type BuildVolume = GVector3;
 export type State = {
@@ -108,6 +107,7 @@ export class WebGLPreview {
   beyondFirstMove = false;
   inches = false;
   nonTravelmoves: string[] = [];
+  _animationFrameId?: number;
 
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
@@ -273,7 +273,7 @@ export class WebGLPreview {
   }
 
   animate(): void {
-    requestAnimationFrame(() => this.animate());
+    this._animationFrameId = requestAnimationFrame(() => this.animate());
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
   }
@@ -304,8 +304,10 @@ export class WebGLPreview {
     }
 
     if (this.renderTubes) {
-      const light = new AmbientLight(0xcccccc, 1);
-      const dLight = new PointLight(0xffffff, 0.8);
+      console.warn('Volumetric rendering is experimental and may not work as expected or change in the future.');
+      const light = new AmbientLight(0xcccccc, 0.3 * Math.PI);
+      // threejs assumes meters but we use mm. So we need to scale the decay of the light
+      const dLight = new PointLight(0xffffff, Math.PI, undefined, 1 / 1000);
       dLight.position.set(0, 500, 500);
       this.scene.add(light);
       this.scene.add(dLight);
@@ -474,7 +476,7 @@ export class WebGLPreview {
     line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
 
-  addArcSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean, cw: boolean): void {
+  addArcSegment(layer: RenderLayer, p1: Point, p2: Arc, extrude: boolean, cw: boolean): void {
     const line = extrude ? layer.extrusion : layer.travel;
 
     const currX = p1.x,
@@ -645,6 +647,20 @@ export class WebGLPreview {
     const line = new LineSegments2(geometry, matLine);
 
     this.group?.add(line);
+  }
+
+  dispose(): void {
+    this.disposables.forEach((d) => d.dispose());
+    this.disposables = [];
+    this.controls.dispose();
+    this.renderer.dispose();
+
+    this.cancelAnimation();
+  }
+
+  private cancelAnimation(): void {
+    if (this._animationFrameId !== undefined) cancelAnimationFrame(this._animationFrameId);
+    this._animationFrameId = undefined;
   }
 
   private _enableDropHandler() {
