@@ -112,6 +112,9 @@ export class WebGLPreview {
 
   static readonly defaultExtrusionColor = new Color('hotpink');
 
+  state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
+  prevLayerIndex?: number = undefined;
+
   private disposables: { dispose(): void }[] = [];
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private _backgroundColor = new Color(0xe0e0e0);
@@ -319,9 +322,8 @@ export class WebGLPreview {
   }
 
   render(): void {
-    for (let index = 0; index < this.layers.length; index++) {
-      this.group = new Group();
-      this.group.name = 'layer' + index;
+    this.group = new Group();
+    for (let index = this.prevLayerIndex ?? 0; index < this.layers.length; index++) {
       this.renderLayer(index);
       this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
 
@@ -335,6 +337,7 @@ export class WebGLPreview {
       this.scene.add(this.group);
       this.renderer.render(this.scene, this.camera);
     }
+    this.prevLayerIndex = this.layers.length - 1;
   }
 
   renderLayer(index: number): void {
