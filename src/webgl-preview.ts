@@ -325,7 +325,7 @@ export class WebGLPreview {
 
   processGCode(gcode: string | string[]): void {
     this.parser.parseGCode(gcode);
-    this.renderIncremental();
+    this.render();
   }
 
   initScene() {
