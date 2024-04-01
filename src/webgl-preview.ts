@@ -293,7 +293,7 @@ export class WebGLPreview {
 
   processGCode(gcode: string | string[]): void {
     this.parser.parseGCode(gcode);
-    this.renderIncremental();
+    this.render();
   }
 
   initScene() {
@@ -397,16 +397,6 @@ export class WebGLPreview {
       z: this.state.z
     };
     const l = this.layers[index];
-    // if (index >= this.minLayerIndex) {
-    //   console.log(
-    //     'rendering layer',
-    //     index,
-    //     l.commands
-    //       .filter((c) => c.gcode)
-    //       .map((c) => c.src)
-    //       .join('\n')
-    //   );
-    // }
     for (const cmd of l.commands) {
       if (cmd.gcode == 'g20') {
         this.setInches();
