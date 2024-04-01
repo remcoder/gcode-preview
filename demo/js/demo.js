@@ -5,9 +5,11 @@ import * as Canvas2Image from 'canvas2image';
 let gcodePreview;
 let favIcon;
 let thumb;
-let chunkSize = 10000;
 const maxToolCount = 8;
 let toolCount = 4;
+let chunkSize = 1000;
+let currentFile;
+const FILE_SIZE_5MB = 5 * 1024 * 1024;
 
 const canvasElement = document.querySelector('.gcode-previewer');
 const settingsPreset = document.getElementById('settings-presets');
@@ -216,6 +218,12 @@ export function initDemo() {
 
   toggleRenderTubes.addEventListener('click', function () {
     changeRenderTubes(!!toggleRenderTubes.checked);
+    if (preview.renderTubes && currentFile.size > FILE_SIZE_5MB) {
+      confirm('This file is large and may take a while to render in this mode. Continue?')
+        ? (preview.renderTubes = true)
+        : (preview.renderTubes = false);
+      toggleRenderTubes.checked = preview.renderTubes;
+    }
     preview.render();
   });
 
@@ -306,7 +314,7 @@ export function initDemo() {
     fileSize.innerText = humanFileSize(file.size);
 
     preview.clear();
-    if (preview.renderTubes && file.size > 5 * 1024 * 1024) {
+    if (preview.renderTubes && file.size > FILE_SIZE_5MB) {
       confirm('This file is large and may take a while to render in this mode. Change to line rendering?')
         ? (preview.renderTubes = false)
         : (preview.renderTubes = true);
@@ -314,6 +322,7 @@ export function initDemo() {
     preview.initScene();
     await preview._readFromStream(file.stream());
     updateUI();
+    currentFile = file;
     preview.render();
   });
 
@@ -533,7 +542,7 @@ function updateUI() {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 async function loadGCodeFromServer(file) {
   const response = await fetch(file);
-
+  currentFile = file;
   if (response.status !== 200) {
     console.error('ERROR. Status Code: ' + response.status);
     return;
