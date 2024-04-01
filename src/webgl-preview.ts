@@ -293,7 +293,7 @@ export class WebGLPreview {
 
   processGCode(gcode: string | string[]): void {
     this.parser.parseGCode(gcode);
-    this.renderNext();
+    this.renderIncremental();
   }
 
   initScene() {
@@ -317,7 +317,7 @@ export class WebGLPreview {
     }
 
     if (this.renderTubes) {
-      console.warn('Volumetric rendering is experimental and may not work as expected or change in the future.');
+      console.warn('Volumetric rendering is experimental. It may not work as expected or change in the future.');
       const light = new AmbientLight(0xcccccc, 0.3 * Math.PI);
       // threejs assumes meters but we use mm. So we need to scale the decay of the light
       const dLight = new PointLight(0xffffff, Math.PI, undefined, 1 / 1000);
@@ -340,7 +340,7 @@ export class WebGLPreview {
     return group;
   }
 
-  renderNext(): void {
+  renderIncremental(): void {
     // console.log('removing layer', this.prevLayerIndex);
     this.scene.remove(this.group);
     this.state = this.prevState ?? State.initial;
@@ -361,8 +361,8 @@ export class WebGLPreview {
   }
 
   render(): void {
-    this.group = new Group();
-    this.group.name = 'gcode';
+    console.log('rendering all layers');
+    this.group = this.createGroup('allLayers');
     this.state = State.initial;
     this.initScene();
 
@@ -397,6 +397,16 @@ export class WebGLPreview {
       z: this.state.z
     };
     const l = this.layers[index];
+    // if (index >= this.minLayerIndex) {
+    //   console.log(
+    //     'rendering layer',
+    //     index,
+    //     l.commands
+    //       .filter((c) => c.gcode)
+    //       .map((c) => c.src)
+    //       .join('\n')
+    //   );
+    // }
     for (const cmd of l.commands) {
       if (cmd.gcode == 'g20') {
         this.setInches();
