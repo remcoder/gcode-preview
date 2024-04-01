@@ -2,7 +2,7 @@
 
 import { test, expect, vi, assert } from 'vitest';
 
-import { WebGLPreview } from '../webgl-preview';
+import { State, WebGLPreview } from '../webgl-preview';
 import { GCodeCommand } from '../gcode-parser';
 
 test('in gcode x,y,z params should update the state', () => {
@@ -86,7 +86,7 @@ test('cancelAnimation should cancel the render loop', async () => {
 
 function createMockPreview() {
   return {
-    state: { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 },
+    state: State.initial,
     minLayerIndex: 0,
     maxLayerIndex: Infinity,
     disposables: [
