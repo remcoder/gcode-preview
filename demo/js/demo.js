@@ -63,7 +63,7 @@ function initDemo() {
     lastSegmentColor: '#fff',
     renderExtrusion: true,
     renderTravel: false,
-    renderTubes: false,
+    renderTubes: true,
     extrusionColor: ['hotpink', 'indigo', 'white', 'lime'],
     backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
     travelColor: new THREE.Color('lime')

@@ -39,7 +39,7 @@ type Arc = GVector3 & { r: number; i: number; j: number };
 
 type Point = GVector3;
 type BuildVolume = GVector3;
-export type State = {
+export class State {
   x: number;
   y: number;
   z: number;
@@ -48,7 +48,13 @@ export type State = {
   i: number;
   j: number;
   t: number; // tool index
-}; // feedrate?
+  // feedrate?
+  static get initial(): State {
+    const state = new State();
+    Object.assign(state, { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 });
+    return state;
+  }
+}
 
 export type GCodePreviewOptions = {
   allowDragNDrop?: boolean;
@@ -108,7 +114,7 @@ export class WebGLPreview {
   _animationFrameId?: number;
   disableGradient = false;
 
-  private state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
+  private state: State = State.initial;
 
   static readonly defaultExtrusionColor = new Color('hotpink');
 
@@ -337,7 +343,7 @@ export class WebGLPreview {
   renderNext(): void {
     // console.log('removing layer', this.prevLayerIndex);
     this.scene.remove(this.group);
-    this.state = this.prevState;
+    this.state = this.prevState ?? State.initial;
 
     for (let index = this.prevLayerIndex ?? 0; index < this.layers.length; index++) {
       this.group = this.createGroup('layer' + index);
@@ -357,7 +363,7 @@ export class WebGLPreview {
   render(): void {
     this.group = new Group();
     this.group.name = 'gcode';
-    this.state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
+    this.state = State.initial;
     this.initScene();
 
     while (this.disposables.length > 0) {
