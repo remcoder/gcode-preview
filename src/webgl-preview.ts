@@ -561,7 +561,7 @@ export class WebGLPreview {
     this.singleLayerMode = false;
     this.parser = new Parser(this.minLayerThreshold);
     this.beyondFirstMove = false;
-    this.state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
+    this.state = State.initial;
     this.devGui?.reset();
     this._geometries = {};
   }
@@ -803,6 +803,7 @@ export class WebGLPreview {
     let tail = '';
     let size = 0;
     do {
+      console.debug('reading from stream');
       result = await reader.read();
       size += result.value?.length ?? 0;
       const str = decode(result.value);
