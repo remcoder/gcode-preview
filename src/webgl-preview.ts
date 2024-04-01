@@ -126,11 +126,11 @@ export class WebGLPreview {
   disableGradient = false;
   private devMode?: boolean | DevModeOptions = true;
 
-  state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
+  private state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
   static readonly defaultExtrusionColor = new Color('hotpink');
 
-  prevLayerIndex?: number = undefined;
+  private prevLayerIndex?: number = undefined;
 
   private disposables: { dispose(): void }[] = [];
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
@@ -144,6 +144,7 @@ export class WebGLPreview {
   private stats: Stats = new Stats();
   private devGui?: DevGUI;
   private _geometries: Record<number, ExtrusionGeometry[]> = {};
+  private prevState: State;
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -318,7 +319,7 @@ export class WebGLPreview {
 
   processGCode(gcode: string | string[]): void {
     this.parser.parseGCode(gcode);
-    this.render();
+    this.renderNext();
   }
 
   initScene() {
@@ -352,35 +353,77 @@ export class WebGLPreview {
     }
   }
 
+  createGroup(name: string): Group {
+    const group = new Group();
+    group.name = name;
+    group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
+    if (this.buildVolume) {
+      group.position.set(-this.buildVolume.x / 2, 0, this.buildVolume.y / 2);
+    } else {
+      // FIXME: this is just a very crude approximation for centering
+      group.position.set(-100, 0, 100);
+    }
+    return group;
+  }
+
+  renderNext(): void {
+    // console.log('removing layer', this.prevLayerIndex);
+    this.scene.remove(this.group);
+    this.state = this.prevState;
+
+    for (let index = this.prevLayerIndex ?? 0; index < this.layers.length; index++) {
+      this.group = this.createGroup('layer' + index);
+      // console.log('rendering layer', index);
+
+      this.prevState = { ...this.state };
+      this.renderLayer(index);
+
+      this.scene.add(this.group);
+    }
+
+    this.renderer.render(this.scene, this.camera);
+
+    this.prevLayerIndex = this.layers.length - 1;
+  }
+
   render(): void {
     const startRender = performance.now();
     this.group = new Group();
-    for (let index = this.prevLayerIndex ?? 0; index < this.layers.length; index++) {
+    this.group.name = 'gcode';
+    this.state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
+    this.initScene();
+
+    while (this.disposables.length > 0) {
+      const disposable = this.disposables.pop();
+      if (disposable) disposable.dispose();
+    }
+
+    for (let index = 0; index < this.layers.length; index++) {
       this.renderLayer(index);
-      this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
+    }
 
-      if (this.buildVolume) {
-        this.group.position.set(-this.buildVolume.x / 2, 0, this.buildVolume.y / 2);
-      } else {
-        // FIXME: this is just a very crude approximation for centering
-        this.group.position.set(-100, 0, 100);
-      }
+    this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
 
-      if (this._geometries) {
-        for (const color in this._geometries) {
-          const mesh = this.createBatchMesh(parseInt(color));
-          while (this._geometries[color].length > 0) {
-            const geometry = this._geometries[color].pop();
-            mesh.addGeometry(geometry);
-          }
+    if (this.buildVolume) {
+      this.group.position.set(-this.buildVolume.x / 2, 0, this.buildVolume.y / 2);
+    } else {
+      // FIXME: this is just a very crude approximation for centering
+      this.group.position.set(-100, 0, 100);
+    }
+
+    if (this._geometries) {
+      for (const color in this._geometries) {
+        const mesh = this.createBatchMesh(parseInt(color));
+        while (this._geometries[color].length > 0) {
+          const geometry = this._geometries[color].pop();
+          mesh.addGeometry(geometry);
         }
       }
-
-      this.scene.add(this.group);
-      this.renderer.render(this.scene, this.camera);
-      this._lastRenderTime = performance.now() - startRender;
     }
-    this.prevLayerIndex = this.layers.length - 1;
+
+    this.scene.add(this.group);
+    this.renderer.render(this.scene, this.camera);
+    this._lastRenderTime = performance.now() - startRender;
   }
 
   renderLayer(index: number): void {
