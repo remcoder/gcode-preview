@@ -4,7 +4,7 @@
 let gcodePreview;
 let favIcon;
 let thumb;
-const chunkSize = 10000;
+let chunkSize = 10000;
 const maxToolCount = 8;
 let toolCount = 4;
 
@@ -227,7 +227,12 @@ function initDemo() {
     fileSize.innerText = humanFileSize(file.size);
 
     preview.clear();
-
+    if (preview.renderTubes && file.size > 5 * 1024 * 1024) {
+      confirm('This file is large and may take a while to render in this mode. Change to line rendering?')
+        ? (preview.renderTubes = false)
+        : (preview.renderTubes = true);
+    }
+    preview.initScene();
     await preview._readFromStream(file.stream());
     updateUI();
     preview.render();
@@ -321,6 +326,9 @@ function updateUI() {
   // lineWidth.value = gcodePreview.lineWidth ?? null;
   lineWidthValue.innerText = lineWidth.value;
 
+  if (gcodePreview.renderTubes) toggleRenderTubes.setAttribute('checked', 'checked');
+  else toggleRenderTubes.removeAttribute('checked');
+
   if (gcodePreview.renderExtrusion) toggleExtrusion.setAttribute('checked', 'checked');
   else toggleExtrusion.removeAttribute('checked');
 
@@ -358,7 +366,7 @@ async function loadGCodeFromServer(file) {
 }
 
 function _handleGCode(filename, gcode) {
-  // chunkSize = gcode.length / 1000;
+  chunkSize = gcode.length / 1000;
   fileName.innerText = filename;
   fileSize.innerText = humanFileSize(gcode.length);
 
@@ -383,7 +391,9 @@ function startLoadingProgressive(gcode) {
       startLayer.removeAttribute('disabled');
       endLayer.removeAttribute('disabled');
     }
-    gcodePreview.processGCode(chunk);
+    gcodePreview.parser.parseGCode(chunk);
+    if (gcodePreview.renderTubes) gcodePreview.renderIncremental();
+    else gcodePreview.render();
     updateUI();
   }
 
