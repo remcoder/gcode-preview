@@ -112,7 +112,6 @@ export class WebGLPreview {
 
   static readonly defaultExtrusionColor = new Color('hotpink');
 
-  state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 };
   prevLayerIndex?: number = undefined;
 
   private disposables: { dispose(): void }[] = [];
