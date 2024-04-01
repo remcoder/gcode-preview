@@ -108,7 +108,7 @@ export class WebGLPreview {
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
-  group?: Group;
+  controls: OrbitControls;
   container?: HTMLElement;
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
@@ -122,24 +122,27 @@ export class WebGLPreview {
   singleLayerMode = false;
   buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
-  debug = false;
-  allowDragNDrop = false;
-  controls: OrbitControls;
-  beyondFirstMove = false;
+  debug = false; // deprecated
+  allowDragNDrop = false; // deprecated
   inches = false;
   nonTravelmoves: string[] = [];
-  _animationFrameId?: number;
   disableGradient = false;
   private devMode?: boolean | DevModeOptions = true;
 
+  // gcode processing state
   private state: State = State.initial;
-
-  static readonly defaultExtrusionColor = new Color('hotpink');
-
+  private prevState: State;
   private prevLayerIndex?: number = undefined;
+  private beyondFirstMove = false;
 
+  // rendering
+  private group?: Group;
   private disposables: { dispose(): void }[] = [];
+  static readonly defaultExtrusionColor = new Color('hotpink');
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
+  private animationFrameId?: number;
+
+  // colors
   private _backgroundColor = new Color(0xe0e0e0);
   private _travelColor = new Color(0x990000);
   private _topLayerColor?: Color;
@@ -150,7 +153,6 @@ export class WebGLPreview {
   private stats: Stats = new Stats();
   private devGui?: DevGUI;
   private _geometries: Record<number, ExtrusionGeometry[]> = {};
-  private prevState: State;
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -317,7 +319,7 @@ export class WebGLPreview {
   }
 
   animate(): void {
-    this._animationFrameId = requestAnimationFrame(() => this.animate());
+    this.animationFrameId = requestAnimationFrame(() => this.animate());
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     this.stats?.update();
@@ -750,8 +752,8 @@ export class WebGLPreview {
   }
 
   private cancelAnimation(): void {
-    if (this._animationFrameId !== undefined) cancelAnimationFrame(this._animationFrameId);
-    this._animationFrameId = undefined;
+    if (this.animationFrameId !== undefined) cancelAnimationFrame(this.animationFrameId);
+    this.animationFrameId = undefined;
   }
 
   private _enableDropHandler() {
