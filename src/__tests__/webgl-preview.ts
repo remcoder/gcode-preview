@@ -87,7 +87,6 @@ test('cancelAnimation should cancel the render loop', async () => {
 function createMockPreview() {
   return {
     state: { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0 },
-
     minLayerIndex: 0,
     maxLayerIndex: Infinity,
     disposables: [
