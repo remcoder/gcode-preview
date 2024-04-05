@@ -8,7 +8,7 @@ const maxToolCount = 8;
 let toolCount = 4;
 let chunkSize = 1000;
 let currentFile;
-const FILE_SIZE_5MB = 5 * 1024 * 1024;
+const FILE_SIZE_10MB = 10 * 1024 * 1024;
 
 const canvasElement = document.querySelector('.gcode-previewer');
 const startLayer = document.getElementById('start-layer');
@@ -132,7 +132,7 @@ function initDemo() {
 
   toggleRenderTubes.addEventListener('click', function () {
     preview.renderTubes = toggleRenderTubes.checked;
-    if (preview.renderTubes && currentFile.size > FILE_SIZE_5MB) {
+    if (preview.renderTubes && currentFile.size > FILE_SIZE_10MB) {
       confirm('This file is large and may take a while to render in this mode. Continue?')
         ? (preview.renderTubes = true)
         : (preview.renderTubes = false);
@@ -235,7 +235,7 @@ function initDemo() {
     fileSize.innerText = humanFileSize(file.size);
 
     preview.clear();
-    if (preview.renderTubes && file.size > FILE_SIZE_5MB) {
+    if (preview.renderTubes && file.size > FILE_SIZE_10MB) {
       confirm('This file is large and may take a while to render in this mode. Change to line rendering?')
         ? (preview.renderTubes = false)
         : (preview.renderTubes = true);
