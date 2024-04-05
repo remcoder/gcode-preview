@@ -621,7 +621,7 @@ export class WebGLPreview {
       curvePoints.push(endPoint);
     }
 
-    if (curvePoints.length > 2) {
+    if (curvePoints.length > 1) {
       curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
     }
 
