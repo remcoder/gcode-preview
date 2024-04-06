@@ -15,6 +15,8 @@ const endLayer = document.getElementById('end-layer');
 const endLayerValue = document.getElementById('end-layer-value');
 const lineWidth = document.getElementById('line-width');
 const lineWidthValue = document.getElementById('line-width-value');
+const tubeLineWidth = document.getElementById('tube-line-width');
+const tubeLineWidthValue = document.getElementById('tube-line-width-value');
 const toggleSingleLayerMode = document.getElementById('single-layer-mode');
 const toggleExtrusion = document.getElementById('extrusion');
 const toggleRenderTubes = document.getElementById('render-tubes');
@@ -110,6 +112,12 @@ function initDemo() {
   lineWidth.addEventListener('input', function () {
     preview.lineWidth = +lineWidth.value;
     lineWidthValue.innerText = lineWidth.value;
+    preview.render();
+  });
+
+  tubeLineWidth.addEventListener('input', function () {
+    preview.tubeLineWidth = +tubeLineWidth.value;
+    tubeLineWidthValue.innerText = tubeLineWidth.value;
     preview.render();
   });
 
