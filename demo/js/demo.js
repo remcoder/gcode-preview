@@ -64,7 +64,7 @@ function initDemo() {
     renderExtrusion: true,
     renderTravel: false,
     renderTubes: false,
-    extrusionColor: ['purple', 'hotpink', 'green', 'yellow'],
+    extrusionColor: ['hotpink', 'indigo', 'white', 'lime'],
     backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
     travelColor: new THREE.Color('lime')
     // minLayerThreshold: 0.1
