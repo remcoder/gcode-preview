@@ -460,3 +460,31 @@ function showExtrusionColors() {
     }
   }
 }
+
+function saveCameraPosition() {
+  localStorage.setItem('camera.hasPosition', 'true');
+
+  localStorage.setItem('camera.position.x', gcodePreview.camera.position.x.toString());
+  localStorage.setItem('camera.position.y', gcodePreview.camera.position.y.toString());
+  localStorage.setItem('camera.position.z', gcodePreview.camera.position.z.toString());
+  localStorage.setItem('camera.rotation.x', gcodePreview.camera.rotation.x.toString());
+  localStorage.setItem('camera.rotation.y', gcodePreview.camera.rotation.y.toString());
+  localStorage.setItem('camera.rotation.z', gcodePreview.camera.rotation.z.toString());
+  localStorage.setItem('controls.target.x', gcodePreview.controls.target.x.toString());
+  localStorage.setItem('controls.target.y', gcodePreview.controls.target.y.toString());
+  localStorage.setItem('controls.target.z', gcodePreview.controls.target.z.toString());
+}
+
+function loadCameraPosition() {
+  if (localStorage.getItem('camera.hasPosition') !== 'true') return;
+
+  gcodePreview.camera.position.x = parseFloat(localStorage.getItem('camera.position.x'));
+  gcodePreview.camera.position.y = parseFloat(localStorage.getItem('camera.position.y'));
+  gcodePreview.camera.position.z = parseFloat(localStorage.getItem('camera.position.z'));
+  gcodePreview.camera.rotation.x = parseFloat(localStorage.getItem('camera.rotation.x'));
+  gcodePreview.camera.rotation.y = parseFloat(localStorage.getItem('camera.rotation.y'));
+  gcodePreview.camera.rotation.z = parseFloat(localStorage.getItem('camera.rotation.z'));
+  gcodePreview.controls.target.x = parseFloat(localStorage.getItem('controls.target.x'));
+  gcodePreview.controls.target.y = parseFloat(localStorage.getItem('controls.target.y'));
+  gcodePreview.controls.target.z = parseFloat(localStorage.getItem('controls.target.z'));
+}
