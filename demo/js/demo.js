@@ -242,10 +242,15 @@ function initDemo() {
     }
     preview.initScene();
     preview.clear();
-    // await preview._readFromStream(file.stream());
-    _handleGCode(file.name, await file.text());
+    console.time('readFromStream');
+    await preview._readFromStream(file.stream());
+    console.timeEnd('readFromStream');
     updateUI();
     currentFile = file;
+
+    console.time('render');
+    preview.render();
+    console.timeEnd('render');
   });
 
   function updateBuildVolume() {
@@ -376,7 +381,7 @@ async function loadGCodeFromServer(filename) {
 }
 
 function _handleGCode(filename, gcode) {
-  chunkSize = gcode.length / 1000;
+  // chunkSize = gcode.length / 1000;
   fileName.innerText = filename;
   fileSize.innerText = humanFileSize(gcode.length);
 

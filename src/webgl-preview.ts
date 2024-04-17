@@ -26,7 +26,8 @@ import {
   Scene,
   TubeGeometry,
   Vector3,
-  WebGLRenderer
+  WebGLRenderer,
+  WireframeGeometry
 } from 'three';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
@@ -451,10 +452,11 @@ export class WebGLPreview {
       }
     }
 
-    this.doRenderExtrusion(currentLayer, index);
+    if (currentLayer.extrusion.length || currentLayer.travel.length) this.doRenderExtrusion(currentLayer, index);
   }
 
   doRenderExtrusion(layer: RenderLayer, index: number): void {
+    console.log('doRenderExtrusion', index, layer);
     if (this.renderExtrusion) {
       let extrusionColor = this.currentToolColor;
 
@@ -635,6 +637,7 @@ export class WebGLPreview {
   }
 
   addLine(vertices: number[], color: number): void {
+    console.log('addLine', vertices.length, vertices);
     if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
       this.addThickLine(vertices, color);
       return;
@@ -653,7 +656,7 @@ export class WebGLPreview {
   addTubeLine(vertices: number[], color: number): void {
     let curvePoints: Vector3[] = [];
     const curves: CatmullRomCurve3[] = [];
-
+    console.log('addTubeLine', vertices.length, vertices);
     // Merging into one curve for performance
     for (let i = 0; i < vertices.length; i += 6) {
       const v = vertices.slice(i, i + 6);
@@ -676,16 +679,26 @@ export class WebGLPreview {
     if (curvePoints.length > 1) {
       curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
     }
-
+    console.log('# curves', curves.length);
     curves.forEach((curve) => {
       const material = new MeshLambertMaterial({ color: color });
       this.disposables.push(material);
       const segments = Math.ceil(curve.getLength() * 2);
+      console.log(' # segments', segments);
       const geometry = new TubeGeometry(curve, segments, 0.3, 4, false);
       this.disposables.push(geometry);
-      const lineSegments = new Mesh(geometry, material);
+      // const lineSegments = new Mesh(geometry, material);
 
-      this.group?.add(lineSegments);
+      const wireframe = new WireframeGeometry(geometry);
+
+      const line = new LineSegments(wireframe);
+      // line.material.depthTest = false;
+      // line.material.opacity = 0.25;
+      // line.material.transparent = true;
+
+      this.group?.add(line);
+
+      // this.group?.add(lineSegments);
     });
   }
 
