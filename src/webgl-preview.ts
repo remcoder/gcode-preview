@@ -50,9 +50,6 @@ export type State = {
   t: number; // tool index
 }; // feedrate?
 
-export type ColorMap = Record<number, Color>;
-export type ColorRepresentatonMap = Record<number, ColorRepresentation>;
-
 export type GCodePreviewOptions = {
   allowDragNDrop?: boolean;
   buildVolume?: BuildVolume;
@@ -60,7 +57,7 @@ export type GCodePreviewOptions = {
   canvas?: HTMLCanvasElement;
   debug?: boolean;
   endLayer?: number;
-  extrusionColor?: ColorRepresentation | ColorRepresentatonMap;
+  extrusionColor?: ColorRepresentation | ColorRepresentation[];
   initialCameraPosition?: number[];
   lastSegmentColor?: ColorRepresentation;
   lineWidth?: number;
@@ -116,7 +113,7 @@ export class WebGLPreview {
   static readonly defaultExtrusionColor = new Color('hotpink');
 
   private disposables: { dispose(): void }[] = [];
-  private _extrusionColor: Color | ColorMap = WebGLPreview.defaultExtrusionColor;
+  private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private _backgroundColor = new Color(0xe0e0e0);
   private _travelColor = new Color(0x990000);
   private _topLayerColor?: Color;
@@ -207,22 +204,22 @@ export class WebGLPreview {
     if (this.allowDragNDrop) this._enableDropHandler();
   }
 
-  get extrusionColor(): Color | ColorMap {
+  get extrusionColor(): Color | Color[] {
     return this._extrusionColor;
   }
-  set extrusionColor(value: number | string | Color | ColorRepresentatonMap) {
-    if (typeof value === 'object') {
-      this._extrusionColor = {};
+  set extrusionColor(value: number | string | Color | ColorRepresentation[]) {
+    if (Array.isArray(value)) {
+      this._extrusionColor = [];
       // loop over the object and convert all colors to Color
-      for (const [key, color] of Object.entries(value)) {
-        this._extrusionColor[parseInt(key, 10)] = new Color(color);
+      for (const [index, color] of value.entries()) {
+        this._extrusionColor[index] = new Color(color);
       }
       return;
     }
     this._extrusionColor = new Color(value);
   }
 
-  // get / set toolColors
+  // get tool color based on current state
   get currentToolColor(): Color {
     if (this._extrusionColor === undefined) {
       return WebGLPreview.defaultExtrusionColor;
