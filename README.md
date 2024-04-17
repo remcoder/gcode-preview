@@ -46,6 +46,8 @@ or
 
 ## Features
 
+### New: multi-tool support T0..T7
+
 ### Experimental: render extrusion as tubes
 ```
 renderTubes : true
