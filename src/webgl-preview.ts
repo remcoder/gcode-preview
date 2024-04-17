@@ -351,7 +351,7 @@ export class WebGLPreview {
         continue;
       }
 
-      if (['t0', 't1', 't2', 't3'].includes(cmd.gcode)) {
+      if (cmd.gcode.startsWith('t')) {
         // flush render queue
         this.doRenderExtrusion(currentLayer, index);
         currentLayer.extrusion = [];
