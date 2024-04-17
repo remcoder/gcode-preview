@@ -18,7 +18,6 @@ import {
   Group,
   LineBasicMaterial,
   LineSegments,
-  Mesh,
   MeshLambertMaterial,
   PerspectiveCamera,
   PointLight,

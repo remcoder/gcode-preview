@@ -6,7 +6,7 @@ let favIcon;
 let thumb;
 const maxToolCount = 8;
 let toolCount = 4;
-let chunkSize = 1000;
+const chunkSize = 1000;
 let currentFile;
 const FILE_SIZE_10MB = 10 * 1024 * 1024;
 
@@ -461,6 +461,7 @@ function showExtrusionColors() {
   }
 }
 
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 function saveCameraPosition() {
   localStorage.setItem('camera.hasPosition', 'true');
 
@@ -475,6 +476,7 @@ function saveCameraPosition() {
   localStorage.setItem('controls.target.z', gcodePreview.controls.target.z.toString());
 }
 
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 function loadCameraPosition() {
   if (localStorage.getItem('camera.hasPosition') !== 'true') return;
 
