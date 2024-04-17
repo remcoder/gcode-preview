@@ -202,7 +202,7 @@ export class WebGLPreview {
       });
     }
 
-    this.camera = new PerspectiveCamera(25, this.canvas.offsetWidth / this.canvas.offsetHeight, 10, 5000);
+    this.camera = new PerspectiveCamera(25, this.canvas.offsetWidth / this.canvas.offsetHeight, 2, 5000);
     this.camera.position.fromArray(this.initialCameraPosition);
     const fogFar = (this.camera as PerspectiveCamera).far;
     const fogNear = fogFar * 0.8;
@@ -467,7 +467,7 @@ export class WebGLPreview {
         extrusionColor = new Color().setHSL(target.h, target.s, brightness);
       }
 
-      if (index == this.layers.length - 1) {
+      if (index == this.layers.length - 1 && this._topLayerColor) {
         const layerColor = this._topLayerColor ?? extrusionColor;
         const lastSegmentColor = this._lastSegmentColor ?? layerColor;
 
@@ -679,6 +679,7 @@ export class WebGLPreview {
     if (curvePoints.length > 1) {
       curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
     }
+
     console.log('# curves', curves.length);
     curves.forEach((curve) => {
       const material = new MeshLambertMaterial({ color: color });

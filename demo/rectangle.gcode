@@ -2,10 +2,10 @@
 G0 Z0.2
 
 ; go to starting point
-G1 X20 Y20
+G1 X40 Y20
 
-; make a square
-G1 X20 Y10 E20
-G1 X10 Y10 E30
+; make a rectangle
+G1 X40 Y15 E20
+G1 X10 Y15 E30
 G1 X10 Y20 E40
-G1 X20 Y20 E50
+G1 X40 Y20 E50

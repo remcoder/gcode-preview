@@ -62,7 +62,7 @@ function initDemo() {
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
     // topLayerColor: 'rgb(0, 255, 255)',
-    lastSegmentColor: '#fff',
+    // lastSegmentColor: '#fff',
     renderExtrusion: true,
     renderTravel: false,
     renderTubes: true,
