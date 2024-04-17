@@ -76,10 +76,48 @@
           <label for="render-tubes">Render tubes</label
           ><input type="checkbox" id="render-tubes" />
         </div>
+      </section>
+
+      <section class="extrusion-colors">
+        <div class="flex just-between"># of extrusion colors  <div class="controls">
+          <button id="add-color">+</button>
+          <button id="remove-color">-</button>
+        </div></div>
         <div class="controls">
-          <label for="extrusion-color">Extrusion color</label>
-          <input type="color" id="extrusion-color" value="#ff0000" />
+          <label for="extrusion-color-t0">Extrusion color (T0)</label>
+          <input type="color" id="extrusion-color-t0" value="#ff0000" />
         </div>
+        <div class="controls">
+          <label for="extrusion-color-t1">Extrusion color (T1)</label>
+          <input type="color" id="extrusion-color-t1" value="#00ff00" />
+        </div>
+        <div class="controls">
+          <label for="extrusion-color-t2">Extrusion color (T2)</label>
+          <input type="color" id="extrusion-color-t2" value="#0000ff" />
+        </div>
+        <div class="controls">
+          <label for="extrusion-color-t3">Extrusion color (T3)</label>
+          <input type="color" id="extrusion-color-t3" value="#ff00ff" />
+        </div>
+        <div class="controls">
+          <label for="extrusion-color-t4">Extrusion color (T4)</label>
+          <input type="color" id="extrusion-color-t4" value="#00ffff" />
+        </div>
+        <div class="controls">
+          <label for="extrusion-color-t5">Extrusion color (T5)</label>
+          <input type="color" id="extrusion-color-t5" value="#ffff00" />
+        </div>
+        <div class="controls">
+          <label for="extrusion-color-t6">Extrusion color (T6)</label>
+          <input type="color" id="extrusion-color-t6" value="#ff0000" />  
+        </div>
+        <div class="controls">
+          <label for="extrusion-color-t7">Extrusion color (T7)</label>
+          <input type="color" id="extrusion-color-t7" value="#00ff00" />
+        </div>
+      </section>
+
+      <section>
         <div class="controls">
           <label for="travel">Travel</label
           ><input type="checkbox" id="travel" />
@@ -105,6 +143,7 @@
           <input type="color" id="background-color" value="#e0e0e0" />
         </div>
       </section>
+
       <section>
         <div  class="controls">
           <label for="drawBuildVolume">Draw build volume</label
@@ -151,6 +190,6 @@
   <script src="js/demo.js"></script>
   <script>
     const gcodeDemo = initDemo();
-    loadGCodeFromServer('benchy.gcode');
+    loadGCodeFromServer('3DBenchy-Multi-part.gcode');
   </script>
 </body>

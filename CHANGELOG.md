@@ -1,5 +1,8 @@
 ## next
 
+
+- Multi-color support for T0-T7 commands.
+
 ## 2.14
 
 - api: added `dispose` method to stop requestAnimationFrame and free memory
@@ -14,7 +17,6 @@ Apart from these changes to the lib, some other changes have been made to the re
 - a roadmap was created in Github to provide some more focus
 
 I want to thank @sophiedeziel for their help in getting a bit more organized, the sparring on Discord and answering issues over the past few months 🖖
-
 
 ## 2.13 maintenance release
 
