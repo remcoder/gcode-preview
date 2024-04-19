@@ -46,7 +46,10 @@ or
 
 ## Features
 
-### New: multi-tool support T0..T7
+### New: multi-color support
+
+<img width="300" alt="image" src="https://github.com/remcoder/gcode-preview/assets/461650/d965d30f-101e-40d3-8ad7-c8257dd7866a">
+
 
 ### Experimental: render extrusion as tubes
 ```
