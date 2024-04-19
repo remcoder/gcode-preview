@@ -1,7 +1,16 @@
 ## next
 
+## 2.15 🌈 Multi-color 🌈 
+ - works via detection of T0-T7 commands
+ - supports systems like:
+     - Prusa MMU1/2/3 & XL
+     - Bambulabs AMS and AMS Lite
+     - 3D Chameleon
+     - Enraged Rabbit Carrot Feeder (ERCF)
+     - IDEX systems
+     - Tool change systems
+     - Color mixing nozzles when used with a 'virtual tool' (M164 - Save Mix)
 
-- Multi-color support for T0-T7 commands.
 
 ## 2.14
 
