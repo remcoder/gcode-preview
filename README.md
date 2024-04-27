@@ -1,19 +1,24 @@
 # GCode Preview [![npm version](http://img.shields.io/npm/v/gcode-preview.svg?style=flat)](https://npmjs.org/package/gcode-preview "View this project on npm") [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT) <a href="https://www.buymeacoffee.com/remcoder" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="25" width="106"></a>
 A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D printing in mind. Written in Typescript.
 
-Try the [online demo](https://gcode-preview.web.app/)
+## feature summary
+- multi-color
+- tube geometry (experimental)
+- g2/g3 arcs
+- thumbnail preview
+- build volume
+- examples for various frameworks
 
-<img width="420" alt="image" src="https://github.com/remcoder/gcode-preview/assets/461650/d965d30f-101e-40d3-8ad7-c8257dd7866a">
+## Demo 
+
+Click to see the interactive demo:
+[<img title="click to see the demo" width="320" alt="image" src="https://github.com/remcoder/gcode-preview/assets/461650/d965d30f-101e-40d3-8ad7-c8257dd7866a">](https://gcode-preview.web.app/)
 
 
 ## Installation
 [![npm version](http://img.shields.io/npm/v/gcode-preview.svg?style=flat)](https://npmjs.org/package/gcode-preview "View this project on npm") 
 
  `npm install gcode-preview`
-
-or
-
-`yarn add gcode-preview`
 
 
 ### Quick start
@@ -48,8 +53,25 @@ or
 
 ### New: multi-color support
 
+GCode files that were sliced for a multi-tool system can be previewed as such. Assign an array of colors to the `extrusionColor` property, where the index in the array corresponds to the index of the tool: T0..T7. 
+
+example: 
+```
+extrusionColor: ['hotpink', 'indigo', 'lime']
+```
+Here, T0 is hotpink, T1 is indigo and T2 is lime.
+
 <img width="300" alt="image" src="https://github.com/remcoder/gcode-preview/assets/461650/d965d30f-101e-40d3-8ad7-c8257dd7866a">
 
+Supported systems include:
+ - Prusa MMU1/2/3 and XL
+ - Bambulab AMS & AMS lite
+ - Enraged Rabbit Carrot Feeder (ERCF)
+ - IDEX machines
+ - toolchangers
+ - 3D Chameleon
+ - Virtual tools (color mixing)
+ - and possibly more
 
 ### Experimental: render extrusion as tubes
 ```
@@ -89,18 +111,15 @@ example:
 
 <img src='https://user-images.githubusercontent.com/461650/103179898-c014a100-4890-11eb-8a25-13415c26f0f4.png' width=200>
 
-## Demo
-Go try the [interactive demo](https://gcode-preview.web.app/).
-
+## Feedback
+If you have found a bug or if have an idea for a feature, don't hesitate to [create an issue on GitHub](https://github.com/remcoder/gcode-preview/issues/new) or [talk to us on Discord](https://discord.gg/mM5HDNYN).
 
 ## Contributing
-If you have found a bug or if have an idea for a feature, don't hesitate to [create an issue](https://github.com/remcoder/gcode-preview/issues/new).
-
 It would be great if you want to help! Maybe you'd like to help out with:
- 
+
  - testing GCode Preview with a variety of gcode files, from different slicers
  - making GCode Preview suitable for different printer types, like Deltas, Belt printers, IDEX, etc.
- - reporting any bugs you find and add as much detail as possible, or even better, a screenshot
+ - please report any bugs you find and add as much detail as possible, or even better, a screenshot
  - even better yet: send in a pull request :-)
  - apart from the main code, lots of improvements can still be made in:
    - documentation
