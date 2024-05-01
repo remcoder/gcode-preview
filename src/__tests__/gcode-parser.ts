@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { Parser, SelectToolCommand } from '../gcode-parser';
+import { GCodeCommand, MoveCommand, Parser, SelectToolCommand } from '../gcode-parser';
 
 test('a single extrusion cmd should result in 1 layer with 1 command', () => {
   const parser = new Parser(0);
@@ -205,4 +205,21 @@ test('T7 command should result in a tool change to tool with index 0', () => {
   const cmd = parsed.layers[0].commands[1] as SelectToolCommand;
   expect(cmd.gcode).toEqual('t7');
   expect(cmd.toolIndex).toEqual(7);
+});
+
+test('gcode commands with spaces between letters and numbers should be parsed correctly', () => {
+  const parser = new Parser(0);
+  const gcode = `G 1 E 42 X 42`;
+  const parsed = parser.parseGCode(gcode);
+  const cmd = parsed.layers[0].commands[0] as MoveCommand;
+  expect(cmd.gcode).toEqual('g1');
+  expect(cmd.params.x).toEqual(42);
+});
+
+// test that a line withouth a gcode command results in a command with empty string gcode
+test('gcode commands without gcode should result in a command with empty string gcode', () => {
+  const parser = new Parser(0);
+  const gcode = ` ; comment`;
+  const cmd = parser.parseCommand(gcode) as GCodeCommand;
+  expect(cmd.gcode).toEqual('');
 });
