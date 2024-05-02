@@ -145,15 +145,19 @@ export class Parser {
     return lines.map((l) => this.parseCommand(l)) as GCodeCommand[];
   }
 
-  private parseCommand(line: string, keepComments = true): GCodeCommand | null {
+  parseCommand(line: string, keepComments = true): GCodeCommand | null {
     const input = line.trim();
     const splitted = input.split(';');
     const cmd = splitted[0];
     const comment = (keepComments && splitted[1]) || undefined;
 
-    const parts = cmd.split(/ +/g);
-    const gcode = parts[0].toLowerCase();
-    const params = this.parseParams(parts.slice(1));
+    const parts = cmd
+      .split(/([a-zA-Z])/g)
+      .slice(1)
+      .map((s) => s.trim());
+
+    const gcode = !parts.length ? '' : `${parts[0]?.toLowerCase()}${parts[1]}`;
+    const params = this.parseParams(parts.slice(2));
     switch (gcode) {
       case 'g0':
       case 'g00':
@@ -181,7 +185,6 @@ export class Parser {
       case 't7':
         return new SelectToolCommand(line, gcode, comment, 7);
       default:
-        // console.warn(`non-move code: ${gcode} ${params}`);
         return new GCodeCommand(line, gcode, params, comment);
     }
   }
@@ -202,9 +205,14 @@ export class Parser {
   }
 
   private parseParams(params: string[]): CommandParams {
-    return params.reduce((acc: CommandParams, cur: string) => {
-      const key = cur.charAt(0).toLowerCase();
-      if (this.isAlpha(key)) acc[key] = parseFloat(cur.slice(1));
+    return params.reduce((acc: CommandParams, cur: string, idx: number, array) => {
+      // alternate bc we're processing in pairs
+      if (idx % 2 == 0) return acc;
+
+      let key = array[idx - 1];
+      key = key.toLowerCase();
+      if (this.isAlpha(key)) acc[key] = parseFloat(cur);
+
       return acc;
     }, {});
   }
