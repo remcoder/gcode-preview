@@ -518,6 +518,7 @@ export class WebGLPreview {
     this.parser = new Parser(this.minLayerThreshold);
     this.beyondFirstMove = false;
     this.state = State.initial;
+    this.prevState = undefined;
   }
 
   resize(): void {
