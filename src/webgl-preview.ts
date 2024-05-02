@@ -566,6 +566,7 @@ export class WebGLPreview {
     this.state = State.initial;
     this.devGui?.reset();
     this._geometries = {};
+    this.prevState = undefined;
   }
 
   resize(): void {
