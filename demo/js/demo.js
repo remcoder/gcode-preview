@@ -32,6 +32,7 @@ const topLayerColorInput = document.getElementById('top-layer-color');
 const lastSegmentColorInput = document.getElementById('last-segment-color');
 const layerCount = document.getElementById('layer-count');
 const fileName = document.getElementById('file-name');
+const fileSelector = document.getElementById('file-selector');
 const fileSize = document.getElementById('file-size');
 const snapshot = document.getElementById('snapshot');
 const buildVolumeX = document.getElementById('buildVolumeX');
@@ -90,6 +91,12 @@ function initDemo() {
   });
 
   // preview.controls.autoRotate = true;
+
+  fileSelector.addEventListener('change', function (e) {
+    const fileName = e.target.value;
+    console.log('file selected', fileName);
+    loadGCodeFromServer(fileName);
+  });
 
   startLayer.addEventListener('input', function () {
     preview.startLayer = +startLayer.value;
