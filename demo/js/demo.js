@@ -70,7 +70,7 @@ const settingsPresets = {
     singleLayerMode: false,
     renderExtrusion: false,
     renderTubes: false,
-    extrusionColor: ['#CF439D'],
+    extrusionColor: [],
     travel: true,
     travelColor: '#00FF00',
     highlightTopLayer: false,
@@ -88,7 +88,7 @@ const settingsPresets = {
     lineWidth: 1,
     singleLayerMode: false,
     renderExtrusion: true,
-    renderTubes: false,
+    renderTubes: true,
     extrusionColor: ['#CF439D'],
     travel: false,
     travelColor: '#00FF00',
@@ -104,8 +104,8 @@ const settingsPresets = {
   },
   'benchy-arcs': {
     file: 'gcodes/benchy arcs.gcode',
-    lineWidth: 1,
-    singleLayerMode: false,
+    lineWidth: 2,
+    singleLayerMode: true,
     renderExtrusion: true,
     renderTubes: false,
     extrusionColor: ['#CF439D'],
@@ -343,9 +343,9 @@ function initDemo() {
   }
 
   function changeLineWidth(width) {
-    lineWidthValue.innerText = width;
-    lineWidth.value = width;
-    preview.lineWidth = width;
+    lineWidthValue.innerText = parseInt(width, 10);
+    lineWidth.value = parseInt(width, 10);
+    preview.lineWidth = parseInt(width, 10);
   }
 
   function changeSingleLayerMode(enabled) {
@@ -441,6 +441,12 @@ function initDemo() {
     }
   }
 
+  function changeToolColors(colors) {
+    toolCount = colors.length;
+    preview.extrusionColor = colors;
+    showExtrusionColors();
+  }
+
   function loadSettingPreset(name) {
     const preset = settingsPresets[name];
     changeLineWidth(preset.lineWidth);
@@ -454,10 +460,7 @@ function initDemo() {
     changeLastSegmentColor(preset.lastSegmentColor);
     changeDrawBuildVolume(preset.drawBuildVolume);
     changeBuildVolume(preset.buildVolume);
-
-    toolCount = preset.extrusionColor.length;
-    preview.extrusionColor = preset.extrusionColor;
-    showExtrusionColors();
+    changeToolColors(preset.extrusionColor);
     changeFile(preset.file);
   }
 
