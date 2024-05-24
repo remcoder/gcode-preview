@@ -120,6 +120,25 @@ const settingsPresets = {
       y: 200,
       z: 180
     }
+  },
+  'vase-mode': {
+    file: 'gcodes/FlowerPot.gcode',
+    lineWidth: 1,
+    singleLayerMode: false,
+    renderExtrusion: true,
+    renderTubes: false,
+    extrusionColor: ['#CF439D'],
+    travel: false,
+    travelColor: '#00FF00',
+    highlightTopLayer: true,
+    topLayerColor: '#40BFBF',
+    lastSegmentColor: '#ffffff',
+    drawBuildVolume: true,
+    buildVolume: {
+      x: 700,
+      y: 500,
+      z: 1000
+    }
   }
 };
 
