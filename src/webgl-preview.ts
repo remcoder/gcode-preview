@@ -72,7 +72,7 @@ export type GCodePreviewOptions = {
   travelColor?: ColorRepresentation;
   toolColors?: Record<number, ColorRepresentation>;
   disableGradient?: boolean;
-  tubeLineWidth?: number;
+  extrusionWidth?: number;
 };
 
 const target = {
@@ -94,7 +94,7 @@ export class WebGLPreview {
   renderExtrusion = true;
   renderTravel = false;
   renderTubes = false;
-  tubeLineWidth = 0.6;
+  extrusionWidth = 0.6;
   lineWidth?: number;
   startLayer?: number;
   endLayer?: number;
@@ -142,7 +142,7 @@ export class WebGLPreview {
     this.renderTravel = opts.renderTravel ?? this.renderTravel;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
     this.renderTubes = opts.renderTubes ?? this.renderTubes;
-    this.tubeLineWidth = opts.tubeLineWidth ?? this.tubeLineWidth;
+    this.extrusionWidth = opts.extrusionWidth ?? this.extrusionWidth;
 
     if (opts.extrusionColor !== undefined) {
       this.extrusionColor = opts.extrusionColor;
@@ -629,7 +629,7 @@ export class WebGLPreview {
       const material = new MeshLambertMaterial({ color: color });
       this.disposables.push(material);
       const segments = Math.ceil(curve.getLength() * 2);
-      const geometry = new TubeGeometry(curve, segments, this.tubeLineWidth / 2, 4, false);
+      const geometry = new TubeGeometry(curve, segments, this.extrusionWidth / 2, 4, false);
       this.disposables.push(geometry);
       const lineSegments = new Mesh(geometry, material);
 
