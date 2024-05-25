@@ -130,7 +130,9 @@ function initDemo() {
 
   toggleRenderTubes.addEventListener('click', function () {
     preview.renderTubes = toggleRenderTubes.checked;
+    const start = performance.now();
     preview.render();
+    console.log('render time', performance.now() - start);
   });
 
   for (let i = 0; i < 8; i++) {

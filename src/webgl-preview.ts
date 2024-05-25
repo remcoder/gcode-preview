@@ -9,14 +9,15 @@ import {
   AmbientLight,
   AxesHelper,
   BufferGeometry,
-  CatmullRomCurve3,
   Color,
   ColorRepresentation,
+  CurvePath,
   Euler,
   Float32BufferAttribute,
   Fog,
   Group,
   LineBasicMaterial,
+  LineCurve3,
   LineSegments,
   Mesh,
   MeshLambertMaterial,
@@ -596,37 +597,28 @@ export class WebGLPreview {
   }
 
   addTubeLine(vertices: number[], color: number): void {
-    let curvePoints: Vector3[] = [];
-    const curves: CatmullRomCurve3[] = [];
+    const curves: CurvePath<Vector3>[] = [];
+    let curvePath: CurvePath<Vector3> = new CurvePath();
 
-    // Merging into one curve for performance
     for (let i = 0; i < vertices.length; i += 6) {
-      const v = vertices.slice(i, i + 6);
+      const v = vertices.slice(i, i + 9);
       const startPoint = new Vector3(v[0], v[1], v[2]);
       const endPoint = new Vector3(v[3], v[4], v[5]);
+      const nextPoint = new Vector3(v[6], v[7], v[8]);
 
-      if (curvePoints.length === 0) {
-        curvePoints.push(startPoint);
+      curvePath.add(new LineCurve3(startPoint, endPoint));
+
+      if (!endPoint.equals(nextPoint)) {
+        curves.push(curvePath);
+        curvePath = new CurvePath();
       }
-
-      if (!curvePoints[curvePoints.length - 1].equals(startPoint)) {
-        curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
-        curvePoints = [];
-        curvePoints.push(startPoint);
-      }
-
-      curvePoints.push(endPoint);
     }
 
-    if (curvePoints.length > 1) {
-      curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
-    }
-
-    curves.forEach((curve) => {
+    curves.forEach((curvePath) => {
       const material = new MeshLambertMaterial({ color: color });
       this.disposables.push(material);
-      const segments = Math.ceil(curve.getLength() * 2);
-      const geometry = new TubeGeometry(curve, segments, 0.3, 4, false);
+      const segments = Math.ceil(curvePath.getLength() * 3);
+      const geometry = new TubeGeometry(curvePath, segments, 0.3, 4, false);
       this.disposables.push(geometry);
       const lineSegments = new Mesh(geometry, material);
 
