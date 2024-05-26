@@ -35,20 +35,21 @@
       <h1>GCode Preview</h1>
       Presets:
       <select id="settings-presets">
-        <option value="default">Multicolor benchy</option>
+        <option value="multicolor">Multicolor</option>
         <option value="mach3">CNC tool path</option>
-        <option value="benchy">Benchy</option>
-        <option value="benchy-arcs">Arc support</option>
-        <option value="vase-mode">Vase</option>
-        <option value="temp-tower" disabled>Temperature tower</option>
+        <option value="arcs">Arcs with G2/G3</option>
+        <option value="vase-mode">Vase mode</option>
+        <option value="travel-moves">Travel moves</option>
       </select>
       <div>
         File: <select id="file-selector">
+          <option value="gcodes/benchy.gcode">benchy.gcode</option>
           <option value="gcodes/3DBenchy-Multi-part.gcode">3DBenchy-Multi-part.gcode</option>
           <option value="gcodes/benchy arcs.gcode">benchy arcs.gcode</option>
-          <option value="gcodes/benchy.gcode">benchy.gcode</option>
           <option value="gcodes/mach3.gcode">mach3.gcode</option>
-          <option value="gcodes/FlowerPot.gcode">FlowerPot.gcode</option>
+          <option value="gcodes/screw.gcode">screw.gcode</option>
+          <option value="gcodes/vase.gcode">vase.gcode</option>
+          <option value="gcodes/plant-sign.gcode">plant-sign.gcode</option>
         </select>
       </div>
       <section>
@@ -209,6 +210,5 @@
   <script src="js/demo.js"></script>
   <script>
     const gcodeDemo = initDemo();
-    loadGCodeFromServer('gcodes/3DBenchy-Multi-part.gcode');
   </script>
 </body>

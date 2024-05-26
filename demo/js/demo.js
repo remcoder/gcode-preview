@@ -44,19 +44,21 @@ const travelColor = document.getElementById('travel-color');
 
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 
+const defaultPreset = 'multicolor';
+
 const settingsPresets = {
-  default: {
+  multicolor: {
     file: 'gcodes/3DBenchy-Multi-part.gcode',
     lineWidth: 1,
     singleLayerMode: false,
     renderExtrusion: true,
     renderTubes: false,
-    extrusionColor: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
+    extrusionColors: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
     travel: false,
     travelColor: '#00FF00',
     highlightTopLayer: false,
-    topLayerColor: '#40BFBF',
-    lastSegmentColor: '#ffffff',
+    topLayerColor: undefined,
+    lastSegmentColor: undefined,
     drawBuildVolume: true,
     buildVolume: {
       x: 180,
@@ -70,12 +72,12 @@ const settingsPresets = {
     singleLayerMode: false,
     renderExtrusion: false,
     renderTubes: false,
-    extrusionColor: [],
+    extrusionColors: [],
     travel: true,
     travelColor: '#00FF00',
     highlightTopLayer: false,
-    topLayerColor: '#40BFBF',
-    lastSegmentColor: '#ffffff',
+    topLayerColor: undefined,
+    lastSegmentColor: undefined,
     drawBuildVolume: true,
     buildVolume: {
       x: 20,
@@ -83,37 +85,18 @@ const settingsPresets = {
       z: ''
     }
   },
-  benchy: {
-    file: 'gcodes/benchy.gcode',
-    lineWidth: 1,
-    singleLayerMode: false,
-    renderExtrusion: true,
-    renderTubes: true,
-    extrusionColor: ['#CF439D'],
-    travel: false,
-    travelColor: '#00FF00',
-    highlightTopLayer: true,
-    topLayerColor: '#40BFBF',
-    lastSegmentColor: '#ffffff',
-    drawBuildVolume: true,
-    buildVolume: {
-      x: 180,
-      y: 180,
-      z: 180
-    }
-  },
-  'benchy-arcs': {
-    file: 'gcodes/benchy arcs.gcode',
+  arcs: {
+    file: 'gcodes/screw.gcode',
     lineWidth: 2,
     singleLayerMode: true,
     renderExtrusion: true,
-    renderTubes: false,
-    extrusionColor: ['#CF439D'],
+    renderTubes: true,
+    extrusionColors: ['rgb(83,209,104)'],
     travel: false,
     travelColor: '#00FF00',
     highlightTopLayer: false,
-    topLayerColor: '#40BFBF',
-    lastSegmentColor: '#ffffff',
+    topLayerColor: undefined,
+    lastSegmentColor: undefined,
     drawBuildVolume: true,
     buildVolume: {
       x: 200,
@@ -122,12 +105,12 @@ const settingsPresets = {
     }
   },
   'vase-mode': {
-    file: 'gcodes/FlowerPot.gcode',
+    file: 'gcodes/vase.gcode',
     lineWidth: 1,
-    singleLayerMode: false,
+    singleLayerMode: true,
     renderExtrusion: true,
-    renderTubes: false,
-    extrusionColor: ['#CF439D'],
+    renderTubes: true,
+    extrusionColors: ['rgb(84,74,187)'],
     travel: false,
     travelColor: '#00FF00',
     highlightTopLayer: true,
@@ -135,9 +118,28 @@ const settingsPresets = {
     lastSegmentColor: '#ffffff',
     drawBuildVolume: true,
     buildVolume: {
-      x: 700,
-      y: 500,
-      z: 1000
+      x: 200,
+      y: 200,
+      z: 220
+    }
+  },
+  'travel-moves': {
+    file: 'gcodes/plant-sign.gcode',
+    lineWidth: 2,
+    singleLayerMode: false,
+    renderExtrusion: true,
+    renderTubes: true,
+    extrusionColors: ['#777777'],
+    travel: true,
+    travelColor: '#00FF00',
+    highlightTopLayer: true,
+    topLayerColor: '#aaaaaa',
+    lastSegmentColor: undefined,
+    drawBuildVolume: true,
+    buildVolume: {
+      x: 200,
+      y: 200,
+      z: 220
     }
   }
 };
@@ -148,39 +150,18 @@ function initDemo() {
   const settings = JSON.parse(localStorage.getItem('settings'));
   console.debug('settings loaded', settings);
 
+  const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
+
   const preview = (window.preview = new GCodePreview.init({
     canvas: canvasElement,
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
-    // topLayerColor: 'rgb(0, 255, 255)',
-    lastSegmentColor: '#fff',
-    renderExtrusion: true,
-    renderTravel: false,
-    renderTubes: false,
-    extrusionColor: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
-    backgroundColor: preferDarkMode.matches ? '#111' : '#eee',
-    travelColor: new THREE.Color('lime')
-    // minLayerThreshold: 0.1
+    backgroundColor: initialBackgroundColor
   }));
 
-  // set default colors on inputs
+  backgroundColor.value = initialBackgroundColor;
 
-  // loop through the extrusionColor object and set the value of the input
-  for (let i = 0; i < maxToolCount; i++) {
-    extrusionColor[i].value = '#' + new THREE.Color(preview.extrusionColor[i]).getHexString();
-  }
-  changeBackgroundColor('#' + new THREE.Color(preview.backgroundColor).getHexString());
-  travelColor.value = '#' + new THREE.Color(preview.travelColor).getHexString();
-
-  preferDarkMode.addEventListener('change', (e) => {
-    if (e.matches) {
-      changeBackgroundColor('#111');
-    } else {
-      changeBackgroundColor('#eee');
-    }
-  });
-
-  // preview.controls.autoRotate = true;
+  loadSettingPreset(defaultPreset);
 
   settingsPreset.addEventListener('change', function (e) {
     loadSettingPreset(e.target.value);
@@ -213,17 +194,17 @@ function initDemo() {
   });
 
   toggleSingleLayerMode.addEventListener('click', function () {
-    changeSingleLayerMode(toggleSingleLayerMode.checked);
+    changeSingleLayerMode(!!toggleSingleLayerMode.checked);
     preview.render();
   });
 
   toggleExtrusion.addEventListener('click', function () {
-    changeRenderExtrusion(toggleExtrusion.checked);
+    changeRenderExtrusion(!!toggleExtrusion.checked);
     preview.render();
   });
 
   toggleRenderTubes.addEventListener('click', function () {
-    changeRenderTubes(toggleRenderTubes.checked);
+    changeRenderTubes(!!toggleRenderTubes.checked);
     preview.render();
   });
 
@@ -258,7 +239,7 @@ function initDemo() {
   );
 
   toggleTravel.addEventListener('click', function () {
-    changeRenderTravel(toggleTravel.checked);
+    changeRenderTravel(!!toggleTravel.checked);
     preview.render();
   });
 
@@ -270,7 +251,7 @@ function initDemo() {
   );
 
   toggleHighlight.addEventListener('click', function () {
-    changeHighlightTopLayer(toggleHighlight.checked);
+    changeHighlightTopLayer(!!toggleHighlight.checked);
     preview.render();
   });
 
@@ -325,7 +306,7 @@ function initDemo() {
     const y = parseInt(buildVolumeY.value, 10);
     const z = parseInt(buildVolumeZ.value, 10);
 
-    const draw = drawBuildVolume.checked;
+    const draw = !!drawBuildVolume.checked;
 
     changeDrawBuildVolume(draw);
     changeBuildVolume({ x, y, z });
@@ -409,12 +390,16 @@ function initDemo() {
   }
 
   function changeHighlightTopLayer(enabled) {
-    preview.highlightTopLayer = enabled;
     toggleHighlight.checked = enabled;
     if (enabled) {
+      console.log('topLayerColorInput.value', topLayerColorInput.value);
+      changeTopLayerColor(preview.topLayerColor || '#40BFBF');
+      changeLastSegmentColor(preview.lastSegmentColor || '#ffffff');
       topLayerColorInput.removeAttribute('disabled');
       lastSegmentColorInput.removeAttribute('disabled');
     } else {
+      preview.topLayerColor = undefined;
+      preview.lastSegmentColor = undefined;
       topLayerColorInput.setAttribute('disabled', 'disabled');
       lastSegmentColorInput.setAttribute('disabled', 'disabled');
     }
@@ -431,13 +416,13 @@ function initDemo() {
   }
 
   function changeTopLayerColor(color) {
-    preview.topLayerColor = color;
     topLayerColorInput.value = color;
+    preview.topLayerColor = color;
   }
 
   function changeLastSegmentColor(color) {
-    preview.lastSegmentColor = color;
     lastSegmentColorInput.value = color;
+    preview.lastSegmentColor = color;
   }
 
   function changeBuildVolume(volume) {
@@ -462,6 +447,7 @@ function initDemo() {
 
   function changeToolColors(colors) {
     toolCount = colors.length;
+    for (let i = 0; i < toolCount; i++) extrusionColor[i].value = '#' + new THREE.Color(colors[i]).getHexString();
     preview.extrusionColor = colors;
     showExtrusionColors();
   }
@@ -479,7 +465,7 @@ function initDemo() {
     changeLastSegmentColor(preset.lastSegmentColor);
     changeDrawBuildVolume(preset.drawBuildVolume);
     changeBuildVolume(preset.buildVolume);
-    changeToolColors(preset.extrusionColor);
+    changeToolColors(preset.extrusionColors);
     changeFile(preset.file);
   }
 
