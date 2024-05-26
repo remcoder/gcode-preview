@@ -24,10 +24,14 @@ import {
   PointLight,
   REVISION,
   Scene,
-  TubeGeometry,
+  // Shape,
+  // TubeGeometry,
+  // ExtrudeGeometry,
   Vector3,
   WebGLRenderer
 } from 'three';
+
+import { ExtrusionGeometry } from './extrusionGeometry';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
 type GVector3 = {
@@ -635,7 +639,7 @@ export class WebGLPreview {
       const material = new MeshLambertMaterial({ color: color });
       this.disposables.push(material);
       const segments = Math.ceil(curve.getLength() * 2);
-      const geometry = new TubeGeometry(curve, segments, this.extrusionWidth / 2, 4, false);
+      const geometry = new ExtrusionGeometry(curve, segments, this.extrusionWidth / 2, 4, false);
       this.disposables.push(geometry);
       const lineSegments = new Mesh(geometry, material);
 
