@@ -3,6 +3,9 @@ import * as Curves from 'three/extras/curves/Curves.js';
 class ExtrusionGeometry extends BufferGeometry {
   constructor(
     path = new Curves['QuadraticBezierCurve3'](new Vector3(-1, -1, 0), new Vector3(-1, 1, 0), new Vector3(1, 1, 0)),
+    // Prototype notes:
+    // I'm thinking of repuposing this parameter to change it's meaning. Instead of being the total number of segments,
+    // it could be the number of segments per travel moves. For now, even with arc support, all travel moves are linear.
     tubularSegments = 64,
     radius = 1,
     radialSegments = 8,
@@ -20,6 +23,9 @@ class ExtrusionGeometry extends BufferGeometry {
       closed: closed
     };
 
+    // The frenet frames are evenly distributed along the path and this current implementation of the TubeGeometry is
+    // based on that. I wonder how to get the right frames, not based on a regular distribution, but based on the travel
+    // moves.
     const frames = path.computeFrenetFrames(tubularSegments, closed);
 
     // expose internals
@@ -56,6 +62,8 @@ class ExtrusionGeometry extends BufferGeometry {
     // functions
 
     function generateBufferData() {
+      // This is where the fun begins: we'd multiply the number of travel moves by the number of segments per move.
+      // I'm not sure yet if we can still get that from a catmull curve, but we'll see.
       for (let i = 0; i < tubularSegments; i++) {
         generateSegment(i);
       }
@@ -78,8 +86,8 @@ class ExtrusionGeometry extends BufferGeometry {
     }
 
     function generateSegment(i) {
-      // we use getPointAt to sample evenly distributed points from the given path
-
+      // As per explorations with the wireframe, the segments could be concentrated only at the ends of the travel moves
+      // instead of evenly distributed. This would most likely reduce the number of segments needed to get a good result.
       P = path.getPointAt(i / tubularSegments, P);
 
       // retrieve corresponding normal and binormal
@@ -106,6 +114,9 @@ class ExtrusionGeometry extends BufferGeometry {
 
         // vertex
 
+        // Since we're going to change the shape of the extrusion, `radius` will no longer make sense. We'll have
+        // to instead pass parameters that represents line height and line width. Let's bring back geometry class to
+        // calculate ellipse points!
         vertex.x = P.x + radius * normal.x;
         vertex.y = P.y + radius * normal.y;
         vertex.z = P.z + radius * normal.z;
