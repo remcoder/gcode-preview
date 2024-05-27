@@ -114,7 +114,7 @@ example:
 <img src='https://user-images.githubusercontent.com/461650/103179898-c014a100-4890-11eb-8a25-13415c26f0f4.png' width=200>
 
 ## Feedback
-If you have found a bug or if have an idea for a feature, don't hesitate to [create an issue on GitHub](https://github.com/remcoder/gcode-preview/issues/new) or [talk to us on Discord](https://discord.gg/mM5HDNYN).
+If you have found a bug or if have an idea for a feature, don't hesitate to [create an issue on GitHub](https://github.com/remcoder/gcode-preview/issues/new) or [talk to us on Discord](https://discord.gg/w2bsGRE6S4).
 
 ## Contributing
 It would be great if you want to help! Maybe you'd like to help out with:
