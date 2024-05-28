@@ -10,11 +10,11 @@ export default [
     input: 'src/gcode-preview.ts', // our source file
     output: [
       {
-        file: pkg.module,
+        file: pkg.main,
         format: 'es' // the preferred format
       },
       {
-        file: pkg.browser,
+        file: 'dist/gcode-preview.js',
         format: 'umd',
         name: 'GCodePreview', // the global which can be used in a browser
         globals: {

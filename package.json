@@ -9,8 +9,7 @@
     "url": "git@github.com:remcoder/gcode-preview.git"
   },
   "homepage": "https://gcode-preview.web.app/",
-  "browser": "dist/gcode-preview.js",
-  "module": "dist/gcode-preview.es.js",
+  "main": "dist/gcode-preview.es.js",
   "files": [
     "dist"
   ],
