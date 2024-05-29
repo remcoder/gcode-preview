@@ -9,7 +9,6 @@ import {
   AmbientLight,
   AxesHelper,
   BufferGeometry,
-  CatmullRomCurve3,
   Color,
   ColorRepresentation,
   Euler,
@@ -24,9 +23,6 @@ import {
   PointLight,
   REVISION,
   Scene,
-  // Shape,
-  // TubeGeometry,
-  // ExtrudeGeometry,
   Vector3,
   WebGLRenderer
 } from 'three';
@@ -610,36 +606,28 @@ export class WebGLPreview {
 
   addTubeLine(vertices: number[], color: number): void {
     let curvePoints: Vector3[] = [];
-    const curves: CatmullRomCurve3[] = [];
+    const extrusionPaths: Vector3[][] = [];
 
     // Merging into one curve for performance
     for (let i = 0; i < vertices.length; i += 6) {
-      const v = vertices.slice(i, i + 6);
+      const v = vertices.slice(i, i + 9);
       const startPoint = new Vector3(v[0], v[1], v[2]);
       const endPoint = new Vector3(v[3], v[4], v[5]);
+      const nextPoint = new Vector3(v[6], v[7], v[8]);
 
-      if (curvePoints.length === 0) {
-        curvePoints.push(startPoint);
-      }
-
-      if (!curvePoints[curvePoints.length - 1].equals(startPoint)) {
-        curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
-        curvePoints = [];
-        curvePoints.push(startPoint);
-      }
-
+      curvePoints.push(startPoint);
       curvePoints.push(endPoint);
+
+      if (!endPoint.equals(nextPoint)) {
+        extrusionPaths.push(curvePoints);
+        curvePoints = [];
+      }
     }
 
-    if (curvePoints.length > 1) {
-      curves.push(new CatmullRomCurve3(curvePoints, false, 'catmullrom', 0));
-    }
-
-    curves.forEach((curve) => {
+    extrusionPaths.forEach((extrusionPath) => {
       const material = new MeshLambertMaterial({ color: color });
       this.disposables.push(material);
-      const segments = Math.ceil(curve.getLength() * 2);
-      const geometry = new ExtrusionGeometry(curve, segments, this.extrusionWidth / 2, 4, false);
+      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, 0.2, 4);
       this.disposables.push(geometry);
       const lineSegments = new Mesh(geometry, material);
 

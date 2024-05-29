@@ -1,38 +1,9 @@
 import { BufferGeometry, Float32BufferAttribute, Vector2, Vector3 } from 'three';
-import * as Curves from 'three/extras/curves/Curves.js';
 class ExtrusionGeometry extends BufferGeometry {
-  constructor(
-    path = new Curves['QuadraticBezierCurve3'](new Vector3(-1, -1, 0), new Vector3(-1, 1, 0), new Vector3(1, 1, 0)),
-    // Prototype notes:
-    // I'm thinking of repuposing this parameter to change it's meaning. Instead of being the total number of segments,
-    // it could be the number of segments per travel moves. For now, even with arc support, all travel moves are linear.
-    tubularSegments = 64,
-    radius = 1,
-    radialSegments = 8,
-    closed = false
-  ) {
+  constructor(points = [], lineWidth = 0.6, lineHeight = 0.2, radialSegments = 8) {
     super();
 
-    this.type = 'TubeGeometry';
-
-    this.parameters = {
-      path: path,
-      tubularSegments: tubularSegments,
-      radius: radius,
-      radialSegments: radialSegments,
-      closed: closed
-    };
-
-    // The frenet frames are evenly distributed along the path and this current implementation of the TubeGeometry is
-    // based on that. I wonder how to get the right frames, not based on a regular distribution, but based on the travel
-    // moves.
-    const frames = path.computeFrenetFrames(tubularSegments, closed);
-
-    // expose internals
-
-    this.tangents = frames.tangents;
-    this.normals = frames.normals;
-    this.binormals = frames.binormals;
+    this.type = 'ExtrusionGeometry';
 
     // helper variables
 
@@ -48,6 +19,8 @@ class ExtrusionGeometry extends BufferGeometry {
     const uvs = [];
     const indices = [];
 
+    let segments = 0;
+
     // create buffer data
 
     generateBufferData();
@@ -62,9 +35,10 @@ class ExtrusionGeometry extends BufferGeometry {
     // functions
 
     function generateBufferData() {
+      segments = 0;
       // This is where the fun begins: we'd multiply the number of travel moves by the number of segments per move.
       // I'm not sure yet if we can still get that from a catmull curve, but we'll see.
-      for (let i = 0; i < tubularSegments; i++) {
+      for (let i = 0; i < points.length; i++) {
         generateSegment(i);
       }
 
@@ -73,7 +47,7 @@ class ExtrusionGeometry extends BufferGeometry {
       //
       // if the geometry is closed, duplicate the first row of vertices and normals (uvs will differ)
 
-      generateSegment(closed === false ? tubularSegments : 0);
+      generateSegment(closed === false ? points.length - 1 : 0);
 
       // uvs are generated in a separate function.
       // this makes it easy compute correct values for closed geometries
@@ -86,47 +60,68 @@ class ExtrusionGeometry extends BufferGeometry {
     }
 
     function generateSegment(i) {
-      // As per explorations with the wireframe, the segments could be concentrated only at the ends of the travel moves
-      // instead of evenly distributed. This would most likely reduce the number of segments needed to get a good result.
-      P = path.getPointAt(i / tubularSegments, P);
+      segments++;
 
-      // retrieve corresponding normal and binormal
+      P = points[i];
+      let tangent = new Vector3();
 
-      const N = frames.normals[i];
-      const B = frames.binormals[i];
+      const end = points[i + 1] || points[i];
+      const start = points[i - 1] || points[i];
 
-      // generate normals and vertices for the current segment
+      tangent.copy(P).subVectors(end, start).normalize();
+
+      const N = new Vector3();
+      const B = new Vector3();
+      const vec = new Vector3();
+
+      let min = Number.MAX_VALUE;
+      const tx = Math.abs(tangent.x);
+      const ty = Math.abs(tangent.y);
+      const tz = Math.abs(tangent.z);
+
+      if (tx <= min) {
+        min = tx;
+        N.set(1, 0, 0);
+      }
+
+      if (ty <= min) {
+        min = ty;
+        N.set(0, 1, 0);
+      }
+
+      if (tz <= min) {
+        N.set(0, 0, 1);
+      }
+
+      vec.crossVectors(tangent, N).normalize();
+
+      N.crossVectors(tangent, vec);
+      B.crossVectors(tangent, N);
 
       for (let j = 0; j <= radialSegments; j++) {
         const v = (j / radialSegments) * Math.PI * 2;
-
         const sin = Math.sin(v);
         const cos = -Math.cos(v);
 
         // normal
-
         normal.x = cos * N.x + sin * B.x;
         normal.y = cos * N.y + sin * B.y;
         normal.z = cos * N.z + sin * B.z;
-        normal.normalize();
 
+        normal.normalize();
         normals.push(normal.x, normal.y, normal.z);
 
         // vertex
 
-        // Since we're going to change the shape of the extrusion, `radius` will no longer make sense. We'll have
-        // to instead pass parameters that represents line height and line width. Let's bring back geometry class to
-        // calculate ellipse points!
-        vertex.x = P.x + radius * normal.x;
-        vertex.y = P.y + radius * normal.y;
-        vertex.z = P.z + radius * normal.z;
-
+        vertex.x = P.x + lineWidth * normal.x * 0.5;
+        vertex.y = P.y + lineWidth * normal.y * 0.5;
+        vertex.z = P.z + lineHeight * normal.z * 0.5;
         vertices.push(vertex.x, vertex.y, vertex.z);
       }
     }
 
     function generateIndices() {
-      for (let j = 1; j <= tubularSegments; j++) {
+      for (let j = 1; j < segments; j++) {
         for (let i = 1; i <= radialSegments; i++) {
           const a = (radialSegments + 1) * (j - 1) + (i - 1);
           const b = (radialSegments + 1) * j + (i - 1);
@@ -142,43 +137,15 @@ class ExtrusionGeometry extends BufferGeometry {
     }
 
     function generateUVs() {
-      for (let i = 0; i <= tubularSegments; i++) {
+      for (let i = 0; i < segments; i++) {
         for (let j = 0; j <= radialSegments; j++) {
-          uv.x = i / tubularSegments;
+          uv.x = i / segments;
           uv.y = j / radialSegments;
 
           uvs.push(uv.x, uv.y);
         }
       }
     }
-  }
-
-  copy(source) {
-    super.copy(source);
-
-    this.parameters = Object.assign({}, source.parameters);
-
-    return this;
-  }
-
-  toJSON() {
-    const data = super.toJSON();
-
-    data.path = this.parameters.path.toJSON();
-
-    return data;
-  }
-
-  static fromJSON(data) {
-    // This only works for built-in curves (e.g. CatmullRomCurve3).
-    // User defined curves or instances of CurvePath will not be deserialized.
-    return new ExtrusionGeometry(
-      new Curves[data.path.type]().fromJSON(data.path),
-      data.tubularSegments,
-      data.radius,
-      data.radialSegments,
-      data.closed
-    );
   }
 }
 
