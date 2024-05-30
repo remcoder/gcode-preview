@@ -616,22 +616,23 @@ export class WebGLPreview {
       const nextPoint = new Vector3(v[6], v[7], v[8]);
 
       curvePoints.push(startPoint);
-      curvePoints.push(endPoint);
 
       if (!endPoint.equals(nextPoint)) {
+        curvePoints.push(endPoint);
         extrusionPaths.push(curvePoints);
         curvePoints = [];
       }
     }
 
     extrusionPaths.forEach((extrusionPath) => {
+      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, 0.2, 5);
+      this.disposables.push(geometry);
+
       const material = new MeshLambertMaterial({ color: color });
       this.disposables.push(material);
-      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, 0.2, 4);
-      this.disposables.push(geometry);
-      const lineSegments = new Mesh(geometry, material);
 
-      this.group?.add(lineSegments);
+      const mesh = new Mesh(geometry, material);
+      this.group?.add(mesh);
     });
   }
 

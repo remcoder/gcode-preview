@@ -7,6 +7,11 @@ class ExtrusionGeometry extends BufferGeometry {
 
     // helper variables
 
+    const N = new Vector3();
+    const B = new Vector3();
+    const vec = new Vector3();
+    let tangent = new Vector3();
+
     const vertex = new Vector3();
     const normal = new Vector3();
     const uv = new Vector2();
@@ -63,16 +68,11 @@ class ExtrusionGeometry extends BufferGeometry {
       segments++;
 
       P = points[i];
-      let tangent = new Vector3();
 
-      const end = points[i + 1] || points[i];
-      const start = points[i - 1] || points[i];
-
-      tangent.copy(P).subVectors(end, start).normalize();
-
-      const N = new Vector3();
-      const B = new Vector3();
-      const vec = new Vector3();
+      tangent
+        .copy(P)
+        .subVectors(points[i + 1] || P, points[i - 1] || P)
+        .normalize();
 
       let min = Number.MAX_VALUE;
       const tx = Math.abs(tangent.x);
