@@ -564,6 +564,7 @@ function startLoadingProgressive(gcode) {
   let c = 0;
   startLayer.setAttribute('disabled', 'disabled');
   endLayer.setAttribute('disabled', 'disabled');
+
   function loadProgressive() {
     const start = c * chunkSize;
     const end = (c + 1) * chunkSize;
@@ -576,6 +577,7 @@ function startLoadingProgressive(gcode) {
       startLayer.removeAttribute('disabled');
       endLayer.removeAttribute('disabled');
     }
+
     gcodePreview.parser.parseGCode(chunk);
     gcodePreview.renderInc();
     updateUI();
@@ -583,6 +585,7 @@ function startLoadingProgressive(gcode) {
 
   const lines = gcode.split('\n');
   const chunks = lines.length / chunkSize;
+  gcodePreview.initScene();
   gcodePreview.clear();
   if (window.__loadTimer__) clearTimeout(window.__loadTimer__);
   loadProgressive();
