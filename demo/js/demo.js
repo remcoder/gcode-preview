@@ -8,7 +8,7 @@ let thumb;
 const maxToolCount = 8;
 let toolCount = 4;
 let chunkSize = 1000;
-let currentFile;
+let currentFileSize;
 const FILE_SIZE_10MB = 10 * 1024 * 1024;
 
 const canvasElement = document.querySelector('.gcode-previewer');
@@ -218,13 +218,7 @@ export function initDemo() {
 
   toggleRenderTubes.addEventListener('click', function () {
     changeRenderTubes(!!toggleRenderTubes.checked);
-    if (preview.renderTubes && currentFile.size > FILE_SIZE_10MB) {
-      confirm('This file is large and may take a while to render in this mode. Continue?')
-        ? (preview.renderTubes = true)
-        : (preview.renderTubes = false);
-      toggleRenderTubes.checked = preview.renderTubes;
-    }
-    preview.render();
+    preview.renderIncremental();
   });
 
   for (let i = 0; i < 8; i++) {
@@ -324,7 +318,7 @@ export function initDemo() {
     // await preview._readFromStream(file.stream());
     _handleGCode(file.name, await file.text());
     updateUI();
-    currentFile = file;
+    currentFileSize = file.size;
   });
 
   function updateBuildVolume() {
@@ -543,13 +537,13 @@ function updateUI() {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 async function loadGCodeFromServer(filename) {
   const response = await fetch(filename);
-  currentFile = filename;
   if (response.status !== 200) {
     console.error('ERROR. Status Code: ' + response.status);
     return;
   }
 
   const gcode = await response.text();
+  currentFileSize = gcode.length;
   _handleGCode(filename, gcode);
   fileName.setAttribute('href', filename);
 }
