@@ -433,7 +433,7 @@ export class WebGLPreview {
   // create a new render method to use an animation loop to render the layers incrementally
   async renderAnimated(layerCount = 1): Promise<void> {
     this.renderLayerIndex = 0;
-    return this.renderFrameLoop(layerCount);
+    return this.renderFrameLoop(layerCount > 0 ? layerCount : 1);
   }
 
   renderFrameLoop(layerCount: number): Promise<void> {
