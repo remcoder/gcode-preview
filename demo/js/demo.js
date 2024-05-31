@@ -8,7 +8,6 @@ let thumb;
 const maxToolCount = 8;
 let toolCount = 4;
 let gcode;
-const FILE_SIZE_10MB = 10 * 1024 * 1024;
 
 const canvasElement = document.querySelector('.gcode-previewer');
 const settingsPreset = document.getElementById('settings-presets');
@@ -309,12 +308,6 @@ export function initDemo() {
     fileName.innerText = file.name;
     fileSize.innerText = humanFileSize(file.size);
 
-    // preview.clear();
-    if (preview.renderTubes && file.size > FILE_SIZE_10MB) {
-      confirm('This file is large and may take a while to render in this mode. Change to line rendering?')
-        ? (preview.renderTubes = false)
-        : (preview.renderTubes = true);
-    }
     preview.initScene();
     preview.clear();
     // await preview._readFromStream(file.stream());
