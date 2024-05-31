@@ -34,15 +34,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
           cache: "npm"
-
+      
+      - run: npm ci
+      
       - name: TSDoc Action
-        uses: erikyo/tsdoc-action@v1
-        with:
-          entry_point: ./src/gcode-preview.ts
-          output_dir: ./docs
-          front_page: README.md
+        run : npm run typedoc
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
