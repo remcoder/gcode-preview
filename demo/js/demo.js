@@ -550,7 +550,6 @@ async function loadGCodeFromServer(filename) {
 
 function _handleGCode(filename, text) {
   gcode = text;
-  chunkSize = text.length / 1000;
   fileName.innerText = filename;
   fileSize.innerText = humanFileSize(text.length);
 
@@ -568,7 +567,7 @@ async function startLoadingProgressive(gcode) {
   gcodePreview.parser.parseGCode(gcode);
   updateUI();
   console.time('render');
-  await gcodePreview.renderAnimated(Math.round(gcodePreview.layers.length / 60));
+  await gcodePreview.renderAnimated(Math.ceil(gcodePreview.layers.length / 60));
   console.timeEnd('render');
   updateUI();
   startLayer.removeAttribute('disabled');
