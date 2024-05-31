@@ -1,5 +1,9 @@
 ## next
 
+## 2.16-alpha fix compatibility with bundlers
+- removed the `browser` field from package.json
+- changed the `module` field to `main`
+
 ## 2.15 🌈 Multi-color 🌈 
  - works via detection of T0-T7 commands
  - supports systems like:

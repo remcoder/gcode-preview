@@ -1,6 +1,6 @@
 {
   "name": "gcode-preview",
-  "version": "2.15.0",
+  "version": "2.16.0-alpha",
   "description": "Preview a 3d print from a gcode file",
   "author": "remcoder@gmail.com",
   "license": "MIT",
@@ -9,8 +9,7 @@
     "url": "git@github.com:remcoder/gcode-preview.git"
   },
   "homepage": "https://gcode-preview.web.app/",
-  "browser": "dist/gcode-preview.js",
-  "module": "dist/gcode-preview.es.js",
+  "main": "dist/gcode-preview.es.js",
   "files": [
     "dist"
   ],
