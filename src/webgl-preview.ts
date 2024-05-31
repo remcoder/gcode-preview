@@ -401,11 +401,6 @@ export class WebGLPreview {
     this.state = State.initial;
     this.initScene();
 
-    while (this.disposables.length > 0) {
-      const disposable = this.disposables.pop();
-      if (disposable) disposable.dispose();
-    }
-
     for (let index = 0; index < this.layers.length; index++) {
       this.renderLayer(index);
     }
