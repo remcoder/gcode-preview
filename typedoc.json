@@ -3,6 +3,6 @@
   "entryPoints": [
     "src/gcode-preview.ts"
   ],
-  "out": "docs",
+  "out": "demo/docs",
   "includeVersion": true
 }
