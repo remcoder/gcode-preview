@@ -12,3 +12,4 @@ examples/files
 react-typescript-demo/.env
 dist/*
 demo/build/*
+docs
