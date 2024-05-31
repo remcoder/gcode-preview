@@ -374,14 +374,14 @@ export class WebGLPreview {
     return group;
   }
 
-  renderIncremental(): void {
-    // console.log('removing layer', this.prevLayerIndex);
-    this.scene.remove(this.group);
+  // Render the next increment. This is done by removing the previous layer and rendering all layers up to the current one.
+  // This way it preserves the state of the previous layers but it does render the top layer again b/c it probably wasnt completed before.
+  renderInc(): void {
+    if (this.group) this.scene.remove(this.group);
     this.state = this.prevState ?? State.initial;
 
     for (let index = this.prevLayerIndex ?? 0; index < this.layers.length; index++) {
       this.group = this.createGroup('layer' + index);
-      // console.log('rendering layer', index);
 
       this.prevState = { ...this.state };
       this.renderLayer(index);
@@ -552,16 +552,23 @@ export class WebGLPreview {
     this.scene.add(geometryBox);
   }
 
+  // reset parser & processing state
   clear(): void {
+    this.resetState();
+    this.parser = new Parser(this.minLayerThreshold);
+  }
+
+  // reset processing state
+  resetState(): void {
     this.startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
-    this.parser = new Parser(this.minLayerThreshold);
     this.beyondFirstMove = false;
     this.state = State.initial;
     this.devGui?.reset();
     this._geometries = {};
     this.prevState = undefined;
+    this.prevLayerIndex = undefined;
   }
 
   resize(): void {

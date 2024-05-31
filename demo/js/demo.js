@@ -8,7 +8,7 @@ let thumb;
 const maxToolCount = 8;
 let toolCount = 4;
 let chunkSize = 1000;
-let currentFileSize;
+let gcode;
 const FILE_SIZE_10MB = 10 * 1024 * 1024;
 
 const canvasElement = document.querySelector('.gcode-previewer');
@@ -218,7 +218,10 @@ export function initDemo() {
 
   toggleRenderTubes.addEventListener('click', function () {
     changeRenderTubes(!!toggleRenderTubes.checked);
-    preview.renderIncremental();
+    preview.initScene();
+    startLoadingProgressive(gcode);
+    // preview.clear();
+    // preview.renderInc();
   });
 
   for (let i = 0; i < 8; i++) {
@@ -318,7 +321,6 @@ export function initDemo() {
     // await preview._readFromStream(file.stream());
     _handleGCode(file.name, await file.text());
     updateUI();
-    currentFileSize = file.size;
   });
 
   function updateBuildVolume() {
@@ -543,19 +545,19 @@ async function loadGCodeFromServer(filename) {
   }
 
   const gcode = await response.text();
-  currentFileSize = gcode.length;
   _handleGCode(filename, gcode);
   fileName.setAttribute('href', filename);
 }
 
-function _handleGCode(filename, gcode) {
-  chunkSize = gcode.length / 1000;
+function _handleGCode(filename, text) {
+  gcode = text;
+  chunkSize = text.length / 1000;
   fileName.innerText = filename;
-  fileSize.innerText = humanFileSize(gcode.length);
+  fileSize.innerText = humanFileSize(text.length);
 
   updateUI();
 
-  startLoadingProgressive(gcode);
+  startLoadingProgressive(text);
 }
 
 function startLoadingProgressive(gcode) {
@@ -575,7 +577,7 @@ function startLoadingProgressive(gcode) {
       endLayer.removeAttribute('disabled');
     }
     gcodePreview.parser.parseGCode(chunk);
-    gcodePreview.renderIncremental();
+    gcodePreview.renderInc();
     updateUI();
   }
 
