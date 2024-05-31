@@ -4,9 +4,5 @@
     "src/gcode-preview.ts"
   ],
   "out": "docs",
-  "includeVersion": true,
-  "plugin": [
-    "typedoc-plugin-mdn-links",
-    "typedoc-plugin-missing-exports",
-  ]
+  "includeVersion": true
 }
