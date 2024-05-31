@@ -7,7 +7,6 @@ let favIcon;
 let thumb;
 const maxToolCount = 8;
 let toolCount = 4;
-let chunkSize = 1000;
 let gcode;
 const FILE_SIZE_10MB = 10 * 1024 * 1024;
 
