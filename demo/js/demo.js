@@ -560,35 +560,20 @@ function _handleGCode(filename, text) {
   startLoadingProgressive(text);
 }
 
-function startLoadingProgressive(gcode) {
-  let c = 0;
+async function startLoadingProgressive(gcode) {
   startLayer.setAttribute('disabled', 'disabled');
   endLayer.setAttribute('disabled', 'disabled');
 
-  function loadProgressive() {
-    const start = c * chunkSize;
-    const end = (c + 1) * chunkSize;
-    const chunk = lines.slice(start, end);
-
-    c++;
-    if (c < chunks) {
-      window.__loadTimer__ = requestAnimationFrame(loadProgressive);
-    } else {
-      startLayer.removeAttribute('disabled');
-      endLayer.removeAttribute('disabled');
-    }
-
-    gcodePreview.parser.parseGCode(chunk);
-    gcodePreview.renderInc();
-    updateUI();
-  }
-
-  const lines = gcode.split('\n');
-  const chunks = lines.length / chunkSize;
   gcodePreview.initScene();
   gcodePreview.clear();
-  if (window.__loadTimer__) clearTimeout(window.__loadTimer__);
-  loadProgressive();
+  gcodePreview.parser.parseGCode(gcode);
+  updateUI();
+  console.time('render');
+  await gcodePreview.renderAnimated(Math.round(gcodePreview.layers.length / 60));
+  console.timeEnd('render');
+  updateUI();
+  startLayer.removeAttribute('disabled');
+  endLayer.removeAttribute('disabled');
 }
 
 function humanFileSize(size) {

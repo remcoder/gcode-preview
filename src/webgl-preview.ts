@@ -141,6 +141,7 @@ export class WebGLPreview {
   static readonly defaultExtrusionColor = new Color('hotpink');
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private animationFrameId?: number;
+  private renderLayerIndex = 0;
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
@@ -427,6 +428,39 @@ export class WebGLPreview {
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
     this._lastRenderTime = performance.now() - startRender;
+  }
+
+  // create a new render method to use an animation loop to render the layers incrementally
+  async renderAnimated(layerCount = 1): Promise<void> {
+    this.renderLayerIndex = 0;
+    return this.renderFrameLoop(layerCount);
+  }
+
+  renderFrameLoop(layerCount: number): Promise<void> {
+    return new Promise((resolve) => {
+      const loop = () => {
+        if (this.renderLayerIndex > this.layers.length - 1) {
+          resolve();
+          console.log('done rendering');
+        } else {
+          this.renderFrame(layerCount);
+          requestAnimationFrame(loop);
+        }
+      };
+      loop();
+    });
+  }
+
+  renderFrame(layerCount: number): void {
+    this.group = this.createGroup('layer' + this.renderLayerIndex);
+
+    for (let l = 0; l < layerCount && this.renderLayerIndex + l < this.layers.length; l++) {
+      this.state = this.prevState ?? State.initial;
+      this.renderLayer(this.renderLayerIndex);
+      this.prevState = { ...this.state };
+      this.renderLayerIndex++;
+    }
+    this.scene.add(this.group);
   }
 
   renderLayer(index: number): void {
