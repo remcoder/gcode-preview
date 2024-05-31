@@ -1,5 +1,6 @@
 ## next
 
+## 2.16
 ## 2.16-alpha fix compatibility with bundlers
 - removed the `browser` field from package.json
 - changed the `module` field to `main`
