@@ -161,7 +161,7 @@ export function initDemo() {
     initialCameraPosition: [180, 150, 300],
     backgroundColor: initialBackgroundColor,
     lineHeight: 0.3,
-    devMode: { camera: false, renderer: true }
+    devMode: true
   }));
 
   backgroundColor.value = initialBackgroundColor;
