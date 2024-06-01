@@ -8,17 +8,11 @@ class ExtrusionGeometry extends BufferGeometry {
 
     // helper variables
 
-    const N = new Vector3();
-    const B = new Vector3();
-    const vec = new Vector3();
-    const tangent = new Vector3();
-
-    // buffer
-
     const vertex = new Vector3();
     const normal = new Vector3();
     const uv = new Vector2();
-    let P = new Vector3();
+
+    // buffer
 
     const vertices: number[] = [];
     const normals: number[] = [];
@@ -61,39 +55,9 @@ class ExtrusionGeometry extends BufferGeometry {
     }
 
     function generateSegment(i: number): void {
-      P = points[i];
-
       // First get the tangent to the corner between the two segments.
-      tangent
-        .copy(P)
-        .subVectors(points[i + 1] || P, points[i - 1] || P)
-        .normalize();
 
-      // Calculate the normal and binormal vectors for the segment
-      // it used to be pre-computed using a curve `.computeFrenetFrames`
-      let min = Number.MAX_VALUE;
-      const tx = Math.abs(tangent.x);
-      const ty = Math.abs(tangent.y);
-      const tz = Math.abs(tangent.z);
-
-      if (tx <= min) {
-        min = tx;
-        N.set(1, 0, 0);
-      }
-
-      if (ty <= min) {
-        min = ty;
-        N.set(0, 1, 0);
-      }
-
-      if (tz <= min) {
-        N.set(0, 0, 1);
-      }
-
-      vec.crossVectors(tangent, N).normalize();
-
-      N.crossVectors(tangent, vec);
-      B.crossVectors(tangent, N);
+      const [P, N, B] = computeCornerAngles(i);
 
       // generate points around the tangent
 
@@ -144,6 +108,49 @@ class ExtrusionGeometry extends BufferGeometry {
           uvs.push(uv.x, uv.y);
         }
       }
+    }
+
+    function computeCornerAngles(i: number): Array<Vector3> {
+      const P = points[i];
+      const tangent = new Vector3();
+      const N = new Vector3();
+      const B = new Vector3();
+      const vec = new Vector3();
+
+      tangent
+        .copy(P)
+        .sub(points[i - 1] || P)
+        .normalize()
+        .add((points[i + 1] || P).clone().sub(P).normalize())
+        .normalize();
+
+      // Calculate the normal and binormal vectors for the segment
+      // it used to be pre-computed using a curve `.computeFrenetFrames`
+      let min = Number.MAX_VALUE;
+      const tx = Math.abs(tangent.x);
+      const ty = Math.abs(tangent.y);
+      const tz = Math.abs(tangent.z);
+
+      if (tx <= min) {
+        min = tx;
+        N.set(1, 0, 0);
+      }
+
+      if (ty <= min) {
+        min = ty;
+        N.set(0, 1, 0);
+      }
+
+      if (tz <= min) {
+        N.set(0, 0, 1);
+      }
+
+      vec.crossVectors(tangent, N).normalize();
+
+      N.crossVectors(tangent, vec);
+      B.crossVectors(tangent, N);
+
+      return [P, N, B];
     }
   }
 }

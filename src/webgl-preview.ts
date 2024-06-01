@@ -625,7 +625,7 @@ export class WebGLPreview {
     }
 
     extrusionPaths.forEach((extrusionPath) => {
-      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, 0.2, 5);
+      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, 0.2, 4);
       this.disposables.push(geometry);
 
       const material = new MeshLambertMaterial({ color: color });
