@@ -1,10 +1,30 @@
 import { BufferGeometry, Float32BufferAttribute, Vector2, Vector3 } from 'three';
 
 class ExtrusionGeometry extends BufferGeometry {
-  constructor(points: Vector3[] = [], lineWidth: number = 0.6, lineHeight: number = 0.2, radialSegments: number = 8) {
+  parameters: {
+    points: Vector3[];
+    lineWidth: number;
+    lineHeight: number;
+    radialSegments: number;
+    closed: boolean;
+  };
+  constructor(
+    points: Vector3[] = [new Vector3()],
+    lineWidth: number = 0.6,
+    lineHeight: number = 0.2,
+    radialSegments: number = 8
+  ) {
     super();
 
     this.type = 'ExtrusionGeometry';
+
+    this.parameters = {
+      points: points,
+      lineWidth: lineWidth,
+      lineHeight: lineHeight,
+      radialSegments: radialSegments,
+      closed: false
+    };
 
     // helper variables
 
