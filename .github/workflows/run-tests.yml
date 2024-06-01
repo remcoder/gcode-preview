@@ -6,13 +6,15 @@ name: Runs All Unit tests
 on:
   push:
     branches: [develop, releases]
-  pull_request:
+  pull_request_target:
     branches: [develop, releases]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
