@@ -13,19 +13,17 @@ class ExtrusionGeometry extends BufferGeometry {
     const vec = new Vector3();
     const tangent = new Vector3();
 
+    // buffer
+
     const vertex = new Vector3();
     const normal = new Vector3();
     const uv = new Vector2();
     let P = new Vector3();
 
-    // buffer
-
     const vertices: number[] = [];
     const normals: number[] = [];
     const uvs: number[] = [];
     const indices: number[] = [];
-
-    let segments = 0;
 
     // create buffer data
 
@@ -40,10 +38,7 @@ class ExtrusionGeometry extends BufferGeometry {
 
     // functions
 
-    function generateBufferData() {
-      segments = 0;
-      // This is where the fun begins: we'd multiply the number of travel moves by the number of segments per move.
-      // I'm not sure yet if we can still get that from a catmull curve, but we'll see.
+    function generateBufferData(): void {
       for (let i = 0; i < points.length; i++) {
         generateSegment(i);
       }
@@ -65,16 +60,17 @@ class ExtrusionGeometry extends BufferGeometry {
       generateIndices();
     }
 
-    function generateSegment(i: number) {
-      segments++;
-
+    function generateSegment(i: number): void {
       P = points[i];
 
+      // First get the tangent to the corner between the two segments.
       tangent
         .copy(P)
         .subVectors(points[i + 1] || P, points[i - 1] || P)
         .normalize();
 
+      // Calculate the normal and binormal vectors for the segment
+      // it used to be pre-computed using a curve `.computeFrenetFrames`
       let min = Number.MAX_VALUE;
       const tx = Math.abs(tangent.x);
       const ty = Math.abs(tangent.y);
@@ -99,6 +95,8 @@ class ExtrusionGeometry extends BufferGeometry {
       N.crossVectors(tangent, vec);
       B.crossVectors(tangent, N);
 
+      // generate points around the tangent
+
       for (let j = 0; j <= radialSegments; j++) {
         const v = (j / radialSegments) * Math.PI * 2;
         const sin = Math.sin(v);
@@ -121,8 +119,8 @@ class ExtrusionGeometry extends BufferGeometry {
       }
     }
 
-    function generateIndices() {
-      for (let j = 1; j < segments; j++) {
+    function generateIndices(): void {
+      for (let j = 1; j < points.length; j++) {
         for (let i = 1; i <= radialSegments; i++) {
           const a = (radialSegments + 1) * (j - 1) + (i - 1);
           const b = (radialSegments + 1) * j + (i - 1);
@@ -137,10 +135,10 @@ class ExtrusionGeometry extends BufferGeometry {
       }
     }
 
-    function generateUVs() {
-      for (let i = 0; i < segments; i++) {
+    function generateUVs(): void {
+      for (let i = 0; i < points.length; i++) {
         for (let j = 0; j <= radialSegments; j++) {
-          uv.x = i / segments;
+          uv.x = i / points.length;
           uv.y = j / radialSegments;
 
           uvs.push(uv.x, uv.y);
