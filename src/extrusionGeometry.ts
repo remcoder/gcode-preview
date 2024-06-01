@@ -1,6 +1,7 @@
 import { BufferGeometry, Float32BufferAttribute, Vector2, Vector3 } from 'three';
+
 class ExtrusionGeometry extends BufferGeometry {
-  constructor(points = [], lineWidth = 0.6, lineHeight = 0.2, radialSegments = 8) {
+  constructor(points: Vector3[] = [], lineWidth: number = 0.6, lineHeight: number = 0.2, radialSegments: number = 8) {
     super();
 
     this.type = 'ExtrusionGeometry';
@@ -10,7 +11,7 @@ class ExtrusionGeometry extends BufferGeometry {
     const N = new Vector3();
     const B = new Vector3();
     const vec = new Vector3();
-    let tangent = new Vector3();
+    const tangent = new Vector3();
 
     const vertex = new Vector3();
     const normal = new Vector3();
@@ -19,10 +20,10 @@ class ExtrusionGeometry extends BufferGeometry {
 
     // buffer
 
-    const vertices = [];
-    const normals = [];
-    const uvs = [];
-    const indices = [];
+    const vertices: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
+    const indices: number[] = [];
 
     let segments = 0;
 
@@ -64,7 +65,7 @@ class ExtrusionGeometry extends BufferGeometry {
       generateIndices();
     }
 
-    function generateSegment(i) {
+    function generateSegment(i: number) {
       segments++;
 
       P = points[i];
