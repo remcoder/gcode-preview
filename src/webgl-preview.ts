@@ -8,6 +8,7 @@ import { LineBox } from './lineBox';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
+
 import {
   AmbientLight,
   AxesHelper,
@@ -307,7 +308,7 @@ export class WebGLPreview {
     this._animationFrameId = requestAnimationFrame(() => this.animate());
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
-    this.stats.update();
+    this.stats?.update();
   }
 
   processGCode(gcode: string | string[]): void {
