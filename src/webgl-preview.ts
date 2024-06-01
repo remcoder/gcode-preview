@@ -7,7 +7,7 @@ import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
-import { DevGUI } from './dev-gui';
+import { DevGUI, DevModeOptions } from './dev-gui';
 
 import {
   AmbientLight,
@@ -53,11 +53,6 @@ export type State = {
   j: number;
   t: number; // tool index
 }; // feedrate?
-
-export type DevModeOptions = {
-  camera?: boolean | undefined;
-  renderer?: boolean | undefined;
-};
 
 export type GCodePreviewOptions = {
   buildVolume?: BuildVolume;
@@ -130,6 +125,7 @@ export class WebGLPreview {
   _animationFrameId?: number;
   disableGradient = false;
   private devMode?: boolean | DevModeOptions = true;
+  private _lastRenderTime = 0;
 
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
@@ -321,6 +317,7 @@ export class WebGLPreview {
   }
 
   render(): void {
+    const startRender = performance.now();
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
@@ -368,6 +365,7 @@ export class WebGLPreview {
 
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
+    this._lastRenderTime = performance.now() - startRender;
   }
 
   renderLayer(index: number): void {
@@ -746,15 +744,9 @@ export class WebGLPreview {
 
   private initGui() {
     if (typeof this.devMode === 'boolean' && this.devMode === true) {
-      this.devGui = new DevGUI({
-        camera: this.camera,
-        renderer: this.renderer
-      });
+      this.devGui = new DevGUI(this);
     } else if (typeof this.devMode === 'object') {
-      this.devGui = new DevGUI({
-        camera: this.devMode.camera ? this.camera : undefined,
-        renderer: this.devMode.renderer ? this.renderer : undefined
-      });
+      this.devGui = new DevGUI(this, this.devMode);
     }
   }
 }
