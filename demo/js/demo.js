@@ -160,7 +160,8 @@ export function initDemo() {
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
     backgroundColor: initialBackgroundColor,
-    lineHeight: 0.3
+    lineHeight: 0.3,
+    devMode: { camera: false, renderer: true }
   }));
 
   backgroundColor.value = initialBackgroundColor;

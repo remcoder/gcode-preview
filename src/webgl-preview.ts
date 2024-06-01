@@ -54,6 +54,11 @@ export type State = {
   t: number; // tool index
 }; // feedrate?
 
+export type DevModeOptions = {
+  camera?: boolean | undefined;
+  renderer?: boolean | undefined;
+};
+
 export type GCodePreviewOptions = {
   buildVolume?: BuildVolume;
   backgroundColor?: ColorRepresentation;
@@ -86,7 +91,7 @@ export type GCodePreviewOptions = {
    */
   targetId?: string;
   /** @experimental */
-  devMode?: boolean;
+  devMode?: boolean | DevModeOptions;
 };
 
 const target = {
@@ -124,7 +129,7 @@ export class WebGLPreview {
   nonTravelmoves: string[] = [];
   _animationFrameId?: number;
   disableGradient = false;
-  private devMode = true;
+  private devMode?: boolean | DevModeOptions = true;
 
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
@@ -740,10 +745,17 @@ export class WebGLPreview {
   }
 
   private initGui() {
-    this.devGui = new DevGUI({
-      camera: this.camera,
-      renderer: this.renderer
-    });
+    if (typeof this.devMode === 'boolean' && this.devMode === true) {
+      this.devGui = new DevGUI({
+        camera: this.camera,
+        renderer: this.renderer
+      });
+    } else if (typeof this.devMode === 'object') {
+      this.devGui = new DevGUI({
+        camera: this.devMode.camera ? this.camera : undefined,
+        renderer: this.devMode.renderer ? this.renderer : undefined
+      });
+    }
   }
 }
 
