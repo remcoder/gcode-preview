@@ -27,7 +27,7 @@ import {
   WebGLRenderer
 } from 'three';
 
-import { ExtrusionGeometry } from './extrusionGeometry';
+import { ExtrusionGeometry } from './extrusion-geometry';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
 type GVector3 = {
