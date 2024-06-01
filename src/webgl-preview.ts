@@ -5,6 +5,9 @@ import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeome
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
+import Stats from 'three/examples/jsm/libs/stats.module';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+
 import {
   AmbientLight,
   AxesHelper,
@@ -81,6 +84,8 @@ export type GCodePreviewOptions = {
    * @deprecated Please use `canvas` instead.
    */
   targetId?: string;
+  /** @experimental */
+  devMode?: boolean;
 };
 
 const target = {
@@ -118,6 +123,7 @@ export class WebGLPreview {
   nonTravelmoves: string[] = [];
   _animationFrameId?: number;
   disableGradient = false;
+  private devMode = true;
 
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
@@ -130,6 +136,9 @@ export class WebGLPreview {
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
+  private stats: Stats = new Stats();
+  private gui: GUI = new GUI();
+  private _guiparams: Record<string, unknown> = {};
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -153,6 +162,7 @@ export class WebGLPreview {
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
     this.renderTubes = opts.renderTubes ?? this.renderTubes;
     this.extrusionWidth = opts.extrusionWidth ?? this.extrusionWidth;
+    this.devMode = opts.devMode ?? this.devMode;
 
     if (opts.extrusionColor !== undefined) {
       this.extrusionColor = opts.extrusionColor;
@@ -215,6 +225,11 @@ export class WebGLPreview {
     this.animate();
 
     if (this.allowDragNDrop) this._enableDropHandler();
+
+    if (this.devMode) {
+      document.body.appendChild(this.stats.dom);
+      this.initGui();
+    }
   }
 
   get extrusionColor(): Color | Color[] {
@@ -292,6 +307,7 @@ export class WebGLPreview {
     this._animationFrameId = requestAnimationFrame(() => this.animate());
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
+    this.stats.update();
   }
 
   processGCode(gcode: string | string[]): void {
@@ -721,6 +737,28 @@ export class WebGLPreview {
       tail = str.slice(idxNewLine);
     } while (!result.done);
     console.debug('read from stream', size);
+  }
+
+  private initGui() {
+    this.gui.title('Dev info');
+    const render = this.gui.addFolder('Render Info');
+    render.add(this.renderer.info.render, 'triangles').listen();
+    render.add(this.renderer.info.render, 'calls').listen();
+    render.add(this.renderer.info.render, 'lines').listen();
+    render.add(this.renderer.info.render, 'points').listen();
+    render.add(this.renderer.info.memory, 'geometries').listen();
+    render.add(this.renderer.info.memory, 'textures').listen();
+
+    const camera = this.gui.addFolder('Camera').close();
+    const cameraPosition = camera.addFolder('Camera position');
+    cameraPosition.add(this.camera.position, 'x').listen();
+    cameraPosition.add(this.camera.position, 'y').listen();
+    cameraPosition.add(this.camera.position, 'z').listen();
+
+    const cameraRotation = camera.addFolder('Camera rotation');
+    cameraRotation.add(this.camera.rotation, 'x').listen();
+    cameraRotation.add(this.camera.rotation, 'y').listen();
+    cameraRotation.add(this.camera.rotation, 'z').listen();
   }
 }
 

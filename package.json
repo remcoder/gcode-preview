@@ -16,7 +16,7 @@
   "types": "dist/gcode-preview.d.ts",
   "devDependencies": {
     "@types/node": "^18.19.33",
-    "@types/three": "^0.144.0",
+    "@types/three": "^0.155.0",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
     "canvas2image": "^1.0.5",
