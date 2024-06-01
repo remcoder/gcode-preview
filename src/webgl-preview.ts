@@ -6,8 +6,8 @@ import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
+import { DevGUI } from './dev-gui';
 
 import {
   AmbientLight,
@@ -138,8 +138,7 @@ export class WebGLPreview {
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
   private stats: Stats = new Stats();
-  private gui: GUI = new GUI();
-  private _guiparams: Record<string, unknown> = {};
+  private devGui?: DevGUI;
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -741,25 +740,10 @@ export class WebGLPreview {
   }
 
   private initGui() {
-    this.gui.title('Dev info');
-    const render = this.gui.addFolder('Render Info');
-    render.add(this.renderer.info.render, 'triangles').listen();
-    render.add(this.renderer.info.render, 'calls').listen();
-    render.add(this.renderer.info.render, 'lines').listen();
-    render.add(this.renderer.info.render, 'points').listen();
-    render.add(this.renderer.info.memory, 'geometries').listen();
-    render.add(this.renderer.info.memory, 'textures').listen();
-
-    const camera = this.gui.addFolder('Camera').close();
-    const cameraPosition = camera.addFolder('Camera position');
-    cameraPosition.add(this.camera.position, 'x').listen();
-    cameraPosition.add(this.camera.position, 'y').listen();
-    cameraPosition.add(this.camera.position, 'z').listen();
-
-    const cameraRotation = camera.addFolder('Camera rotation');
-    cameraRotation.add(this.camera.rotation, 'x').listen();
-    cameraRotation.add(this.camera.rotation, 'y').listen();
-    cameraRotation.add(this.camera.rotation, 'z').listen();
+    this.devGui = new DevGUI({
+      camera: this.camera,
+      renderer: this.renderer
+    });
   }
 }
 
