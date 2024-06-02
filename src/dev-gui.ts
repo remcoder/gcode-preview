@@ -11,6 +11,7 @@ class DevGUI {
   private gui: GUI;
   private watchedObject;
   private options?: DevModeOptions | undefined;
+  private openFolders: string[] = [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(watchedObject: any, options?: DevModeOptions | undefined) {
     this.watchedObject = watchedObject;
@@ -23,6 +24,7 @@ class DevGUI {
   }
 
   setup(): void {
+    this.loadOpenFolders();
     if (!this.options || this.options.renderer) {
       this.setupRedererFolder();
     }
@@ -41,14 +43,40 @@ class DevGUI {
   }
 
   reset(): void {
+    // The lil-gui bundled with the current three.js version does not have the `onOpen` method to save the open folders
+    // as they are individually opened. This is good enough in between different changes to the watched objects. The
+    // last change will not persist between page reloads unless some event triggered this reset method.
+    this.saveOpenFolders();
+
     this.gui.destroy();
     this.gui = new GUI();
     this.gui.title('Dev info');
     this.setup();
   }
 
+  loadOpenFolders(): void {
+    this.openFolders = JSON.parse(localStorage.getItem('dev-gui-open') || '{}').open || [];
+    console.log(this.openFolders);
+  }
+
+  saveOpenFolders(): void {
+    this.openFolders = this.gui
+      .foldersRecursive()
+      .filter((folder) => {
+        return !folder._closed;
+      })
+      .map((folder) => {
+        return folder._title;
+      });
+    console.log(this.openFolders);
+    localStorage.setItem('dev-gui-open', JSON.stringify({ open: this.openFolders }));
+  }
+
   private setupRedererFolder(): void {
-    const render = this.gui.addFolder('Render Info').close();
+    const render = this.gui.addFolder('Render Info');
+    if (!this.openFolders.includes('Render Info')) {
+      render.close();
+    }
     render.add(this.watchedObject.renderer.info.render, 'triangles').listen();
     render.add(this.watchedObject.renderer.info.render, 'calls').listen();
     render.add(this.watchedObject.renderer.info.render, 'lines').listen();
@@ -59,7 +87,10 @@ class DevGUI {
   }
 
   private setupCameraFolder(): void {
-    const camera = this.gui.addFolder('Camera').close();
+    const camera = this.gui.addFolder('Camera');
+    if (!this.openFolders.includes('Camera')) {
+      camera.close();
+    }
     const cameraPosition = camera.addFolder('Camera position');
     cameraPosition.add(this.watchedObject.camera.position, 'x').listen();
     cameraPosition.add(this.watchedObject.camera.position, 'y').listen();
@@ -72,7 +103,10 @@ class DevGUI {
   }
 
   private setupParserFolder(): void {
-    const parser = this.gui.addFolder('Parser').close();
+    const parser = this.gui.addFolder('Parser');
+    if (!this.openFolders.includes('Parser')) {
+      parser.close();
+    }
     parser.add(this.watchedObject.parser, 'curZ').listen();
     parser.add(this.watchedObject.parser, 'maxZ').listen();
     parser.add(this.watchedObject.parser, 'tolerance').listen();
@@ -81,7 +115,10 @@ class DevGUI {
   }
 
   private setupBuildVolumeFolder(): void {
-    const buildVolume = this.gui.addFolder('Build Volume').close();
+    const buildVolume = this.gui.addFolder('Build Volume');
+    if (!this.openFolders.includes('Build Volume')) {
+      buildVolume.close();
+    }
     buildVolume
       .add(this.watchedObject.buildVolume, 'x')
       .min(0)
