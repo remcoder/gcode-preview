@@ -1,4 +1,4 @@
-import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+import { GUI } from 'lil-gui';
 
 export type DevModeOptions = {
   camera?: boolean | false;
