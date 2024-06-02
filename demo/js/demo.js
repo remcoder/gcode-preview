@@ -440,7 +440,9 @@ export function initDemo() {
     buildVolumeX.value = volume.x;
     buildVolumeY.value = volume.y;
     buildVolumeZ.value = volume.z;
-    preview.buildVolume = volume;
+    preview.buildVolume.x = volume.x;
+    preview.buildVolume.y = volume.y;
+    preview.buildVolume.z = volume.z;
   }
 
   function changeDrawBuildVolume(draw) {
