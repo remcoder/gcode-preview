@@ -8,7 +8,6 @@ class ExtrusionGeometry extends BufferGeometry {
     radialSegments: number;
     closed: boolean;
   };
-  readonly type: 'ExtrusionGeometry';
   constructor(
     points: Vector3[] = [new Vector3()],
     lineWidth: number = 0.6,
@@ -16,6 +15,8 @@ class ExtrusionGeometry extends BufferGeometry {
     radialSegments: number = 8
   ) {
     super();
+
+    this.type = 'ExtrusionGeometry';
 
     this.parameters = {
       points: points,
