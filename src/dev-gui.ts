@@ -5,6 +5,7 @@ export type DevModeOptions = {
   renderer?: boolean | false;
   parser?: boolean | false;
   buildVolume?: boolean | false;
+  devHelpers?: boolean | false;
 };
 
 class DevGUI {
@@ -39,6 +40,10 @@ class DevGUI {
 
     if (!this.options || this.options.buildVolume) {
       this.setupBuildVolumeFolder();
+    }
+
+    if (!this.options || this.options.devHelpers) {
+      this.setupDevHelpers();
     }
   }
 
@@ -143,6 +148,21 @@ class DevGUI {
       .onChange(() => {
         this.watchedObject.render();
       });
+  }
+
+  private setupDevHelpers(): void {
+    const devHelpers = this.gui.addFolder('Dev Helpers');
+    if (!this.openFolders.includes('Dev Helpers')) {
+      devHelpers.close();
+    }
+    devHelpers
+      .add(this.watchedObject, '_wireframe')
+      .listen()
+      .onChange(() => {
+        this.watchedObject.render();
+      });
+    devHelpers.add(this.watchedObject, 'render').listen();
+    devHelpers.add(this.watchedObject, 'clear').listen();
   }
 }
 

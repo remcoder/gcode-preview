@@ -125,7 +125,6 @@ export class WebGLPreview {
   _animationFrameId?: number;
   disableGradient = false;
   private devMode?: boolean | DevModeOptions = true;
-  private _lastRenderTime = 0;
 
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
@@ -138,6 +137,8 @@ export class WebGLPreview {
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
+  private _lastRenderTime = 0;
+  private _wireframe = false;
   private stats: Stats = new Stats();
   private devGui?: DevGUI;
 
@@ -366,6 +367,7 @@ export class WebGLPreview {
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
     this._lastRenderTime = performance.now() - startRender;
+    console.debug('Render time', this._lastRenderTime);
   }
 
   renderLayer(index: number): void {
@@ -654,7 +656,7 @@ export class WebGLPreview {
       const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, this.lineHeight || layerHeight, 4);
       this.disposables.push(geometry);
 
-      const material = new MeshLambertMaterial({ color: color });
+      const material = new MeshLambertMaterial({ color: color, wireframe: this._wireframe });
       this.disposables.push(material);
 
       const mesh = new Mesh(geometry, material);
