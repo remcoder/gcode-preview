@@ -102,17 +102,13 @@ export class Layer {
 }
 
 export class Parser {
-  private lines: string[] = [];
-
-  /**
-   * @experimental GCode commands before extrusion starts.
-   */
-  public preamble = new Layer(-1, [], 0); // TODO: remove preamble and treat as a regular layer? Unsure of the benefit
-  public layers: Layer[] = [];
-  private curZ = 0;
-  private maxZ = -Infinity; // cannot start at 0 because of tolerance. first layer will always be created
-  private metadata: Metadata = { thumbnails: {} };
-  private tolerance = 0; // The higher the tolerance, the fewer layers are created, so performance will improve.
+  lines: string[] = [];
+  preamble = new Layer(-1, [], 0); // TODO: remove preamble and treat as a regular layer? Unsure of the benefit
+  layers: Layer[] = [];
+  curZ = 0;
+  maxZ = -Infinity; // cannot start at 0 because of tolerance. first layer will always be created
+  metadata: Metadata = { thumbnails: {} };
+  tolerance = 0; // The higher the tolerance, the fewer layers are created, so performance will improve.
 
   /**
    * Create a new Parser instance.
@@ -288,4 +284,3 @@ export interface Parser {
   parseGcode: typeof Parser.prototype.parseGCode;
 }
 Parser.prototype.parseGcode = Parser.prototype.parseGCode;
-export { Thumbnail };

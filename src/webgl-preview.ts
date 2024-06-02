@@ -38,11 +38,7 @@ type GVector3 = {
 type Arc = GVector3 & { r: number; i: number; j: number };
 
 type Point = GVector3;
-export type BuildVolume = {
-  x: number;
-  y: number;
-  z: number;
-};
+type BuildVolume = GVector3;
 export type State = {
   x: number;
   y: number;
@@ -55,10 +51,11 @@ export type State = {
 }; // feedrate?
 
 export type GCodePreviewOptions = {
+  allowDragNDrop?: boolean;
   buildVolume?: BuildVolume;
   backgroundColor?: ColorRepresentation;
   canvas?: HTMLCanvasElement;
-  axes?: boolean;
+  debug?: boolean;
   endLayer?: number;
   extrusionColor?: ColorRepresentation | ColorRepresentation[];
   initialCameraPosition?: number[];
@@ -68,23 +65,14 @@ export type GCodePreviewOptions = {
   minLayerThreshold?: number;
   renderExtrusion?: boolean;
   renderTravel?: boolean;
+  renderTubes?: boolean;
   startLayer?: number;
+  targetId?: string;
   topLayerColor?: ColorRepresentation;
   travelColor?: ColorRepresentation;
+  toolColors?: Record<number, ColorRepresentation>;
   disableGradient?: boolean;
   extrusionWidth?: number;
-
-  /** @experimental */
-  renderTubes?: boolean;
-
-  /**
-   * @deprecated Please see the demo how to implement drag and drop.
-   */
-  allowDragNDrop?: boolean;
-  /**
-   * @deprecated Please use `canvas` instead.
-   */
-  targetId?: string;
 };
 
 const target = {
@@ -94,37 +82,37 @@ const target = {
 };
 
 export class WebGLPreview {
-  private minLayerThreshold = 0.05;
-  private parser: Parser;
-  private targetId?: string; // deprecated
-  private scene: Scene;
-  private camera: PerspectiveCamera;
-  private renderer: WebGLRenderer;
-  private group?: Group;
-  private container?: HTMLElement;
-  private canvas: HTMLCanvasElement;
-  private renderExtrusion = true;
-  private renderTravel = false;
-  private renderTubes = false;
-  private extrusionWidth = 0.6;
-  private lineWidth?: number;
-  private startLayer?: number;
-  private endLayer?: number;
-  private singleLayerMode = false;
-  private buildVolume?: BuildVolume;
-  private initialCameraPosition = [-100, 400, 450];
-  private axes = false;
-  private allowDragNDrop = false;
-  private controls: OrbitControls;
-  private beyondFirstMove = false;
-  private inches = false;
-  private nonTravelmoves: string[] = [];
-  private _animationFrameId?: number;
-  private disableGradient = false;
+  minLayerThreshold = 0.05;
+  parser: Parser;
+  targetId?: string; // deprecated
+  scene: Scene;
+  camera: PerspectiveCamera;
+  renderer: WebGLRenderer;
+  group?: Group;
+  container?: HTMLElement;
+  canvas: HTMLCanvasElement;
+  renderExtrusion = true;
+  renderTravel = false;
+  renderTubes = false;
+  extrusionWidth = 0.6;
+  lineWidth?: number;
+  startLayer?: number;
+  endLayer?: number;
+  singleLayerMode = false;
+  buildVolume?: BuildVolume;
+  initialCameraPosition = [-100, 400, 450];
+  debug = false;
+  allowDragNDrop = false;
+  controls: OrbitControls;
+  beyondFirstMove = false;
+  inches = false;
+  nonTravelmoves: string[] = [];
+  _animationFrameId?: number;
+  disableGradient = false;
 
-  private state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
+  state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
-  private static readonly defaultExtrusionColor = new Color('hotpink');
+  static readonly defaultExtrusionColor = new Color('hotpink');
 
   private disposables: { dispose(): void }[] = [];
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
@@ -132,6 +120,7 @@ export class WebGLPreview {
   private _travelColor = new Color(0x990000);
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
+  private _toolColors: Record<number, Color> = {};
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -141,14 +130,13 @@ export class WebGLPreview {
     if (opts.backgroundColor !== undefined) {
       this.backgroundColor = new Color(opts.backgroundColor);
     }
-
     this.targetId = opts.targetId;
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
     this.lineWidth = opts.lineWidth;
     this.buildVolume = opts.buildVolume;
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
-    this.axes = opts.axes ?? this.axes;
+    this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.renderExtrusion = opts.renderExtrusion ?? this.renderExtrusion;
     this.renderTravel = opts.renderTravel ?? this.renderTravel;
@@ -167,6 +155,12 @@ export class WebGLPreview {
     }
     if (opts.lastSegmentColor !== undefined) {
       this.lastSegmentColor = new Color(opts.lastSegmentColor);
+    }
+    if (opts.toolColors) {
+      this._toolColors = {};
+      for (const [key, value] of Object.entries(opts.toolColors)) {
+        this._toolColors[parseInt(key)] = new Color(value);
+      }
     }
 
     if (opts.disableGradient !== undefined) {
@@ -305,7 +299,7 @@ export class WebGLPreview {
       if (disposable) disposable.dispose();
     }
 
-    if (this.axes && this.buildVolume) {
+    if (this.debug && this.buildVolume) {
       // show webgl axes
       const axesHelper = new AxesHelper(Math.max(this.buildVolume.x / 2, this.buildVolume.y / 2) + 20);
       this.scene.add(axesHelper);
@@ -721,4 +715,3 @@ export class WebGLPreview {
 function decode(uint8array: Uint8Array) {
   return new TextDecoder('utf-8').decode(uint8array);
 }
-export { ColorRepresentation };
