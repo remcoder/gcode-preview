@@ -159,7 +159,8 @@ export function initDemo() {
     canvas: canvasElement,
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
-    backgroundColor: initialBackgroundColor
+    backgroundColor: initialBackgroundColor,
+    lineHeight: 0.3
   }));
 
   backgroundColor.value = initialBackgroundColor;

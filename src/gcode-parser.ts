@@ -97,7 +97,8 @@ export class Layer {
   constructor(
     public layer: number,
     public commands: GCodeCommand[],
-    public lineNumber: number
+    public lineNumber: number,
+    public height: number = 0
   ) {}
 }
 
@@ -106,7 +107,7 @@ export class Parser {
   preamble = new Layer(-1, [], 0); // TODO: remove preamble and treat as a regular layer? Unsure of the benefit
   layers: Layer[] = [];
   curZ = 0;
-  maxZ = -Infinity; // cannot start at 0 because of tolerance. first layer will always be created
+  maxZ = 0; // cannot start at 0 because of tolerance. first layer will always be created
   metadata: Metadata = { thumbnails: {} };
   tolerance = 0; // The higher the tolerance, the fewer layers are created, so performance will improve.
 
@@ -232,10 +233,11 @@ export class Parser {
         if (
           (params.e ?? 0) > 0 && // extruding?
           (params.x != undefined || params.y != undefined) && // moving?
-          Math.abs(this.curZ - this.maxZ) > this.tolerance // new layer?
+          Math.abs(this.curZ - (this.maxZ || -Infinity)) > this.tolerance // new layer?
         ) {
+          const layerHeight = Math.abs(this.curZ - this.maxZ);
           this.maxZ = this.curZ;
-          this.layers.push(new Layer(this.layers.length, [], lineNumber));
+          this.layers.push(new Layer(this.layers.length, [], lineNumber, layerHeight));
         }
       }
 

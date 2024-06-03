@@ -121,6 +121,25 @@ test('2 extrusion moves with a z diff exactly at the threshold should result in 
   expect(parsed.layers[0].commands.length).toEqual(2);
 });
 
+test('Layers should have calculated heights', () => {
+  const threshold = 0.05;
+  const parser = new Parser(threshold);
+  const gcode = `G0 X0 Y0 Z0.1 E1
+  G1 X10 Y10 Z0.2 E2
+  G1 X20 Y20 Z0.3 E3
+  G1 X30 Y30 Z0.5 E4
+  G1 X40 Y40 Z0.8 E5
+  `;
+  const parsed = parser.parseGCode(gcode);
+  expect(parsed).not.toBeNull();
+  expect(parsed.layers).not.toBeNull();
+  expect(parsed.layers.length).toEqual(5);
+  expect(parsed.layers[0].height).toEqual(expect.closeTo(0.1, 3));
+  expect(parsed.layers[1].height).toEqual(expect.closeTo(0.1, 3));
+  expect(parsed.layers[2].height).toEqual(expect.closeTo(0.1, 3));
+  expect(parsed.layers[3].height).toEqual(expect.closeTo(0.2, 3));
+});
+
 test('T0 command should result in a tool change to tool with index 0', () => {
   const parser = new Parser(0);
   const gcode = `G1 X0 Y0 Z1 E1
