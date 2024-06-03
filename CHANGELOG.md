@@ -1,11 +1,19 @@
 ## next
 
+## 2.17 🚀 Extrusion geometry 🚀
+- performance: Tube rendering is now faster and more accurate, thanks to a new custom geometry
+- feature: The parser can calculate layer height for each layer. It is used in tube rendering as the line height of extrusions
+- options: New option `lineHeight`, that overrides the height of all extrusion lines in tube rendering
+
+The repo also got some improvements:
+- Automatic deploy of the demo when pull-requests are opened and merged
+
 ## 2.16
 ## 2.16-alpha fix compatibility with bundlers
 - removed the `browser` field from package.json
 - changed the `module` field to `main`
 
-## 2.15 🌈 Multi-color 🌈 
+## 2.15 🌈 Multi-color 🌈
  - works via detection of T0-T7 commands
  - supports systems like:
      - Prusa MMU1/2/3 & XL
@@ -34,7 +42,7 @@ I want to thank @sophiedeziel for their help in getting a bit more organized, th
 
 ## 2.13 maintenance release
 
-- new options: 
+- new options:
  - renderExtrusion
  - renderTravel
 
@@ -44,7 +52,7 @@ fixed:
  - fat lines incorrecty rendering lines between extrusion lines
  - [demo] sidebar doesn't update after loading a new gcode file
 
-## 2.12 Tubular 🤙 
+## 2.12 Tubular 🤙
 - new experimental mode: tube rendering
 In this mode extrusion lines are rendered using volumetric tubes using THREEjs TubeGeometry. Currently this mode is still under development and considered experimental.
 
@@ -62,7 +70,7 @@ If the difference in Z exceeds the threshold a new layer is allocated.
 If not specified, the default value is 0. (0 meaning a new layer is allocated for each and every increase in Z, however tiny.)
 
 Setting a non-zero value helps to reduce the number of layers that are allocated in memory, which would otherwise cause lagging or even a lock up for spiral vases and such.
-   
+
 Thanks to @raulodev for the initial fix.
 
 ## 2.10 🎃 Halloween release 🎃
@@ -95,7 +103,7 @@ Colors can be any valid THREE.Color value: css string, color name, hex value, or
 - G2/G3 arcs are supported thanks to @Sindarius
 - .d.ts files are bundled into one: gcode-preview.d.ts
 ## 2.8.1
-- fix ES module 
+- fix ES module
 ## 2.8.0
 - expose .controls (OrbitControls) to allow setting autorotate etc.
 ## 2.7.0
@@ -162,7 +170,7 @@ Colors can be any valid THREE.Color value: css string, color name, hex value, or
 
 ## 2.0
 - updated demo page
-- toggle rendering of travel 
+- toggle rendering of travel
 - toggle rendering of extrusion
 - WebGL rendering with pan/zoom/rotate controls
 - added `lineWidth` option (canvas 2.5 D only)
