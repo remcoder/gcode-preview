@@ -49,7 +49,7 @@
     "version:patch": "npm version patch",
     "version:minor": "npm version minor",
     "xpostversion": "npm publish && npm run deploy",
-    "predeploy": "npm run build",
+    "predeploy": "npm run build && copyfiles -f node_modules/three/build/three.min.js dist/gcode-preview.js demo/js",
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
