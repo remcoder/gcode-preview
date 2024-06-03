@@ -61,6 +61,7 @@ export type GCodePreviewOptions = {
   initialCameraPosition?: number[];
   lastSegmentColor?: ColorRepresentation;
   lineWidth?: number;
+  lineHeight?: number;
   nonTravelMoves?: string[];
   minLayerThreshold?: number;
   renderExtrusion?: boolean;
@@ -96,6 +97,7 @@ export class WebGLPreview {
   renderTubes = false;
   extrusionWidth = 0.6;
   lineWidth?: number;
+  lineHeight?: number;
   startLayer?: number;
   endLayer?: number;
   singleLayerMode = false;
@@ -134,6 +136,7 @@ export class WebGLPreview {
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
     this.lineWidth = opts.lineWidth;
+    this.lineHeight = opts.lineHeight;
     this.buildVolume = opts.buildVolume;
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
@@ -621,7 +624,7 @@ export class WebGLPreview {
     }
 
     extrusionPaths.forEach((extrusionPath) => {
-      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, layerHeight, 4);
+      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, this.lineHeight || layerHeight, 4);
       this.disposables.push(geometry);
 
       const material = new MeshLambertMaterial({ color: color });
