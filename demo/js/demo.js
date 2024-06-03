@@ -1,6 +1,6 @@
-import * as GCodePreview from './gcode-preview.es.js';
+import * as GCodePreview from 'gcode-preview';
 import * as THREE from 'three';
-import * as Canvas2Image from './canvas2image.js';
+import * as Canvas2Image from 'canvas2image';
 
 let gcodePreview;
 let favIcon;
