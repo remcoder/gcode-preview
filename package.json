@@ -37,9 +37,9 @@
   "scripts": {
     "typeCheck": "tsc --noEmit",
     "build": "rollup -c",
-    "watch": "watch 'npm run build' src ",
-    "predemo": "npm run build",
-    "demo": "live-server demo --wait=4100 --watch=.,js,./../dist/gcode-preview.es.js --mount=/build:dist --mount=/js:demo/js --mount=/build:node_modules",
+    "watch": "watch 'npm run predemo' src ",
+    "predemo": "npm run build && copyfiles -f dist/gcode-preview.es.js demo/build",
+    "demo": "live-server demo --watch=.,js --mount=/js:demo/js --mount=/build:node_modules",
     "lint": "prettier --check . && eslint -c .eslintrc.js .",
     "lint:fix": "eslint -c .eslintrc.js . --fix",
     "prettier:fix": "prettier --plugin-search-dir . --write .",
