@@ -5,10 +5,6 @@ import { test, expect, vi, assert } from 'vitest';
 import { WebGLPreview } from '../webgl-preview';
 import { GCodeCommand } from '../gcode-parser';
 
-test('intentionally fails', () => {
-  expect(1).toBe(2);
-});
-
 test('in gcode x,y,z params should update the state', () => {
   const mock = createMockPreview();
   mock.layers[0].commands.push(new GCodeCommand('', 'g0', { x: 1, y: 1, z: 1, e: 1 }, undefined));
