@@ -8,6 +8,9 @@ class ExtrusionGeometry extends BufferGeometry {
     radialSegments: number;
     closed: boolean;
   };
+
+  readonly type: string;
+
   constructor(
     points: Vector3[] = [new Vector3()],
     lineWidth: number = 0.6,
