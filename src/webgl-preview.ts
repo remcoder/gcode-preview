@@ -29,7 +29,7 @@ import {
 
 import { ExtrusionGeometry } from './extrusion-geometry';
 
-type RenderLayer = { extrusion: number[]; travel: number[]; z: number };
+type RenderLayer = { extrusion: number[]; travel: number[]; z: number; height: number };
 type GVector3 = {
   x: number;
   y: number;
@@ -341,13 +341,15 @@ export class WebGLPreview {
 
   renderLayer(index: number): void {
     if (index > this.maxLayerIndex) return;
+    const l = this.layers[index];
 
     const currentLayer: RenderLayer = {
       extrusion: [],
       travel: [],
-      z: this.state.z
+      z: this.state.z,
+      height: l.height
     };
-    const l = this.layers[index];
+
     for (const cmd of l.commands) {
       if (cmd.gcode == 'g20') {
         this.setInches();
@@ -421,15 +423,15 @@ export class WebGLPreview {
         const endPoint = layer.extrusion.splice(-3);
         const preendPoint = layer.extrusion.splice(-3);
         if (this.renderTubes) {
-          this.addTubeLine(layer.extrusion, layerColor.getHex());
-          this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+          this.addTubeLine(layer.extrusion, layerColor.getHex(), layer.height);
+          this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex(), layer.height);
         } else {
           this.addLine(layer.extrusion, layerColor.getHex());
           this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
         }
       } else {
         if (this.renderTubes) {
-          this.addTubeLine(layer.extrusion, extrusionColor.getHex());
+          this.addTubeLine(layer.extrusion, extrusionColor.getHex(), layer.height);
         } else {
           this.addLine(layer.extrusion, extrusionColor.getHex());
         }
@@ -598,7 +600,7 @@ export class WebGLPreview {
     this.group?.add(lineSegments);
   }
 
-  addTubeLine(vertices: number[], color: number): void {
+  addTubeLine(vertices: number[], color: number, layerHeight = 0.2): void {
     let curvePoints: Vector3[] = [];
     const extrusionPaths: Vector3[][] = [];
 
@@ -619,7 +621,7 @@ export class WebGLPreview {
     }
 
     extrusionPaths.forEach((extrusionPath) => {
-      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, 0.2, 4);
+      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, layerHeight, 4);
       this.disposables.push(geometry);
 
       const material = new MeshLambertMaterial({ color: color });
