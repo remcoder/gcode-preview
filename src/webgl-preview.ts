@@ -663,7 +663,6 @@ export class WebGLPreview {
 
     extrusionPaths.forEach((extrusionPath) => {
       const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, this.lineHeight || layerHeight, 4);
-      this.disposables.push(geometry);
 
       this.batchGeometry(color, geometry);
     });
@@ -750,9 +749,8 @@ export class WebGLPreview {
 
   private createBatchMesh(color: number): BatchedMesh {
     const material = new MeshLambertMaterial({ color: color, wireframe: this._wireframe });
-    this.disposables.push(material);
 
-    const batchedMesh = new BatchedMesh(50, 5000, 100000, material);
+    const batchedMesh = new BatchedMesh(100, 5000, undefined, material);
     this.disposables.push(batchedMesh);
     this._batchedColoredMeshes[color].push(batchedMesh);
     return batchedMesh;
