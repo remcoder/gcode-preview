@@ -123,6 +123,7 @@ export class WebGLPreview {
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
+  private _materials: Record<number, MeshLambertMaterial> = {};
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -623,12 +624,19 @@ export class WebGLPreview {
       }
     }
 
+    let material: MeshLambertMaterial;
+
+    if (!this._materials[color]) {
+      material = new MeshLambertMaterial({ color: color });
+      this._materials[color] = material;
+      this.disposables.push(material);
+    } else {
+      material = this._materials[color];
+    }
+
     extrusionPaths.forEach((extrusionPath) => {
       const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, this.lineHeight || layerHeight, 4);
       this.disposables.push(geometry);
-
-      const material = new MeshLambertMaterial({ color: color });
-      this.disposables.push(material);
 
       const mesh = new Mesh(geometry, material);
       this.group?.add(mesh);
