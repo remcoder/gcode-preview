@@ -214,11 +214,18 @@
     </div>
   </div>
 
-  <script src="js/three.min.js"></script>
-  <script src="js/canvas2image.js"></script>
-  <script src="js/gcode-preview.js"></script>
-  <script src="js/demo.js"></script>
-  <script>
+  <!-- <script src="js/canvas2image.js"></script> -->
+  <script type="importmap">
+    {
+        "imports": {
+            "three": "./build/three/build/three.module.js",
+            "gcode-preview": "./build/gcode-preview.es.js",
+            "canvas2image": "./build/canvas2image/canvas2image.js"
+        }
+    }
+</script>
+  <script type="module">
+    import {initDemo} from './js/demo.js';
     const gcodeDemo = initDemo();
   </script>
 </body>

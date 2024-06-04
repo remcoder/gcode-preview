@@ -1,6 +1,7 @@
-/*eslint prefer-const: "error"*/
+import * as GCodePreview from 'gcode-preview';
+import * as THREE from 'three';
+import * as Canvas2Image from 'canvas2image';
 
-/* global THREE, GCodePreview, Canvas2Image */
 let gcodePreview;
 let favIcon;
 let thumb;
@@ -147,7 +148,7 @@ const settingsPresets = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-function initDemo() {
+export function initDemo() {
   // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const settings = JSON.parse(localStorage.getItem('settings'));
   console.debug('settings loaded', settings);

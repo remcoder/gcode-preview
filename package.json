@@ -18,6 +18,7 @@
     "@types/three": "^0.144.0",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
+    "canvas2image": "^1.0.5",
     "copyfiles": "^2.4.1",
     "del-cli": "^5.0.0",
     "eslint": "^8.56.0",
@@ -30,16 +31,15 @@
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.34.0",
     "typescript": "4.4",
-    "watch": "^1.0.2",
-    "vitest": "^1.5.1"
+    "vitest": "^1.5.1",
+    "watch": "^1.0.2"
   },
   "scripts": {
-    "prebuild": "del-cli dist/**/*",
     "typeCheck": "tsc --noEmit",
     "build": "rollup -c",
-    "watch": "watch 'npm run build && copyfiles -f dist/gcode-preview.js demo/js' src ",
-    "predemo": "npm run build && copyfiles -f node_modules/three/build/three.min.js dist/gcode-preview.js demo/js",
-    "demo": "live-server demo --watch=.,js",
+    "watch": "watch 'npm run predemo' src ",
+    "predemo": "npm run build && copyfiles -f dist/gcode-preview.es.js demo/build",
+    "demo": "live-server demo --watch=.,js --mount=/js:demo/js --mount=/build:node_modules",
     "lint": "prettier --check . && eslint -c .eslintrc.js .",
     "lint:fix": "eslint -c .eslintrc.js . --fix",
     "prettier:fix": "prettier --plugin-search-dir . --write .",
@@ -49,7 +49,7 @@
     "version:patch": "npm version patch",
     "version:minor": "npm version minor",
     "xpostversion": "npm publish && npm run deploy",
-    "predeploy": "npm run build",
+    "predeploy": "npm run build && copyfiles -f node_modules/three/build/three.module.js demo/build/three/build && copyfiles -f dist/gcode-preview.es.js demo/build && copyfiles -f node_modules/canvas2image/canvas2image.js demo/build/canvas2image",
     "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
