@@ -67,10 +67,10 @@ class DevGUI {
   saveOpenFolders(): void {
     this.openFolders = this.gui
       .foldersRecursive()
-      .filter((folder) => {
+      .filter((folder: { _closed: boolean }) => {
         return !folder._closed;
       })
-      .map((folder) => {
+      .map((folder: { _title: string }) => {
         return folder._title;
       });
     console.log(this.openFolders);
