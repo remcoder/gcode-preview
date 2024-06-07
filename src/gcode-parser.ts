@@ -104,6 +104,10 @@ export class Layer {
 
 export class Parser {
   lines: string[] = [];
+
+  /**
+   * @experimental GCode commands before extrusion starts.
+   */
   preamble = new Layer(-1, [], 0); // TODO: remove preamble and treat as a regular layer? Unsure of the benefit
   layers: Layer[] = [];
   curZ = 0;
