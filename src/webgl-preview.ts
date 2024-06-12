@@ -51,7 +51,6 @@ export type State = {
 }; // feedrate?
 
 export type GCodePreviewOptions = {
-  allowDragNDrop?: boolean;
   buildVolume?: BuildVolume;
   backgroundColor?: ColorRepresentation;
   canvas?: HTMLCanvasElement;
@@ -66,14 +65,22 @@ export type GCodePreviewOptions = {
   minLayerThreshold?: number;
   renderExtrusion?: boolean;
   renderTravel?: boolean;
-  renderTubes?: boolean;
   startLayer?: number;
-  targetId?: string;
   topLayerColor?: ColorRepresentation;
   travelColor?: ColorRepresentation;
   toolColors?: Record<number, ColorRepresentation>;
   disableGradient?: boolean;
   extrusionWidth?: number;
+  /** @experimental */
+  renderTubes?: boolean;
+  /**
+   * @deprecated Please see the demo how to implement drag and drop.
+   */
+  allowDragNDrop?: boolean;
+  /**
+   * @deprecated Please use `canvas` instead.
+   */
+  targetId?: string;
 };
 
 const target = {
