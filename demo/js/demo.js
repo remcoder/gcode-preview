@@ -160,7 +160,8 @@ export function initDemo() {
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],
     backgroundColor: initialBackgroundColor,
-    lineHeight: 0.3
+    lineHeight: 0.3,
+    devMode: true
   }));
 
   backgroundColor.value = initialBackgroundColor;
@@ -439,7 +440,9 @@ export function initDemo() {
     buildVolumeX.value = volume.x;
     buildVolumeY.value = volume.y;
     buildVolumeZ.value = volume.z;
-    preview.buildVolume = volume;
+    preview.buildVolume.x = volume.x;
+    preview.buildVolume.y = volume.y;
+    preview.buildVolume.z = volume.z;
   }
 
   function changeDrawBuildVolume(draw) {

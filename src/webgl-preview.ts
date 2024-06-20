@@ -5,6 +5,10 @@ import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeome
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
+import Stats from 'three/examples/jsm/libs/stats.module';
+
+import { DevGUI, DevModeOptions } from './dev-gui';
+
 import {
   AmbientLight,
   AxesHelper,
@@ -81,6 +85,8 @@ export type GCodePreviewOptions = {
    * @deprecated Please use `canvas` instead.
    */
   targetId?: string;
+  /** @experimental */
+  devMode?: boolean | DevModeOptions;
 };
 
 const target = {
@@ -118,6 +124,7 @@ export class WebGLPreview {
   nonTravelmoves: string[] = [];
   _animationFrameId?: number;
   disableGradient = false;
+  private devMode?: boolean | DevModeOptions = true;
 
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
@@ -130,6 +137,10 @@ export class WebGLPreview {
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
+  private _lastRenderTime = 0;
+  private _wireframe = false;
+  private stats: Stats = new Stats();
+  private devGui?: DevGUI;
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -153,6 +164,7 @@ export class WebGLPreview {
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
     this.renderTubes = opts.renderTubes ?? this.renderTubes;
     this.extrusionWidth = opts.extrusionWidth ?? this.extrusionWidth;
+    this.devMode = opts.devMode ?? this.devMode;
 
     if (opts.extrusionColor !== undefined) {
       this.extrusionColor = opts.extrusionColor;
@@ -215,6 +227,11 @@ export class WebGLPreview {
     this.animate();
 
     if (this.allowDragNDrop) this._enableDropHandler();
+
+    if (this.devMode) {
+      document.body.appendChild(this.stats.dom);
+      this.initGui();
+    }
   }
 
   get extrusionColor(): Color | Color[] {
@@ -292,6 +309,7 @@ export class WebGLPreview {
     this._animationFrameId = requestAnimationFrame(() => this.animate());
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
+    this.stats?.update();
   }
 
   processGCode(gcode: string | string[]): void {
@@ -300,6 +318,7 @@ export class WebGLPreview {
   }
 
   render(): void {
+    const startRender = performance.now();
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
@@ -347,6 +366,8 @@ export class WebGLPreview {
 
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
+    this._lastRenderTime = performance.now() - startRender;
+    console.debug('Render time', this._lastRenderTime);
   }
 
   renderLayer(index: number): void {
@@ -479,6 +500,7 @@ export class WebGLPreview {
     this.parser = new Parser(this.minLayerThreshold);
     this.beyondFirstMove = false;
     this.state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
+    this.devGui?.reset();
   }
 
   resize(): void {
@@ -634,7 +656,7 @@ export class WebGLPreview {
       const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, this.lineHeight || layerHeight, 4);
       this.disposables.push(geometry);
 
-      const material = new MeshLambertMaterial({ color: color });
+      const material = new MeshLambertMaterial({ color: color, wireframe: this._wireframe });
       this.disposables.push(material);
 
       const mesh = new Mesh(geometry, material);
@@ -721,6 +743,14 @@ export class WebGLPreview {
       tail = str.slice(idxNewLine);
     } while (!result.done);
     console.debug('read from stream', size);
+  }
+
+  private initGui() {
+    if (typeof this.devMode === 'boolean' && this.devMode === true) {
+      this.devGui = new DevGUI(this);
+    } else if (typeof this.devMode === 'object') {
+      this.devGui = new DevGUI(this, this.devMode);
+    }
   }
 }
 

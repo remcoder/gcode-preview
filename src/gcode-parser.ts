@@ -111,7 +111,7 @@ export class Parser {
   preamble = new Layer(-1, [], 0); // TODO: remove preamble and treat as a regular layer? Unsure of the benefit
   layers: Layer[] = [];
   curZ = 0;
-  maxZ = 0; // cannot start at 0 because of tolerance. first layer will always be created
+  maxZ = 0;
   metadata: Metadata = { thumbnails: {} };
   tolerance = 0; // The higher the tolerance, the fewer layers are created, so performance will improve.
 
