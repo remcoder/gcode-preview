@@ -48,11 +48,6 @@ class DevGUI {
   }
 
   reset(): void {
-    // The lil-gui bundled with the current three.js version does not have the `onOpen` method to save the open folders
-    // as they are individually opened. This is good enough in between different changes to the watched objects. The
-    // last change will not persist between page reloads unless some event triggered this reset method.
-    this.saveOpenFolders();
-
     this.gui.destroy();
     this.gui = new GUI();
     this.gui.title('Dev info');
@@ -67,10 +62,10 @@ class DevGUI {
   saveOpenFolders(): void {
     this.openFolders = this.gui
       .foldersRecursive()
-      .filter((folder: { _closed: boolean }) => {
+      .filter((folder) => {
         return !folder._closed;
       })
-      .map((folder: { _title: string }) => {
+      .map((folder) => {
         return folder._title;
       });
     console.log(this.openFolders);
@@ -82,6 +77,9 @@ class DevGUI {
     if (!this.openFolders.includes('Render Info')) {
       render.close();
     }
+    render.onOpenClose(() => {
+      this.saveOpenFolders();
+    });
     render.add(this.watchedObject.renderer.info.render, 'triangles').listen();
     render.add(this.watchedObject.renderer.info.render, 'calls').listen();
     render.add(this.watchedObject.renderer.info.render, 'lines').listen();
@@ -96,6 +94,9 @@ class DevGUI {
     if (!this.openFolders.includes('Camera')) {
       camera.close();
     }
+    camera.onOpenClose(() => {
+      this.saveOpenFolders();
+    });
     const cameraPosition = camera.addFolder('Camera position');
     cameraPosition.add(this.watchedObject.camera.position, 'x').listen();
     cameraPosition.add(this.watchedObject.camera.position, 'y').listen();
@@ -112,6 +113,9 @@ class DevGUI {
     if (!this.openFolders.includes('Parser')) {
       parser.close();
     }
+    parser.onOpenClose(() => {
+      this.saveOpenFolders();
+    });
     parser.add(this.watchedObject.parser, 'curZ').listen();
     parser.add(this.watchedObject.parser, 'maxZ').listen();
     parser.add(this.watchedObject.parser, 'tolerance').listen();
@@ -124,6 +128,9 @@ class DevGUI {
     if (!this.openFolders.includes('Build Volume')) {
       buildVolume.close();
     }
+    buildVolume.onOpenClose(() => {
+      this.saveOpenFolders();
+    });
     buildVolume
       .add(this.watchedObject.buildVolume, 'x')
       .min(0)
@@ -155,6 +162,9 @@ class DevGUI {
     if (!this.openFolders.includes('Dev Helpers')) {
       devHelpers.close();
     }
+    devHelpers.onOpenClose(() => {
+      this.saveOpenFolders();
+    });
     devHelpers
       .add(this.watchedObject, '_wireframe')
       .listen()
