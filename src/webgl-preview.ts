@@ -141,7 +141,7 @@ export class WebGLPreview {
   private _wireframe = false;
   private stats: Stats = new Stats();
   private devGui?: DevGUI;
-  private _batchedColoredMeshes: Record<number, BatchedMesh[]> = {};
+  private _geometries: Record<number, ExtrusionGeometry[]> = {};
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -352,8 +352,6 @@ export class WebGLPreview {
     this.group = new Group();
     this.group.name = 'gcode';
 
-    this._batchedColoredMeshes = {};
-
     for (let index = 0; index < this.layers.length; index++) {
       this.renderLayer(index);
     }
@@ -367,9 +365,13 @@ export class WebGLPreview {
       this.group.position.set(-100, 0, 100);
     }
 
-    if (this._batchedColoredMeshes) {
-      for (const color in this._batchedColoredMeshes) {
-        this.group.add(...this._batchedColoredMeshes[color]);
+    if (this._geometries) {
+      for (const color in this._geometries) {
+        const mesh = this.createBatchMesh(parseInt(color));
+        while (this._geometries[color].length > 0) {
+          const geometry = this._geometries[color].pop();
+          mesh.addGeometry(geometry);
+        }
       }
     }
 
@@ -509,7 +511,7 @@ export class WebGLPreview {
     this.beyondFirstMove = false;
     this.state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
     this.devGui?.reset();
-    this._batchedColoredMeshes = {};
+    this._geometries = {};
   }
 
   resize(): void {
@@ -663,8 +665,8 @@ export class WebGLPreview {
 
     extrusionPaths.forEach((extrusionPath) => {
       const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, this.lineHeight || layerHeight, 4);
-
-      this.batchGeometry(color, geometry);
+      this._geometries[color] ||= [];
+      this._geometries[color].push(geometry);
     });
   }
 
@@ -730,29 +732,16 @@ export class WebGLPreview {
     });
   }
 
-  private batchGeometry(color: number, geometry: ExtrusionGeometry): void {
-    try {
-      this.findOrCreateBatchMesh(color).addGeometry(geometry);
-    } catch (e) {
-      this.createBatchMesh(color).addGeometry(geometry);
-    }
-  }
-
-  private findOrCreateBatchMesh(color: number): BatchedMesh {
-    const list = this._batchedColoredMeshes[color];
-    if (!list) {
-      this._batchedColoredMeshes[color] = [];
-      return this.createBatchMesh(color);
-    }
-    return list[list.length - 1];
-  }
-
   private createBatchMesh(color: number): BatchedMesh {
+    const geometries = this._geometries[color];
     const material = new MeshLambertMaterial({ color: color, wireframe: this._wireframe });
+    this.disposables.push(material);
 
-    const batchedMesh = new BatchedMesh(100, 5000, undefined, material);
+    const maxVertexCount = geometries.reduce((acc, geometry) => geometry.attributes.position.count * 3 + acc, 0);
+
+    const batchedMesh = new BatchedMesh(geometries.length, maxVertexCount, undefined, material);
     this.disposables.push(batchedMesh);
-    this._batchedColoredMeshes[color].push(batchedMesh);
+    this.group?.add(batchedMesh);
     return batchedMesh;
   }
 
