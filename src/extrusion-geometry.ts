@@ -7,10 +7,9 @@ class ExtrusionGeometry extends BufferGeometry {
     lineHeight: number;
     radialSegments: number;
     closed: boolean;
-    type: string;
   };
 
-  readonly type: string = 'ExtrusionGeometry';
+  readonly type: string;
 
   constructor(
     points: Vector3[] = [new Vector3()],
@@ -20,13 +19,14 @@ class ExtrusionGeometry extends BufferGeometry {
   ) {
     super();
 
+    this.type = 'ExtrusionGeometry';
+
     this.parameters = {
       points: points,
       lineWidth: lineWidth,
       lineHeight: lineHeight,
       radialSegments: radialSegments,
-      closed: false,
-      type: 'ExtrusionGeometry'
+      closed: false
     };
 
     // helper variables
