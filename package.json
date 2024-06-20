@@ -59,6 +59,7 @@
     "typedoc:watch": "typedoc --watch"
   },
   "dependencies": {
-    "three": "^0.159.0"
+    "three": "^0.159.0",
+    "lil-gui": "^0.19.2"
   }
 }
