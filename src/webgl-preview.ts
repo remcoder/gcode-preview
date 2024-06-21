@@ -12,6 +12,7 @@ import { DevGUI, DevModeOptions } from './dev-gui';
 import {
   AmbientLight,
   AxesHelper,
+  BatchedMesh,
   BufferGeometry,
   Color,
   ColorRepresentation,
@@ -21,7 +22,6 @@ import {
   Group,
   LineBasicMaterial,
   LineSegments,
-  Mesh,
   MeshLambertMaterial,
   PerspectiveCamera,
   PointLight,
@@ -141,6 +141,7 @@ export class WebGLPreview {
   private _wireframe = false;
   private stats: Stats = new Stats();
   private devGui?: DevGUI;
+  private _geometries: Record<number, ExtrusionGeometry[]> = {};
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -364,10 +365,19 @@ export class WebGLPreview {
       this.group.position.set(-100, 0, 100);
     }
 
+    if (this._geometries) {
+      for (const color in this._geometries) {
+        const mesh = this.createBatchMesh(parseInt(color));
+        while (this._geometries[color].length > 0) {
+          const geometry = this._geometries[color].pop();
+          mesh.addGeometry(geometry);
+        }
+      }
+    }
+
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
     this._lastRenderTime = performance.now() - startRender;
-    console.debug('Render time', this._lastRenderTime);
   }
 
   renderLayer(index: number): void {
@@ -501,6 +511,7 @@ export class WebGLPreview {
     this.beyondFirstMove = false;
     this.state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
     this.devGui?.reset();
+    this._geometries = {};
   }
 
   resize(): void {
@@ -654,13 +665,8 @@ export class WebGLPreview {
 
     extrusionPaths.forEach((extrusionPath) => {
       const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, this.lineHeight || layerHeight, 4);
-      this.disposables.push(geometry);
-
-      const material = new MeshLambertMaterial({ color: color, wireframe: this._wireframe });
-      this.disposables.push(material);
-
-      const mesh = new Mesh(geometry, material);
-      this.group?.add(mesh);
+      this._geometries[color] ||= [];
+      this._geometries[color].push(geometry);
     });
   }
 
@@ -724,6 +730,19 @@ export class WebGLPreview {
       await this._readFromStream(file.stream() as unknown as ReadableStream<any>);
       this.render();
     });
+  }
+
+  private createBatchMesh(color: number): BatchedMesh {
+    const geometries = this._geometries[color];
+    const material = new MeshLambertMaterial({ color: color, wireframe: this._wireframe });
+    this.disposables.push(material);
+
+    const maxVertexCount = geometries.reduce((acc, geometry) => geometry.attributes.position.count * 3 + acc, 0);
+
+    const batchedMesh = new BatchedMesh(geometries.length, maxVertexCount, undefined, material);
+    this.disposables.push(batchedMesh);
+    this.group?.add(batchedMesh);
+    return batchedMesh;
   }
 
   async _readFromStream(stream: ReadableStream): Promise<void> {
