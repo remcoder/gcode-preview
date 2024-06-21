@@ -333,7 +333,7 @@ export class WebGLPreview {
     this.render();
   }
 
-  initScene() {
+  private initScene() {
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
@@ -364,7 +364,7 @@ export class WebGLPreview {
     }
   }
 
-  createGroup(name: string): Group {
+  private createGroup(name: string): Group {
     const group = new Group();
     group.name = name;
     group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
@@ -375,26 +375,6 @@ export class WebGLPreview {
       group.position.set(-100, 0, 100);
     }
     return group;
-  }
-
-  // Render the next increment. This is done by removing the previous layer and rendering all layers up to the current one.
-  // This way it preserves the state of the previous layers but it does render the top layer again b/c it probably wasnt completed before.
-  renderInc(): void {
-    if (this.group) this.scene.remove(this.group);
-    this.state = this.prevState ?? State.initial;
-
-    for (let index = this.prevLayerIndex ?? 0; index < this.layers.length; index++) {
-      this.group = this.createGroup('layer' + index);
-
-      this.prevState = { ...this.state };
-      this.renderLayer(index);
-
-      this.scene.add(this.group);
-    }
-
-    this.renderer.render(this.scene, this.camera);
-
-    this.prevLayerIndex = this.layers.length - 1;
   }
 
   render(): void {
@@ -429,7 +409,7 @@ export class WebGLPreview {
     return this.renderFrameLoop(layerCount > 0 ? layerCount : 1);
   }
 
-  renderFrameLoop(layerCount: number): Promise<void> {
+  private renderFrameLoop(layerCount: number): Promise<void> {
     return new Promise((resolve) => {
       const loop = () => {
         if (this.renderLayerIndex > this.layers.length - 1) {
@@ -443,7 +423,7 @@ export class WebGLPreview {
     });
   }
 
-  renderFrame(layerCount: number): void {
+  private renderFrame(layerCount: number): void {
     this.group = this.createGroup('layer' + this.renderLayerIndex);
 
     for (let l = 0; l < layerCount && this.renderLayerIndex + l < this.layers.length; l++) {
@@ -588,7 +568,7 @@ export class WebGLPreview {
   }
 
   // reset processing state
-  resetState(): void {
+  private resetState(): void {
     this.startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
