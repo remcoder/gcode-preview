@@ -151,7 +151,6 @@ const settingsPresets = {
 export function initDemo() {
   // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const settings = JSON.parse(localStorage.getItem('settings'));
-  console.debug('settings loaded', settings);
 
   const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
 
@@ -406,7 +405,6 @@ export function initDemo() {
   function changeHighlightTopLayer(enabled) {
     toggleHighlight.checked = enabled;
     if (enabled) {
-      console.log('topLayerColorInput.value', topLayerColorInput.value);
       changeTopLayerColor(preview.topLayerColor || '#40BFBF');
       changeLastSegmentColor(preview.lastSegmentColor || '#ffffff');
       topLayerColorInput.removeAttribute('disabled');
@@ -559,9 +557,7 @@ async function startLoadingProgressive(gcode) {
   gcodePreview.clear();
   gcodePreview.parser.parseGCode(gcode);
   updateUI();
-  console.time('render');
   await gcodePreview.renderAnimated(Math.ceil(gcodePreview.layers.length / 60));
-  console.timeEnd('render');
   updateUI();
   startLayer.removeAttribute('disabled');
   endLayer.removeAttribute('disabled');

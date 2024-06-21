@@ -434,7 +434,6 @@ export class WebGLPreview {
       const loop = () => {
         if (this.renderLayerIndex > this.layers.length - 1) {
           resolve();
-          console.log('done rendering');
         } else {
           this.renderFrame(layerCount);
           requestAnimationFrame(loop);
