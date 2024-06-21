@@ -127,7 +127,6 @@ export class WebGLPreview {
   inches = false;
   nonTravelmoves: string[] = [];
   disableGradient = false;
-  private devMode?: boolean | DevModeOptions = true;
 
   // gcode processing state
   private state: State = State.initial;
@@ -142,6 +141,7 @@ export class WebGLPreview {
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private animationFrameId?: number;
   private renderLayerIndex = 0;
+  private _geometries: Record<number, ExtrusionGeometry[]> = {};
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
@@ -149,11 +149,13 @@ export class WebGLPreview {
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
+
+  // debug
+  private devMode?: boolean | DevModeOptions = true;
   private _lastRenderTime = 0;
   private _wireframe = false;
   private stats: Stats = new Stats();
   private devGui?: DevGUI;
-  private _geometries: Record<number, ExtrusionGeometry[]> = {};
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -397,7 +399,6 @@ export class WebGLPreview {
 
   render(): void {
     const startRender = performance.now();
-    console.log('rendering all layers');
     this.group = this.createGroup('allLayers');
     this.state = State.initial;
     this.initScene();
@@ -415,15 +416,7 @@ export class WebGLPreview {
       this.group.position.set(-100, 0, 100);
     }
 
-    if (this._geometries) {
-      for (const color in this._geometries) {
-        const mesh = this.createBatchMesh(parseInt(color));
-        while (this._geometries[color].length > 0) {
-          const geometry = this._geometries[color].pop();
-          mesh.addGeometry(geometry);
-        }
-      }
-    }
+    this.batchGeometries();
 
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
@@ -460,6 +453,9 @@ export class WebGLPreview {
       this.prevState = { ...this.state };
       this.renderLayerIndex++;
     }
+
+    this.batchGeometries();
+
     this.scene.add(this.group);
   }
 
@@ -821,6 +817,18 @@ export class WebGLPreview {
       await this._readFromStream(file.stream() as unknown as ReadableStream<any>);
       this.render();
     });
+  }
+
+  private batchGeometries() {
+    if (this._geometries) {
+      for (const color in this._geometries) {
+        const mesh = this.createBatchMesh(parseInt(color));
+        while (this._geometries[color].length > 0) {
+          const geometry = this._geometries[color].pop();
+          mesh.addGeometry(geometry);
+        }
+      }
+    }
   }
 
   private createBatchMesh(color: number): BatchedMesh {
