@@ -130,8 +130,6 @@ export class WebGLPreview {
 
   // gcode processing state
   private state: State = State.initial;
-  private prevState: State;
-  private prevLayerIndex?: number = undefined;
   private beyondFirstMove = false;
 
   // rendering
@@ -427,9 +425,7 @@ export class WebGLPreview {
     this.group = this.createGroup('layer' + this.renderLayerIndex);
 
     for (let l = 0; l < layerCount && this.renderLayerIndex + l < this.layers.length; l++) {
-      this.state = this.prevState ?? State.initial;
       this.renderLayer(this.renderLayerIndex);
-      this.prevState = { ...this.state };
       this.renderLayerIndex++;
     }
 
@@ -576,8 +572,6 @@ export class WebGLPreview {
     this.state = State.initial;
     this.devGui?.reset();
     this._geometries = {};
-    this.prevState = undefined;
-    this.prevLayerIndex = undefined;
   }
 
   resize(): void {
