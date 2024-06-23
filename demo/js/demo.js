@@ -1,4 +1,4 @@
-import * as GCodePreview from 'gcode-preview';
+import { GCodePreview } from 'gcode-preview';
 import * as THREE from 'three';
 import * as Canvas2Image from 'canvas2image';
 
@@ -155,7 +155,7 @@ export function initDemo() {
 
   const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
 
-  const preview = (window.preview = new GCodePreview.init({
+  const preview = (window.preview = new GCodePreview({
     canvas: canvasElement,
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
     initialCameraPosition: [180, 150, 300],

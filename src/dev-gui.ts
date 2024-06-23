@@ -47,7 +47,7 @@ class DevGUI {
     }
   }
 
-  reset(): void {
+  clear(): void {
     this.gui.destroy();
     this.gui = new GUI();
     this.gui.title('Dev info');
@@ -80,13 +80,13 @@ class DevGUI {
     render.onOpenClose(() => {
       this.saveOpenFolders();
     });
-    render.add(this.watchedObject.renderer.info.render, 'triangles').listen();
-    render.add(this.watchedObject.renderer.info.render, 'calls').listen();
-    render.add(this.watchedObject.renderer.info.render, 'lines').listen();
-    render.add(this.watchedObject.renderer.info.render, 'points').listen();
-    render.add(this.watchedObject.renderer.info.memory, 'geometries').listen();
-    render.add(this.watchedObject.renderer.info.memory, 'textures').listen();
-    render.add(this.watchedObject, '_lastRenderTime').listen();
+    render.add(this.watchedObject.webglPreview.renderer.info.render, 'triangles').listen();
+    render.add(this.watchedObject.webglPreview.renderer.info.render, 'calls').listen();
+    render.add(this.watchedObject.webglPreview.renderer.info.render, 'lines').listen();
+    render.add(this.watchedObject.webglPreview.renderer.info.render, 'points').listen();
+    render.add(this.watchedObject.webglPreview.renderer.info.memory, 'geometries').listen();
+    render.add(this.watchedObject.webglPreview.renderer.info.memory, 'textures').listen();
+    render.add(this.watchedObject.webglPreview, '_lastRenderTime').listen();
   }
 
   private setupCameraFolder(): void {
@@ -98,14 +98,14 @@ class DevGUI {
       this.saveOpenFolders();
     });
     const cameraPosition = camera.addFolder('Camera position');
-    cameraPosition.add(this.watchedObject.camera.position, 'x').listen();
-    cameraPosition.add(this.watchedObject.camera.position, 'y').listen();
-    cameraPosition.add(this.watchedObject.camera.position, 'z').listen();
+    cameraPosition.add(this.watchedObject.webglPreview.camera.position, 'x').listen();
+    cameraPosition.add(this.watchedObject.webglPreview.camera.position, 'y').listen();
+    cameraPosition.add(this.watchedObject.webglPreview.camera.position, 'z').listen();
 
     const cameraRotation = camera.addFolder('Camera rotation');
-    cameraRotation.add(this.watchedObject.camera.rotation, 'x').listen();
-    cameraRotation.add(this.watchedObject.camera.rotation, 'y').listen();
-    cameraRotation.add(this.watchedObject.camera.rotation, 'z').listen();
+    cameraRotation.add(this.watchedObject.webglPreview.camera.rotation, 'x').listen();
+    cameraRotation.add(this.watchedObject.webglPreview.camera.rotation, 'y').listen();
+    cameraRotation.add(this.watchedObject.webglPreview.camera.rotation, 'z').listen();
   }
 
   private setupParserFolder(): void {
@@ -166,7 +166,7 @@ class DevGUI {
       this.saveOpenFolders();
     });
     devHelpers
-      .add(this.watchedObject, '_wireframe')
+      .add(this.watchedObject.webglPreview, '_wireframe')
       .listen()
       .onChange(() => {
         this.watchedObject.render();

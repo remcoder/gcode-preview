@@ -121,8 +121,18 @@ export class Parser {
    * @param minLayerThreshold - If specified, the minimum layer height to be considered a new layer. If not specified, the default value is 0.
    * @returns A new Parser instance.
    */
-  constructor(minLayerThreshold: number) {
+  constructor(minLayerThreshold?: number) {
     this.tolerance = minLayerThreshold ?? this.tolerance;
+  }
+
+  clear(): void {
+    this.lines = [];
+    this.preamble = new Layer(-1, [], 0);
+    this.layers = [];
+    this.curZ = 0;
+    this.maxZ = 0;
+    this.metadata = { thumbnails: {} };
+    this.tolerance = 0;
   }
 
   parseGCode(input: string | string[]): {

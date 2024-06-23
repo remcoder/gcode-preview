@@ -1,17 +1,14 @@
-import { Parser, MoveCommand, Layer, SelectToolCommand } from './gcode-parser';
+import { MoveCommand, Layer, SelectToolCommand } from './gcode-parser';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
-import { GridHelper } from './gridHelper';
-import { LineBox } from './lineBox';
-import Stats from 'three/examples/jsm/libs/stats.module';
+import { DevModeOptions } from './dev-gui';
 
-import { DevGUI, DevModeOptions } from './dev-gui';
+import Stats from 'three/examples/jsm/libs/stats.module';
 
 import {
   AmbientLight,
-  AxesHelper,
   BatchedMesh,
   BufferGeometry,
   Color,
@@ -33,6 +30,8 @@ import {
 
 import { ExtrusionGeometry } from './extrusion-geometry';
 
+import { BuildVolume } from './buildVolume';
+
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number; height: number };
 type GVector3 = {
   x: number;
@@ -42,7 +41,6 @@ type GVector3 = {
 type Arc = GVector3 & { r: number; i: number; j: number };
 
 type Point = GVector3;
-type BuildVolume = GVector3;
 export type State = {
   x: number;
   y: number;
@@ -54,7 +52,7 @@ export type State = {
   t: number; // tool index
 }; // feedrate?
 
-export type GCodePreviewOptions = {
+export type WebGLPreviewOptions = {
   buildVolume?: BuildVolume;
   backgroundColor?: ColorRepresentation;
   canvas?: HTMLCanvasElement;
@@ -97,7 +95,6 @@ const target = {
 
 export class WebGLPreview {
   minLayerThreshold = 0.05;
-  parser: Parser;
   targetId?: string; // deprecated
   scene: Scene;
   camera: PerspectiveCamera;
@@ -125,6 +122,7 @@ export class WebGLPreview {
   _animationFrameId?: number;
   disableGradient = false;
   private devMode?: boolean | DevModeOptions = true;
+  layers?: Layer[];
 
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
@@ -140,12 +138,11 @@ export class WebGLPreview {
   private _lastRenderTime = 0;
   private _wireframe = false;
   private stats: Stats = new Stats();
-  private devGui?: DevGUI;
+
   private _geometries: Record<number, ExtrusionGeometry[]> = {};
 
-  constructor(opts: GCodePreviewOptions) {
+  constructor(opts: WebGLPreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
-    this.parser = new Parser(this.minLayerThreshold);
     this.scene = new Scene();
     this.scene.background = this._backgroundColor;
     if (opts.backgroundColor !== undefined) {
@@ -156,7 +153,7 @@ export class WebGLPreview {
     this.startLayer = opts.startLayer;
     this.lineWidth = opts.lineWidth;
     this.lineHeight = opts.lineHeight;
-    this.buildVolume = opts.buildVolume;
+    this.buildVolume = opts.buildVolume && new BuildVolume(opts.buildVolume.x, opts.buildVolume.y, opts.buildVolume.z);
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
     this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
@@ -165,7 +162,6 @@ export class WebGLPreview {
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
     this.renderTubes = opts.renderTubes ?? this.renderTubes;
     this.extrusionWidth = opts.extrusionWidth ?? this.extrusionWidth;
-    this.devMode = opts.devMode ?? this.devMode;
 
     if (opts.extrusionColor !== undefined) {
       this.extrusionColor = opts.extrusionColor;
@@ -231,7 +227,6 @@ export class WebGLPreview {
 
     if (this.devMode) {
       document.body.appendChild(this.stats.dom);
-      this.initGui();
     }
   }
 
@@ -292,10 +287,6 @@ export class WebGLPreview {
     this._lastSegmentColor = value !== undefined ? new Color(value) : undefined;
   }
 
-  get layers(): Layer[] {
-    return [this.parser.preamble].concat(this.parser.layers.concat());
-  }
-
   // convert from 1-based to 0-based
   get maxLayerIndex(): number {
     return (this.endLayer ?? this.layers.length) - 1;
@@ -313,11 +304,6 @@ export class WebGLPreview {
     this.stats?.update();
   }
 
-  processGCode(gcode: string | string[]): void {
-    this.parser.parseGCode(gcode);
-    this.render();
-  }
-
   render(): void {
     const startRender = performance.now();
     while (this.scene.children.length > 0) {
@@ -330,9 +316,7 @@ export class WebGLPreview {
     }
 
     if (this.debug && this.buildVolume) {
-      // show webgl axes
-      const axesHelper = new AxesHelper(Math.max(this.buildVolume.x / 2, this.buildVolume.y / 2) + 20);
-      this.scene.add(axesHelper);
+      this.scene.add(this.buildVolume.axesHelper());
     }
 
     if (this.buildVolume) {
@@ -495,22 +479,16 @@ export class WebGLPreview {
   drawBuildVolume(): void {
     if (!this.buildVolume) return;
 
-    this.scene.add(new GridHelper(this.buildVolume.x, 10, this.buildVolume.y, 10));
-
-    const geometryBox = LineBox(this.buildVolume.x, this.buildVolume.z, this.buildVolume.y, 0x888888);
-
-    geometryBox.position.setY(this.buildVolume.z / 2);
-    this.scene.add(geometryBox);
+    this.scene.add(this.buildVolume.gridHelper());
+    this.scene.add(this.buildVolume.geomertry());
   }
 
   clear(): void {
     this.startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
-    this.parser = new Parser(this.minLayerThreshold);
     this.beyondFirstMove = false;
     this.state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
-    this.devGui?.reset();
     this._geometries = {};
   }
 
@@ -758,18 +736,10 @@ export class WebGLPreview {
       const maxFullLine = str.slice(0, idxNewLine);
 
       // parse increments but don't render yet
-      this.parser.parseGCode(tail + maxFullLine);
+      // this.parser.parseGCode(tail + maxFullLine);
       tail = str.slice(idxNewLine);
     } while (!result.done);
     console.debug('read from stream', size);
-  }
-
-  private initGui() {
-    if (typeof this.devMode === 'boolean' && this.devMode === true) {
-      this.devGui = new DevGUI(this);
-    } else if (typeof this.devMode === 'object') {
-      this.devGui = new DevGUI(this, this.devMode);
-    }
   }
 }
 
