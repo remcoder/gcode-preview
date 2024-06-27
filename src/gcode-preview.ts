@@ -1,19 +1,14 @@
 import { WebGLPreviewOptions, WebGLPreview } from './webgl-preview';
 import { Layer, Parser } from './gcode-parser';
-
-import { BuildVolume } from './buildVolume';
 import { DevGUI, DevModeOptions } from './dev-gui';
 
-export { WebGLPreview, DevModeOptions };
-
-export type GCodePreviewOptions = WebGLPreviewOptions & { test: boolean } & DevModeOptions;
-
+type GCodePreviewOptions = WebGLPreviewOptions & { test: boolean } & DevModeOptions;
 export class GCodePreview {
   webglPreview?: WebGLPreview;
   opts: GCodePreviewOptions;
   parser: Parser;
   private devGui?: DevGUI;
-  devMode: boolean | DevModeOptions;
+  devMode: boolean | DevModeOptions = false;
 
   constructor(opts: GCodePreviewOptions) {
     this.opts = opts;
@@ -21,12 +16,10 @@ export class GCodePreview {
     this.webglPreview = new WebGLPreview(this.opts);
     this.devMode = opts.devMode ?? this.devMode;
 
-    if (this.devMode) {
-      this.initGui();
-    }
+    this.initGui();
   }
 
-  get buildVolume(): BuildVolume {
+  get buildVolume() {
     return this.webglPreview.buildVolume;
   }
 
@@ -45,7 +38,7 @@ export class GCodePreview {
   }
 
   processGCode(gcode: string): void {
-    const { layers } = this.parser.parseGCode(gcode);
+    const { layers } = this.parser.parseGCode(gcode); // Not sure the layers paradigm is a good thing to keep around for all cases.
     this.webglPreview.layers = layers;
     this.webglPreview.render();
   }
@@ -59,6 +52,8 @@ export class GCodePreview {
   }
 
   private initGui() {
+    if (this.devMode === false) return;
+
     if (typeof this.devMode === 'boolean' && this.devMode === true) {
       this.devGui = new DevGUI(this);
     } else if (typeof this.devMode === 'object') {

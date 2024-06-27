@@ -1,10 +1,12 @@
 import { MoveCommand, Layer, SelectToolCommand } from './gcode-parser';
+import { DevModeOptions } from './dev-gui';
+import { ExtrusionGeometry } from './extrusion-geometry';
+import { BuildVolume } from './buildVolume';
+
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
-import { DevModeOptions } from './dev-gui';
-
 import Stats from 'three/examples/jsm/libs/stats.module';
 
 import {
@@ -27,10 +29,6 @@ import {
   Vector3,
   WebGLRenderer
 } from 'three';
-
-import { ExtrusionGeometry } from './extrusion-geometry';
-
-import { BuildVolume } from './buildVolume';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number; height: number };
 type GVector3 = {
@@ -73,16 +71,7 @@ export type WebGLPreviewOptions = {
   toolColors?: Record<number, ColorRepresentation>;
   disableGradient?: boolean;
   extrusionWidth?: number;
-  /** @experimental */
   renderTubes?: boolean;
-  /**
-   * @deprecated Please see the demo how to implement drag and drop.
-   */
-  allowDragNDrop?: boolean;
-  /**
-   * @deprecated Please use `canvas` instead.
-   */
-  targetId?: string;
   /** @experimental */
   devMode?: boolean | DevModeOptions;
 };
@@ -95,7 +84,6 @@ const target = {
 
 export class WebGLPreview {
   minLayerThreshold = 0.05;
-  targetId?: string; // deprecated
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
@@ -114,7 +102,6 @@ export class WebGLPreview {
   buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
   debug = false;
-  allowDragNDrop = false;
   controls: OrbitControls;
   beyondFirstMove = false;
   inches = false;
@@ -148,7 +135,6 @@ export class WebGLPreview {
     if (opts.backgroundColor !== undefined) {
       this.backgroundColor = new Color(opts.backgroundColor);
     }
-    this.targetId = opts.targetId;
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
     this.lineWidth = opts.lineWidth;
@@ -156,7 +142,6 @@ export class WebGLPreview {
     this.buildVolume = opts.buildVolume && new BuildVolume(opts.buildVolume.x, opts.buildVolume.y, opts.buildVolume.z);
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
-    this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.renderExtrusion = opts.renderExtrusion ?? this.renderExtrusion;
     this.renderTravel = opts.renderTravel ?? this.renderTravel;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
@@ -189,28 +174,11 @@ export class WebGLPreview {
     console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
 
-    if (this.targetId) {
-      console.warn('`targetId` is deprecated and will removed in the future. Use `canvas` instead.');
-    }
-
-    if (!opts.canvas) {
-      if (!this.targetId) {
-        throw Error('Set either opts.canvas or opts.targetId');
-      }
-      const container = document.getElementById(this.targetId);
-      if (!container) throw new Error('Unable to find element ' + this.targetId);
-
-      this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true });
-      this.canvas = this.renderer.domElement;
-
-      container.appendChild(this.canvas);
-    } else {
-      this.canvas = opts.canvas;
-      this.renderer = new WebGLRenderer({
-        canvas: this.canvas,
-        preserveDrawingBuffer: true
-      });
-    }
+    this.canvas = opts.canvas;
+    this.renderer = new WebGLRenderer({
+      canvas: this.canvas,
+      preserveDrawingBuffer: true
+    });
 
     this.camera = new PerspectiveCamera(25, this.canvas.offsetWidth / this.canvas.offsetHeight, 10, 5000);
     this.camera.position.fromArray(this.initialCameraPosition);
@@ -222,8 +190,6 @@ export class WebGLPreview {
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.animate();
-
-    if (this.allowDragNDrop) this._enableDropHandler();
 
     if (this.devMode) {
       document.body.appendChild(this.stats.dom);
