@@ -8,6 +8,7 @@ let thumb;
 const maxToolCount = 8;
 let toolCount = 4;
 let gcode;
+let renderProgressive = true;
 
 const canvasElement = document.querySelector('.gcode-previewer');
 const settingsPreset = document.getElementById('settings-presets');
@@ -44,7 +45,6 @@ const buildVolumeY = document.getElementById('buildVolumeY');
 const buildVolumeZ = document.getElementById('buildVolumeZ');
 const drawBuildVolume = document.getElementById('drawBuildVolume');
 const travelColor = document.getElementById('travel-color');
-
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 
 const defaultPreset = 'multicolor';
@@ -215,10 +215,7 @@ export function initDemo() {
 
   toggleRenderTubes.addEventListener('click', function () {
     changeRenderTubes(!!toggleRenderTubes.checked);
-    preview.initScene();
     startLoadingProgressive(gcode);
-    // preview.clear();
-    // preview.renderInc();
   });
 
   for (let i = 0; i < 8; i++) {
@@ -307,8 +304,6 @@ export function initDemo() {
     fileName.innerText = file.name;
     fileSize.innerText = humanFileSize(file.size);
 
-    preview.initScene();
-    preview.clear();
     // await preview._readFromStream(file.stream());
     _handleGCode(file.name, await file.text());
     updateUI();
@@ -553,12 +548,16 @@ async function startLoadingProgressive(gcode) {
   startLayer.setAttribute('disabled', 'disabled');
   endLayer.setAttribute('disabled', 'disabled');
 
-  gcodePreview.initScene();
   gcodePreview.clear();
-  gcodePreview.parser.parseGCode(gcode);
+  if (renderProgressive) {
+    gcodePreview.parser.parseGCode(gcode);
+    updateUI();
+    await gcodePreview.renderAnimated(Math.ceil(gcodePreview.layers.length / 60));
+  } else {
+    gcodePreview.processGCode(gcode);
+  }
   updateUI();
-  await gcodePreview.renderAnimated(Math.ceil(gcodePreview.layers.length / 60));
-  updateUI();
+
   startLayer.removeAttribute('disabled');
   endLayer.removeAttribute('disabled');
 }
