@@ -43,7 +43,7 @@ type Arc = GVector3 & { r: number; i: number; j: number };
 
 type Point = GVector3;
 type BuildVolume = GVector3;
-export type State = {
+export class State {
   x: number;
   y: number;
   z: number;
@@ -52,7 +52,13 @@ export type State = {
   i: number;
   j: number;
   t: number; // tool index
-}; // feedrate?
+  // feedrate?
+  static get initial(): State {
+    const state = new State();
+    Object.assign(state, { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 });
+    return state;
+  }
+}
 
 export type GCodePreviewOptions = {
   buildVolume?: BuildVolume;
@@ -102,7 +108,7 @@ export class WebGLPreview {
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
-  group?: Group;
+  controls: OrbitControls;
   container?: HTMLElement;
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
@@ -116,32 +122,38 @@ export class WebGLPreview {
   singleLayerMode = false;
   buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
-  debug = false;
-  allowDragNDrop = false;
-  controls: OrbitControls;
-  beyondFirstMove = false;
+  debug = false; // deprecated
+  allowDragNDrop = false; // deprecated
   inches = false;
   nonTravelmoves: string[] = [];
-  _animationFrameId?: number;
   disableGradient = false;
-  private devMode?: boolean | DevModeOptions = true;
 
-  state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
+  // gcode processing state
+  private state: State = State.initial;
+  private beyondFirstMove = false;
 
-  static readonly defaultExtrusionColor = new Color('hotpink');
-
+  // rendering
+  private group?: Group;
   private disposables: { dispose(): void }[] = [];
+  static readonly defaultExtrusionColor = new Color('hotpink');
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
+  private animationFrameId?: number;
+  private renderLayerIndex = 0;
+  private _geometries: Record<number, ExtrusionGeometry[]> = {};
+
+  // colors
   private _backgroundColor = new Color(0xe0e0e0);
   private _travelColor = new Color(0x990000);
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
+
+  // debug
+  private devMode?: boolean | DevModeOptions = true;
   private _lastRenderTime = 0;
   private _wireframe = false;
   private stats: Stats = new Stats();
   private devGui?: DevGUI;
-  private _geometries: Record<number, ExtrusionGeometry[]> = {};
 
   constructor(opts: GCodePreviewOptions) {
     this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
@@ -225,6 +237,7 @@ export class WebGLPreview {
     this.resize();
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.initScene();
     this.animate();
 
     if (this.allowDragNDrop) this._enableDropHandler();
@@ -307,7 +320,7 @@ export class WebGLPreview {
   }
 
   animate(): void {
-    this._animationFrameId = requestAnimationFrame(() => this.animate());
+    this.animationFrameId = requestAnimationFrame(() => this.animate());
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     this.stats?.update();
@@ -318,8 +331,7 @@ export class WebGLPreview {
     this.render();
   }
 
-  render(): void {
-    const startRender = performance.now();
+  private initScene() {
     while (this.scene.children.length > 0) {
       this.scene.remove(this.scene.children[0]);
     }
@@ -340,7 +352,7 @@ export class WebGLPreview {
     }
 
     if (this.renderTubes) {
-      console.warn('Volumetric rendering is experimental and may not work as expected or change in the future.');
+      console.warn('Volumetric rendering is experimental. It may not work as expected or change in the future.');
       const light = new AmbientLight(0xcccccc, 0.3 * Math.PI);
       // threejs assumes meters but we use mm. So we need to scale the decay of the light
       const dLight = new PointLight(0xffffff, Math.PI, undefined, 1 / 1000);
@@ -348,36 +360,72 @@ export class WebGLPreview {
       this.scene.add(light);
       this.scene.add(dLight);
     }
+  }
 
-    this.group = new Group();
-    this.group.name = 'gcode';
+  private createGroup(name: string): Group {
+    const group = new Group();
+    group.name = name;
+    group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
+    if (this.buildVolume) {
+      group.position.set(-this.buildVolume.x / 2, 0, this.buildVolume.y / 2);
+    } else {
+      // FIXME: this is just a very crude approximation for centering
+      group.position.set(-100, 0, 100);
+    }
+    return group;
+  }
+
+  render(): void {
+    const startRender = performance.now();
+    this.group = this.createGroup('allLayers');
+    this.state = State.initial;
+    this.initScene();
 
     for (let index = 0; index < this.layers.length; index++) {
       this.renderLayer(index);
     }
 
-    this.group.quaternion.setFromEuler(new Euler(-Math.PI / 2, 0, 0));
-
-    if (this.buildVolume) {
-      this.group.position.set(-this.buildVolume.x / 2, 0, this.buildVolume.y / 2);
-    } else {
-      // FIXME: this is just a very crude approximation for centering
-      this.group.position.set(-100, 0, 100);
-    }
-
-    if (this._geometries) {
-      for (const color in this._geometries) {
-        const mesh = this.createBatchMesh(parseInt(color));
-        while (this._geometries[color].length > 0) {
-          const geometry = this._geometries[color].pop();
-          mesh.addGeometry(geometry);
-        }
-      }
-    }
+    this.batchGeometries();
 
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
     this._lastRenderTime = performance.now() - startRender;
+  }
+
+  // create a new render method to use an animation loop to render the layers incrementally
+  /** @experimental */
+  async renderAnimated(layerCount = 1): Promise<void> {
+    this.initScene();
+
+    this.renderLayerIndex = 0;
+    return this.renderFrameLoop(layerCount > 0 ? layerCount : 1);
+  }
+
+  private renderFrameLoop(layerCount: number): Promise<void> {
+    return new Promise((resolve) => {
+      const loop = () => {
+        if (this.renderLayerIndex > this.layers.length - 1) {
+          resolve();
+        } else {
+          this.renderFrame(layerCount);
+          requestAnimationFrame(loop);
+        }
+      };
+      loop();
+    });
+  }
+
+  private renderFrame(layerCount: number): void {
+    this.group = this.createGroup('layer' + this.renderLayerIndex);
+
+    for (let l = 0; l < layerCount && this.renderLayerIndex + l < this.layers.length; l++) {
+      this.renderLayer(this.renderLayerIndex);
+      this.renderLayerIndex++;
+    }
+
+    this.batchGeometries();
+
+    this.scene.add(this.group);
   }
 
   renderLayer(index: number): void {
@@ -503,13 +551,20 @@ export class WebGLPreview {
     this.scene.add(geometryBox);
   }
 
+  // reset parser & processing state
   clear(): void {
+    this.resetState();
+    this.parser = new Parser(this.minLayerThreshold);
+  }
+
+  // reset processing state
+  private resetState(): void {
     this.startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
-    this.parser = new Parser(this.minLayerThreshold);
+
     this.beyondFirstMove = false;
-    this.state = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
+    this.state = State.initial;
     this.devGui?.reset();
     this._geometries = {};
   }
@@ -698,8 +753,8 @@ export class WebGLPreview {
   }
 
   private cancelAnimation(): void {
-    if (this._animationFrameId !== undefined) cancelAnimationFrame(this._animationFrameId);
-    this._animationFrameId = undefined;
+    if (this.animationFrameId !== undefined) cancelAnimationFrame(this.animationFrameId);
+    this.animationFrameId = undefined;
   }
 
   private _enableDropHandler() {
@@ -732,6 +787,18 @@ export class WebGLPreview {
     });
   }
 
+  private batchGeometries() {
+    if (this._geometries) {
+      for (const color in this._geometries) {
+        const mesh = this.createBatchMesh(parseInt(color));
+        while (this._geometries[color].length > 0) {
+          const geometry = this._geometries[color].pop();
+          mesh.addGeometry(geometry);
+        }
+      }
+    }
+  }
+
   private createBatchMesh(color: number): BatchedMesh {
     const geometries = this._geometries[color];
     const material = new MeshLambertMaterial({ color: color, wireframe: this._wireframe });
@@ -751,6 +818,7 @@ export class WebGLPreview {
     let tail = '';
     let size = 0;
     do {
+      console.debug('reading from stream');
       result = await reader.read();
       size += result.value?.length ?? 0;
       const str = decode(result.value);

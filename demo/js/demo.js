@@ -5,9 +5,10 @@ import * as Canvas2Image from 'canvas2image';
 let gcodePreview;
 let favIcon;
 let thumb;
-const chunkSize = 10000;
 const maxToolCount = 8;
 let toolCount = 4;
+let gcode;
+let renderProgressive = true;
 
 const canvasElement = document.querySelector('.gcode-previewer');
 const settingsPreset = document.getElementById('settings-presets');
@@ -44,7 +45,6 @@ const buildVolumeY = document.getElementById('buildVolumeY');
 const buildVolumeZ = document.getElementById('buildVolumeZ');
 const drawBuildVolume = document.getElementById('drawBuildVolume');
 const travelColor = document.getElementById('travel-color');
-
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 
 const defaultPreset = 'multicolor';
@@ -151,7 +151,6 @@ const settingsPresets = {
 export function initDemo() {
   // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
   const settings = JSON.parse(localStorage.getItem('settings'));
-  console.debug('settings loaded', settings);
 
   const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
 
@@ -216,7 +215,7 @@ export function initDemo() {
 
   toggleRenderTubes.addEventListener('click', function () {
     changeRenderTubes(!!toggleRenderTubes.checked);
-    preview.render();
+    startLoadingProgressive(gcode);
   });
 
   for (let i = 0; i < 8; i++) {
@@ -305,11 +304,9 @@ export function initDemo() {
     fileName.innerText = file.name;
     fileSize.innerText = humanFileSize(file.size);
 
-    preview.clear();
-
-    await preview._readFromStream(file.stream());
+    // await preview._readFromStream(file.stream());
+    _handleGCode(file.name, await file.text());
     updateUI();
-    preview.render();
   });
 
   function updateBuildVolume() {
@@ -403,7 +400,6 @@ export function initDemo() {
   function changeHighlightTopLayer(enabled) {
     toggleHighlight.checked = enabled;
     if (enabled) {
-      console.log('topLayerColorInput.value', topLayerColorInput.value);
       changeTopLayerColor(preview.topLayerColor || '#40BFBF');
       changeLastSegmentColor(preview.lastSegmentColor || '#ffffff');
       topLayerColorInput.removeAttribute('disabled');
@@ -526,54 +522,44 @@ function updateUI() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-async function loadGCodeFromServer(file) {
-  const response = await fetch(file);
-
+async function loadGCodeFromServer(filename) {
+  const response = await fetch(filename);
   if (response.status !== 200) {
     console.error('ERROR. Status Code: ' + response.status);
     return;
   }
 
   const gcode = await response.text();
-  _handleGCode(file, gcode);
-  fileName.setAttribute('href', file);
+  _handleGCode(filename, gcode);
+  fileName.setAttribute('href', filename);
 }
 
-function _handleGCode(filename, gcode) {
-  // chunkSize = gcode.length / 1000;
+function _handleGCode(filename, text) {
+  gcode = text;
   fileName.innerText = filename;
-  fileSize.innerText = humanFileSize(gcode.length);
+  fileSize.innerText = humanFileSize(text.length);
 
   updateUI();
 
-  startLoadingProgressive(gcode);
+  startLoadingProgressive(text);
 }
 
-function startLoadingProgressive(gcode) {
-  let c = 0;
+async function startLoadingProgressive(gcode) {
   startLayer.setAttribute('disabled', 'disabled');
   endLayer.setAttribute('disabled', 'disabled');
-  function loadProgressive() {
-    const start = c * chunkSize;
-    const end = (c + 1) * chunkSize;
-    const chunk = lines.slice(start, end);
 
-    c++;
-    if (c < chunks) {
-      window.__loadTimer__ = requestAnimationFrame(loadProgressive);
-    } else {
-      startLayer.removeAttribute('disabled');
-      endLayer.removeAttribute('disabled');
-    }
-    gcodePreview.processGCode(chunk);
-    updateUI();
-  }
-
-  const lines = gcode.split('\n');
-  const chunks = lines.length / chunkSize;
   gcodePreview.clear();
-  if (window.__loadTimer__) clearTimeout(window.__loadTimer__);
-  loadProgressive();
+  if (renderProgressive) {
+    gcodePreview.parser.parseGCode(gcode);
+    updateUI();
+    await gcodePreview.renderAnimated(Math.ceil(gcodePreview.layers.length / 60));
+  } else {
+    gcodePreview.processGCode(gcode);
+  }
+  updateUI();
+
+  startLayer.removeAttribute('disabled');
+  endLayer.removeAttribute('disabled');
 }
 
 function humanFileSize(size) {
