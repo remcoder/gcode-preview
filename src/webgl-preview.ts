@@ -88,7 +88,7 @@ export type GCodePreviewOptions = {
    */
   allowDragNDrop?: boolean;
   /**
-   * @deprecated Please use `canvas` instead.
+   * @deprecated Please use the `canvas` param instead.
    */
   targetId?: string;
   /** @experimental */
@@ -104,7 +104,10 @@ const target = {
 export class WebGLPreview {
   minLayerThreshold = 0.05;
   parser: Parser;
-  targetId?: string; // deprecated
+  /**
+   * @deprecated Please use the `canvas` param instead.
+   */
+  targetId?: string;
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
@@ -121,15 +124,21 @@ export class WebGLPreview {
   singleLayerMode = false;
   buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
-  debug = false; // deprecated
-  allowDragNDrop = false; // deprecated
+  /**
+   * @deprecated Use the dev mode options instead.
+   */
+  debug = false;
+  /**
+   * @deprecated See the demo how to implement drag and drop.
+   */
+  allowDragNDrop = false;
   inches = false;
   nonTravelmoves: string[] = [];
   disableGradient = false;
 
   // gcode processing state
   private state: State = State.initial;
-  private beyondFirstMove = false;
+  private beyondFirstMove = false; // TODO: move to state
 
   // rendering
   private group?: Group;
