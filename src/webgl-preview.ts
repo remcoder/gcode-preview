@@ -128,10 +128,6 @@ export class WebGLPreview {
    * @deprecated Use the dev mode options instead.
    */
   debug = false;
-  /**
-   * @deprecated See the demo how to implement drag and drop.
-   */
-  allowDragNDrop = false;
   inches = false;
   nonTravelmoves: string[] = [];
   disableGradient = false;
@@ -179,7 +175,6 @@ export class WebGLPreview {
     this.buildVolume = opts.buildVolume;
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
-    this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.renderExtrusion = opts.renderExtrusion ?? this.renderExtrusion;
     this.renderTravel = opts.renderTravel ?? this.renderTravel;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
@@ -248,7 +243,7 @@ export class WebGLPreview {
     this.initScene();
     this.animate();
 
-    if (this.allowDragNDrop) this._enableDropHandler();
+    if (opts.allowDragNDrop) this._enableDropHandler();
 
     if (this.devMode) {
       document.body.appendChild(this.stats.dom);
