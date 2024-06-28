@@ -4,5 +4,6 @@
     "src/gcode-preview.ts"
   ],
   "out": "demo/docs",
-  "includeVersion": true
+  "includeVersion": true,
+  "excludeInternal": true
 }
