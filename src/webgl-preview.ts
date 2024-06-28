@@ -109,7 +109,6 @@ export class WebGLPreview {
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
   controls: OrbitControls;
-  container?: HTMLElement;
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
   renderTravel = false;
