@@ -4,4 +4,4 @@ import { DevModeOptions } from './dev-gui';
 const init = function (opts: GCodePreviewOptions) {
   return new WebGLPreview(opts);
 };
-export { WebGLPreview, init, DevModeOptions };
+export { WebGLPreview, init, DevModeOptions, GCodePreviewOptions };
