@@ -551,6 +551,7 @@ export class WebGLPreview {
     this.inches = true;
   }
 
+  /** @internal */
   drawBuildVolume(): void {
     if (!this.buildVolume) return;
 
