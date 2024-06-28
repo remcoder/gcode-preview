@@ -309,7 +309,7 @@ export class WebGLPreview {
   }
 
   /**
-   * @internal Do not use externally. @hidden
+   * @internal Do not use externally.
    */
   get layers(): Layer[] {
     return [this.parser.preamble].concat(this.parser.layers.concat());
@@ -436,7 +436,7 @@ export class WebGLPreview {
   }
 
   /**
-   *  @internal @hidden
+   *  @internal
    */
   renderLayer(index: number): void {
     if (index > this.maxLayerIndex) return;
