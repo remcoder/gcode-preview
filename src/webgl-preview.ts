@@ -101,16 +101,32 @@ const target = {
   l: 0
 };
 
+/**
+ * @groupDescription cnc
+ * Meant for CNC specific use cases.
+ */
+
+/**
+ * @groupDescription threejs
+ * Exposed threejs properties
+ */
+
 export class WebGLPreview {
   minLayerThreshold = 0.05;
+  /** @internal */
   parser: Parser;
   /**
    * @deprecated Please use the `canvas` param instead.
    */
   targetId?: string;
+
+  /** @group threejs @group Properties */
   scene: Scene;
+  /** @group threejs @group Properties */
   camera: PerspectiveCamera;
+  /** @internal */
   renderer: WebGLRenderer;
+  /** @group threejs @group Properties */
   controls: OrbitControls;
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
@@ -129,6 +145,7 @@ export class WebGLPreview {
    */
   debug = false;
   inches = false;
+  /** @group cnc */
   nonTravelmoves: string[] = [];
   disableGradient = false;
 
@@ -139,6 +156,7 @@ export class WebGLPreview {
   // rendering
   private group?: Group;
   private disposables: { dispose(): void }[] = [];
+  /** @group Colors */
   static readonly defaultExtrusionColor = new Color('hotpink');
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private animationFrameId?: number;
@@ -251,6 +269,7 @@ export class WebGLPreview {
     }
   }
 
+  /** @group Colors */
   get extrusionColor(): Color | Color[] {
     return this._extrusionColor;
   }
@@ -267,6 +286,7 @@ export class WebGLPreview {
   }
 
   // get tool color based on current state
+  /** @group Colors */
   get currentToolColor(): Color {
     if (this._extrusionColor === undefined) {
       return WebGLPreview.defaultExtrusionColor;
@@ -278,6 +298,7 @@ export class WebGLPreview {
     return this._extrusionColor[this.state.t] ?? WebGLPreview.defaultExtrusionColor;
   }
 
+  /** @group Colors */
   get backgroundColor(): Color {
     return this._backgroundColor;
   }
@@ -287,6 +308,7 @@ export class WebGLPreview {
     this.scene.background = this._backgroundColor;
   }
 
+  /** @group Colors */
   get travelColor(): Color {
     return this._travelColor;
   }
@@ -294,6 +316,7 @@ export class WebGLPreview {
     this._travelColor = new Color(value);
   }
 
+  /** @group Colors */
   get topLayerColor(): ColorRepresentation | undefined {
     return this._topLayerColor;
   }
@@ -301,6 +324,7 @@ export class WebGLPreview {
     this._topLayerColor = value !== undefined ? new Color(value) : undefined;
   }
 
+  /** @group Colors */
   get lastSegmentColor(): ColorRepresentation | undefined {
     return this._lastSegmentColor;
   }
@@ -543,6 +567,7 @@ export class WebGLPreview {
     }
   }
 
+  /** @group cnc */
   setInches(): void {
     if (this.beyondFirstMove) {
       console.warn('Switching units after movement is already made is discouraged and is not supported.');
