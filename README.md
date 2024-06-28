@@ -39,7 +39,7 @@ Click to see the interactive demo:
 ```
 
 ### API Docs
-Check the full API documentation at https://gcode-preview.web.app/doc
+Check the full API documentation at https://gcode-preview.web.app/docs
 
 ### Vue.js / React / Svelte integration
 <img src="https://vuejs.org/logo.svg" height="40px" />
