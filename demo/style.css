@@ -172,3 +172,14 @@ output {
 .just-between {
   justify-content: space-between;
 }
+
+.badge-warn {
+  background: orange;
+  border-radius: 10px;
+  padding: 0px 10px 2px;
+  font-size: 70%;
+  color: black;
+  line-height: 10px;
+  position: relative;
+  bottom: 2px;
+}
