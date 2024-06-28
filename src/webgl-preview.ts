@@ -308,6 +308,9 @@ export class WebGLPreview {
     this._lastSegmentColor = value !== undefined ? new Color(value) : undefined;
   }
 
+  /**
+   * @internal Do not use externally. @hidden
+   */
   get layers(): Layer[] {
     return [this.parser.preamble].concat(this.parser.layers.concat());
   }
@@ -322,6 +325,7 @@ export class WebGLPreview {
     return this.singleLayerMode ? this.maxLayerIndex : (this.startLayer ?? 0) - 1;
   }
 
+  /** @internal @hidden */
   animate(): void {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
     this.controls.update();
@@ -431,6 +435,9 @@ export class WebGLPreview {
     this.scene.add(this.group);
   }
 
+  /**
+   *  @internal @hidden
+   */
   renderLayer(index: number): void {
     if (index > this.maxLayerIndex) return;
     const l = this.layers[index];
@@ -497,6 +504,7 @@ export class WebGLPreview {
     this.doRenderExtrusion(currentLayer, index);
   }
 
+  /** @internal @hidden */
   doRenderExtrusion(layer: RenderLayer, index: number): void {
     if (this.renderExtrusion) {
       let extrusionColor = this.currentToolColor;
@@ -580,11 +588,13 @@ export class WebGLPreview {
     this.renderer.setSize(w, h, false);
   }
 
+  /** @internal @hidden */
   addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void {
     const line = extrude ? layer.extrusion : layer.travel;
     line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
 
+  /** @internal @hidden */
   addArcSegment(layer: RenderLayer, p1: Point, p2: Arc, extrude: boolean, cw: boolean): void {
     const line = extrude ? layer.extrusion : layer.travel;
 
@@ -685,6 +695,7 @@ export class WebGLPreview {
     }
   }
 
+  /** @internal @hidden */
   addLine(vertices: number[], color: number): void {
     if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
       this.addThickLine(vertices, color);
@@ -701,6 +712,7 @@ export class WebGLPreview {
     this.group?.add(lineSegments);
   }
 
+  /** @internal @hidden */
   addTubeLine(vertices: number[], color: number, layerHeight = 0.2): void {
     let curvePoints: Vector3[] = [];
     const extrusionPaths: Vector3[][] = [];
@@ -728,6 +740,7 @@ export class WebGLPreview {
     });
   }
 
+  /** @internal @hidden */
   addThickLine(vertices: number[], color: number): void {
     if (!vertices.length || !this.lineWidth) return;
 
@@ -815,6 +828,7 @@ export class WebGLPreview {
     return batchedMesh;
   }
 
+  /** @experimental @hidden  */
   async _readFromStream(stream: ReadableStream): Promise<void> {
     const reader = stream.getReader();
     let result;
