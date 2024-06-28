@@ -88,7 +88,7 @@ export type GCodePreviewOptions = {
    */
   allowDragNDrop?: boolean;
   /**
-   * @deprecated Please use `canvas` instead.
+   * @deprecated Please use the `canvas` param instead.
    */
   targetId?: string;
   /** @experimental */
@@ -104,12 +104,14 @@ const target = {
 export class WebGLPreview {
   minLayerThreshold = 0.05;
   parser: Parser;
-  targetId?: string; // deprecated
+  /**
+   * @deprecated Please use the `canvas` param instead.
+   */
+  targetId?: string;
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
   controls: OrbitControls;
-  container?: HTMLElement;
   canvas: HTMLCanvasElement;
   renderExtrusion = true;
   renderTravel = false;
@@ -122,15 +124,17 @@ export class WebGLPreview {
   singleLayerMode = false;
   buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
-  debug = false; // deprecated
-  allowDragNDrop = false; // deprecated
+  /**
+   * @deprecated Use the dev mode options instead.
+   */
+  debug = false;
   inches = false;
   nonTravelmoves: string[] = [];
   disableGradient = false;
 
   // gcode processing state
   private state: State = State.initial;
-  private beyondFirstMove = false;
+  private beyondFirstMove = false; // TODO: move to state
 
   // rendering
   private group?: Group;
@@ -171,7 +175,6 @@ export class WebGLPreview {
     this.buildVolume = opts.buildVolume;
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
-    this.allowDragNDrop = opts.allowDragNDrop ?? this.allowDragNDrop;
     this.renderExtrusion = opts.renderExtrusion ?? this.renderExtrusion;
     this.renderTravel = opts.renderTravel ?? this.renderTravel;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
@@ -240,7 +243,7 @@ export class WebGLPreview {
     this.initScene();
     this.animate();
 
-    if (this.allowDragNDrop) this._enableDropHandler();
+    if (opts.allowDragNDrop) this._enableDropHandler();
 
     if (this.devMode) {
       document.body.appendChild(this.stats.dom);
@@ -305,6 +308,9 @@ export class WebGLPreview {
     this._lastSegmentColor = value !== undefined ? new Color(value) : undefined;
   }
 
+  /**
+   * @internal Do not use externally.
+   */
   get layers(): Layer[] {
     return [this.parser.preamble].concat(this.parser.layers.concat());
   }
@@ -319,6 +325,7 @@ export class WebGLPreview {
     return this.singleLayerMode ? this.maxLayerIndex : (this.startLayer ?? 0) - 1;
   }
 
+  /** @internal */
   animate(): void {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
     this.controls.update();
@@ -428,6 +435,9 @@ export class WebGLPreview {
     this.scene.add(this.group);
   }
 
+  /**
+   *  @internal
+   */
   renderLayer(index: number): void {
     if (index > this.maxLayerIndex) return;
     const l = this.layers[index];
@@ -494,6 +504,7 @@ export class WebGLPreview {
     this.doRenderExtrusion(currentLayer, index);
   }
 
+  /** @internal */
   doRenderExtrusion(layer: RenderLayer, index: number): void {
     if (this.renderExtrusion) {
       let extrusionColor = this.currentToolColor;
@@ -540,6 +551,7 @@ export class WebGLPreview {
     this.inches = true;
   }
 
+  /** @internal */
   drawBuildVolume(): void {
     if (!this.buildVolume) return;
 
@@ -577,11 +589,13 @@ export class WebGLPreview {
     this.renderer.setSize(w, h, false);
   }
 
+  /** @internal */
   addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void {
     const line = extrude ? layer.extrusion : layer.travel;
     line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
 
+  /** @internal */
   addArcSegment(layer: RenderLayer, p1: Point, p2: Arc, extrude: boolean, cw: boolean): void {
     const line = extrude ? layer.extrusion : layer.travel;
 
@@ -682,6 +696,7 @@ export class WebGLPreview {
     }
   }
 
+  /** @internal */
   addLine(vertices: number[], color: number): void {
     if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
       this.addThickLine(vertices, color);
@@ -698,6 +713,7 @@ export class WebGLPreview {
     this.group?.add(lineSegments);
   }
 
+  /** @internal */
   addTubeLine(vertices: number[], color: number, layerHeight = 0.2): void {
     let curvePoints: Vector3[] = [];
     const extrusionPaths: Vector3[][] = [];
@@ -725,6 +741,7 @@ export class WebGLPreview {
     });
   }
 
+  /** @internal */
   addThickLine(vertices: number[], color: number): void {
     if (!vertices.length || !this.lineWidth) return;
 
@@ -812,6 +829,7 @@ export class WebGLPreview {
     return batchedMesh;
   }
 
+  /** @experimental  */
   async _readFromStream(stream: ReadableStream): Promise<void> {
     const reader = stream.getReader();
     let result;

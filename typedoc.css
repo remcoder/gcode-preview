@@ -1,0 +1,16 @@
+a[href='WebGLPreview.html#_readFromStream'] span::after,
+a[href='WebGLPreview.html#renderAnimated'] span::after {
+  content: ' 💥';
+}
+
+a[id='_readFromStream'] + h3 span::after,
+a[id='renderAnimated'] + h3 span::after {
+  content: ' 💥 experimental';
+  color: grey;
+  font-size: 80%;
+}
+
+a.deprecated,
+a.deprecated span {
+  color: grey;
+}
