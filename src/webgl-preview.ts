@@ -156,7 +156,7 @@ export class WebGLPreview {
   private devMode?: boolean | DevModeOptions = false;
   private _lastRenderTime = 0;
   private _wireframe = false;
-  private stats?: Stats = this.devMode ? new Stats() : undefined;
+  private stats?: Stats;
   private statsContainer?: HTMLElement;
   private devGui?: DevGUI;
 
@@ -182,6 +182,7 @@ export class WebGLPreview {
     this.renderTubes = opts.renderTubes ?? this.renderTubes;
     this.extrusionWidth = opts.extrusionWidth ?? this.extrusionWidth;
     this.devMode = opts.devMode ?? this.devMode;
+    this.stats = this.devMode ? new Stats() : undefined;
 
     if (opts.extrusionColor !== undefined) {
       this.extrusionColor = opts.extrusionColor;
