@@ -4,11 +4,13 @@
 
 	let canvas: HTMLCanvasElement;
 	let preview: GCodePreview.WebGLPreview;
+	export let src: string;
 
 	onMount(() => {
-		let preview = GCodePreview.init({
+		preview = GCodePreview.init({
 			canvas,
 			devMode: false,
+			renderTubes: true,
 			buildVolume: {
 				x: 200,
 				y: 200,
@@ -16,8 +18,14 @@
 			}
 		});
 
-		preview.processGCode('G0 X0 Y0 Z0\nG1 X10 Y10 Z10 E10');
+		load(src);
 	});
+
+	async function load(src: string) {
+		const response = await fetch(src);
+		const gcode = await response.text();
+		preview.processGCode(gcode);
+	}
 </script>
 
 <canvas bind:this={canvas}></canvas>

@@ -3,4 +3,4 @@
 </script>
 
 <h1>GCode Preview</h1>
-<GCode />
+<GCode src="benchy.gcode" />
