@@ -153,7 +153,7 @@ export class WebGLPreview {
   private _toolColors: Record<number, Color> = {};
 
   // debug
-  private devMode?: boolean | DevModeOptions = true;
+  private devMode?: boolean | DevModeOptions = false;
   private _lastRenderTime = 0;
   private _wireframe = false;
   private stats?: Stats = this.devMode ? new Stats() : undefined;
