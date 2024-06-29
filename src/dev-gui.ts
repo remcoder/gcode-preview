@@ -6,6 +6,7 @@ export type DevModeOptions = {
   parser?: boolean | false;
   buildVolume?: boolean | false;
   devHelpers?: boolean | false;
+  statsContainer?: HTMLElement | undefined;
 };
 
 class DevGUI {
@@ -56,7 +57,6 @@ class DevGUI {
 
   loadOpenFolders(): void {
     this.openFolders = JSON.parse(localStorage.getItem('dev-gui-open') || '{}').open || [];
-    console.log(this.openFolders);
   }
 
   saveOpenFolders(): void {

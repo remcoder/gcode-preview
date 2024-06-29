@@ -153,10 +153,11 @@ export class WebGLPreview {
   private _toolColors: Record<number, Color> = {};
 
   // debug
-  private devMode?: boolean | DevModeOptions = true;
+  private devMode?: boolean | DevModeOptions = false;
   private _lastRenderTime = 0;
   private _wireframe = false;
-  private stats: Stats = new Stats();
+  private stats?: Stats;
+  private statsContainer?: HTMLElement;
   private devGui?: DevGUI;
 
   constructor(opts: GCodePreviewOptions) {
@@ -181,6 +182,7 @@ export class WebGLPreview {
     this.renderTubes = opts.renderTubes ?? this.renderTubes;
     this.extrusionWidth = opts.extrusionWidth ?? this.extrusionWidth;
     this.devMode = opts.devMode ?? this.devMode;
+    this.stats = this.devMode ? new Stats() : undefined;
 
     if (opts.extrusionColor !== undefined) {
       this.extrusionColor = opts.extrusionColor;
@@ -245,10 +247,7 @@ export class WebGLPreview {
 
     if (opts.allowDragNDrop) this._enableDropHandler();
 
-    if (this.devMode) {
-      document.body.appendChild(this.stats.dom);
-      this.initGui();
-    }
+    this.initStats();
   }
 
   get extrusionColor(): Color | Color[] {
@@ -855,6 +854,17 @@ export class WebGLPreview {
       this.devGui = new DevGUI(this);
     } else if (typeof this.devMode === 'object') {
       this.devGui = new DevGUI(this, this.devMode);
+    }
+  }
+
+  private initStats() {
+    if (this.stats) {
+      if (typeof this.devMode === 'object') {
+        this.statsContainer = this.devMode.statsContainer;
+      }
+      (this.statsContainer ?? document.body).appendChild(this.stats.dom);
+      this.stats.dom.classList.add('stats');
+      this.initGui();
     }
   }
 }
