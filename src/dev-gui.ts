@@ -56,7 +56,6 @@ class DevGUI {
 
   loadOpenFolders(): void {
     this.openFolders = JSON.parse(localStorage.getItem('dev-gui-open') || '{}').open || [];
-    console.log(this.openFolders);
   }
 
   saveOpenFolders(): void {
