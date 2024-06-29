@@ -160,7 +160,14 @@ export function initDemo() {
     initialCameraPosition: [180, 150, 300],
     backgroundColor: initialBackgroundColor,
     lineHeight: 0.3,
-    devMode: true
+    devMode: {
+      camera: true,
+      renderer: true,
+      parser: true,
+      buildVolume: true,
+      devHelpers: true,
+      statsContainer: document.querySelector('.sidebar')
+    }
   }));
 
   backgroundColor.value = initialBackgroundColor;
