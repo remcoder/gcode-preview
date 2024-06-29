@@ -156,7 +156,7 @@ export class WebGLPreview {
   private devMode?: boolean | DevModeOptions = true;
   private _lastRenderTime = 0;
   private _wireframe = false;
-  private stats: Stats = new Stats();
+  private stats: Stats = this.devMode ? new Stats() : undefined;
   private devGui?: DevGUI;
 
   constructor(opts: GCodePreviewOptions) {
@@ -245,7 +245,7 @@ export class WebGLPreview {
 
     if (opts.allowDragNDrop) this._enableDropHandler();
 
-    if (this.devMode) {
+    if (this.stats) {
       document.body.appendChild(this.stats.dom);
       this.initGui();
     }
