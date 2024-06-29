@@ -6,6 +6,7 @@ export type DevModeOptions = {
   parser?: boolean | false;
   buildVolume?: boolean | false;
   devHelpers?: boolean | false;
+  statsContainer?: HTMLElement | undefined;
 };
 
 class DevGUI {

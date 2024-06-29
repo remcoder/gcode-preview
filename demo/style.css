@@ -33,15 +33,20 @@ body {
   left: 0;
   top: 0;
   bottom: 0;
-  padding: 10px;
   line-height: 25px;
   transform: translateZ(0);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   transform: translateZ(0);
+}
+
+.scroll-container {
+  padding: 10px;
+
   overflow-y: scroll;
   overflow-x: hidden;
+  height: 100%;
 }
 
 .description {
@@ -182,4 +187,10 @@ output {
   line-height: 10px;
   position: relative;
   bottom: 2px;
+}
+
+.stats {
+  position: absolute !important;
+  right: -80px !important;
+  left: unset !important;
 }
