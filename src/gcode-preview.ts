@@ -1,5 +1,5 @@
 import { WebGLPreviewOptions, WebGLPreview } from './webgl-preview';
-import { Layer, Parser } from './gcode-parser';
+import { GCodeCommand, Parser } from './gcode-parser';
 import { DevGUI, DevModeOptions } from './dev-gui';
 
 type GCodePreviewOptions = WebGLPreviewOptions & { test: boolean } & DevModeOptions;
@@ -23,8 +23,8 @@ export class GCodePreview {
     return this.webglPreview.buildVolume;
   }
 
-  get layers(): Layer[] {
-    return [this.parser.preamble].concat(this.parser.layers.concat());
+  get layers(): GCodeCommand[][] {
+    return this.parser.parsedGCode.layers;
   }
 
   clear(): void {
@@ -40,6 +40,7 @@ export class GCodePreview {
   processGCode(gcode: string): void {
     const { layers } = this.parser.parseGCode(gcode); // Not sure the layers paradigm is a good thing to keep around for all cases.
     this.webglPreview.layers = layers;
+    this.webglPreview.parsedGCode = this.parser.parsedGCode;
     this.webglPreview.render();
   }
 

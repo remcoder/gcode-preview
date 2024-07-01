@@ -61,6 +61,8 @@ type MoveCommandParams = {
   [key in MoveCommandParamName]?: number;
 };
 export class GCodeCommand {
+  public lineNumber: number;
+  public state: State;
   constructor(
     public src: string,
     public gcode: string,
@@ -102,6 +104,31 @@ export class Layer {
   ) {}
 }
 
+export class State {
+  constructor(
+    public x: number | undefined,
+    public y: number | undefined,
+    public z: number | undefined,
+    public e: number | undefined,
+    public maxZ: number | undefined,
+    public toolIndex: number | undefined,
+    public lineNumber: number
+  ) {}
+
+  copy(): State {
+    return new State(this.x, this.y, this.z, this.e, this.maxZ, this.toolIndex, this.lineNumber);
+  }
+}
+
+export type ParsedGCode = {
+  commands: GCodeCommand[];
+  preamble: GCodeCommand[];
+  isPlanar: boolean | undefined;
+  layers: GCodeCommand[][];
+  paths: GCodeCommand[][];
+  metadata: Metadata;
+};
+
 export class Parser {
   lines: string[] = [];
 
@@ -115,6 +142,17 @@ export class Parser {
   metadata: Metadata = { thumbnails: {} };
   tolerance = 0; // The higher the tolerance, the fewer layers are created, so performance will improve.
 
+  parsedGCode: ParsedGCode = {
+    isPlanar: undefined,
+    commands: [],
+    layers: [],
+    paths: [],
+    preamble: [],
+    metadata: { thumbnails: {} }
+  };
+
+  state: State;
+
   /**
    * Create a new Parser instance.
    *
@@ -123,6 +161,7 @@ export class Parser {
    */
   constructor(minLayerThreshold?: number) {
     this.tolerance = minLayerThreshold ?? this.tolerance;
+    this.state = new State(0, 0, 0, undefined, undefined, undefined, 0);
   }
 
   clear(): void {
@@ -133,6 +172,15 @@ export class Parser {
     this.maxZ = 0;
     this.metadata = { thumbnails: {} };
     this.tolerance = 0;
+    this.parsedGCode = {
+      isPlanar: undefined,
+      commands: [],
+      layers: [],
+      paths: [],
+      preamble: [],
+      metadata: { thumbnails: {} }
+    };
+    this.state = new State(0, 0, 0, undefined, undefined, undefined, 0);
   }
 
   parseGCode(input: string | string[]): {
@@ -143,15 +191,87 @@ export class Parser {
 
     this.lines = this.lines.concat(lines);
 
-    const commands = this.lines2commands(lines);
+    for (let i = 0; i < lines.length; i++) {
+      // build the command object
+      const command = this.parseCommand(lines[i]);
+      command.lineNumber = this.state.lineNumber + 1;
+      command.state = this.state.copy();
+      this.parsedGCode.commands.push(command);
 
-    this.groupIntoLayers(commands);
+      // Planar slicing specific logic
+      if (
+        this.parsedGCode.isPlanar === undefined &&
+        command instanceof MoveCommand &&
+        command.params.z &&
+        command.params.e
+      ) {
+        this.parsedGCode.isPlanar = false;
+        this.parsedGCode.layers = [];
+      } else {
+        let currentLayer = this.parsedGCode.layers[this.parsedGCode.layers.length - 1];
+        if (!currentLayer) {
+          currentLayer = [];
+          this.parsedGCode.layers.push(currentLayer);
+        }
+
+        if (command instanceof MoveCommand) {
+          const params = command.params;
+
+          if (
+            (params.e ?? 0) > 0 && // extruding?
+            (params.x != undefined || params.y != undefined) && // moving?
+            Math.abs(this.state.z - (this.state.maxZ || -Infinity)) > this.tolerance // new layer?
+          ) {
+            this.state.maxZ = this.state.z;
+            this.parsedGCode.layers.push([]);
+          }
+        }
+
+        // Split movements into paths
+        let currentPath = this.parsedGCode.paths[this.parsedGCode.paths.length - 1];
+        if (command instanceof MoveCommand) {
+          if (!currentPath) {
+            currentPath = [];
+            this.parsedGCode.paths.push(currentPath);
+          }
+
+          if (
+            command.params.e &&
+            !this.state.e && // start extruding?
+            !command.params.e &&
+            this.state.e // stop extruding?
+          ) {
+            this.parsedGCode.paths[this.parsedGCode.paths.length - 1].push(command);
+          }
+          currentPath.push(command);
+        } else if (command instanceof SelectToolCommand) {
+          this.parsedGCode.paths.push([]);
+        }
+      }
+
+      // update state
+      this.state.x = command.params?.x || this.state.x;
+      this.state.y = command.params?.y || this.state.y;
+      this.state.z = command.params?.z || this.state.z;
+      this.state.e = command.params?.e;
+      this.state.lineNumber++;
+    }
+
+    // this.parsedGCode.paths = this.parsedGCode.paths.filter((path) => path.length > 0);
+
+    if (this.parsedGCode.isPlanar === undefined) {
+      this.parsedGCode.isPlanar = true;
+    }
+
+    // const commands = this.lines2commands(lines);
+
+    // this.groupIntoLayers(commands);
 
     // merge thumbs
-    const thumbs = this.parseMetadata(commands.filter((cmd) => cmd.comment)).thumbnails;
-    for (const [key, value] of Object.entries(thumbs)) {
-      this.metadata.thumbnails[key] = value;
-    }
+    // const thumbs = this.parseMetadata(commands.filter((cmd) => cmd.comment)).thumbnails;
+    // for (const [key, value] of Object.entries(thumbs)) {
+    //   this.metadata.thumbnails[key] = value;
+    // }
 
     return { layers: this.layers, metadata: this.metadata };
   }
@@ -184,20 +304,28 @@ export class Parser {
       case 'g03':
         return new MoveCommand(line, gcode, params, comment);
       case 't0':
+        this.state.toolIndex = 0;
         return new SelectToolCommand(line, gcode, comment, 0);
       case 't1':
+        this.state.toolIndex = 1;
         return new SelectToolCommand(line, gcode, comment, 1);
       case 't2':
+        this.state.toolIndex = 2;
         return new SelectToolCommand(line, gcode, comment, 2);
       case 't3':
+        this.state.toolIndex = 3;
         return new SelectToolCommand(line, gcode, comment, 3);
       case 't4':
+        this.state.toolIndex = 4;
         return new SelectToolCommand(line, gcode, comment, 4);
       case 't5':
+        this.state.toolIndex = 5;
         return new SelectToolCommand(line, gcode, comment, 5);
       case 't6':
+        this.state.toolIndex = 6;
         return new SelectToolCommand(line, gcode, comment, 6);
       case 't7':
+        this.state.toolIndex = 7;
         return new SelectToolCommand(line, gcode, comment, 7);
       default:
         return new GCodeCommand(line, gcode, params, comment);
@@ -293,10 +421,3 @@ export class Parser {
     return { thumbnails };
   }
 }
-
-// backwards compat;
-// eslint-disable-next-line no-redeclare
-export interface Parser {
-  parseGcode: typeof Parser.prototype.parseGCode;
-}
-Parser.prototype.parseGcode = Parser.prototype.parseGCode;

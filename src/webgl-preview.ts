@@ -1,7 +1,7 @@
-import { MoveCommand, Layer, SelectToolCommand } from './gcode-parser';
+import { MoveCommand, Layer, SelectToolCommand, ParsedGCode } from './gcode-parser';
 import { DevModeOptions } from './dev-gui';
 import { ExtrusionGeometry } from './extrusion-geometry';
-import { BuildVolume } from './buildVolume';
+import { BuildVolume } from './build-volume';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
@@ -110,6 +110,7 @@ export class WebGLPreview {
   disableGradient = false;
   private devMode?: boolean | DevModeOptions = true;
   layers?: Layer[];
+  parsedGCode?: ParsedGCode;
 
   state: State = { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 };
 
@@ -692,18 +693,18 @@ export class WebGLPreview {
   async _readFromStream(stream: ReadableStream): Promise<void> {
     const reader = stream.getReader();
     let result;
-    let tail = '';
+    // let tail = '';
     let size = 0;
     do {
       result = await reader.read();
       size += result.value?.length ?? 0;
-      const str = decode(result.value);
-      const idxNewLine = str.lastIndexOf('\n');
-      const maxFullLine = str.slice(0, idxNewLine);
+      // const str = decode(result.value);
+      // const idxNewLine = str.lastIndexOf('\n');
+      // const maxFullLine = str.slice(0, idxNewLine);
 
       // parse increments but don't render yet
       // this.parser.parseGCode(tail + maxFullLine);
-      tail = str.slice(idxNewLine);
+      // tail = str.slice(idxNewLine);
     } while (!result.done);
     console.debug('read from stream', size);
   }
