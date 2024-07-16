@@ -77,7 +77,7 @@ export type GCodePreviewOptions = {
   renderTravel?: boolean;
   startLayer?: number;
   topLayerColor?: ColorRepresentation;
-  travelColor?: ColorRepresentation;
+  travelColor?: ColorRepresentation | ColorRepresentation[];
   toolColors?: Record<number, ColorRepresentation>;
   disableGradient?: boolean;
   extrusionWidth?: number;
@@ -147,7 +147,8 @@ export class WebGLPreview {
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
-  private _travelColor = new Color(0x990000);
+  static readonly defaultTravelColor = [new Color('green'), new Color('red')];
+  private _travelColor: Color | Color[] = WebGLPreview.defaultTravelColor;
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
@@ -188,7 +189,7 @@ export class WebGLPreview {
       this.extrusionColor = opts.extrusionColor;
     }
     if (opts.travelColor !== undefined) {
-      this.travelColor = new Color(opts.travelColor);
+      this.travelColor = opts.travelColor;
     }
     if (opts.topLayerColor !== undefined) {
       this.topLayerColor = new Color(opts.topLayerColor);
@@ -277,6 +278,21 @@ export class WebGLPreview {
     return this._extrusionColor[this.state.t] ?? WebGLPreview.defaultExtrusionColor;
   }
 
+  // get travel color based on current state
+  get currentTravelColor(): Color {
+    if (this._travelColor === undefined) {
+      this._travelColor = WebGLPreview.defaultTravelColor;
+    }
+    if (this._travelColor instanceof Color) {
+      return this._travelColor;
+    }
+
+    const airCutting = this.state.z >= 0;
+    const color = airCutting ? this._travelColor[0] : this._travelColor[1];
+
+    return color ?? WebGLPreview.defaultTravelColor[0];
+  }
+
   get backgroundColor(): Color {
     return this._backgroundColor;
   }
@@ -286,10 +302,19 @@ export class WebGLPreview {
     this.scene.background = this._backgroundColor;
   }
 
-  get travelColor(): Color {
+  get travelColor(): Color | Color[] {
     return this._travelColor;
   }
-  set travelColor(value: number | string | Color) {
+  set travelColor(value: number | string | Color | ColorRepresentation[]) {
+    if (Array.isArray(value)) {
+      this._travelColor = [];
+      // loop over the object and convert all colors to Color
+      for (const [index, color] of value.entries()) {
+        this._travelColor[index] = new Color(color);
+      }
+
+      return;
+    }
     this._travelColor = new Color(value);
   }
 
@@ -477,9 +502,11 @@ export class WebGLPreview {
           t: this.state.t
         };
 
+        const travelLineSize = currentLayer.travel.length;
         if (index >= this.minLayerIndex) {
           const extrude = (g.params.e ?? 0) > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
           const moving = next.x != this.state.x || next.y != this.state.y || next.z != this.state.z;
+
           if (moving) {
             if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
               if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
@@ -489,6 +516,12 @@ export class WebGLPreview {
               }
             }
           }
+        }
+
+        if (this.renderTravel) {
+          const travelColor = this.currentTravelColor;
+          const newTravelLines = currentLayer.travel.slice(travelLineSize, currentLayer.travel.length);
+          this.addLine(newTravelLines, travelColor.getHex());
         }
 
         // update this.state
@@ -536,10 +569,6 @@ export class WebGLPreview {
         }
       }
     }
-
-    if (this.renderTravel) {
-      this.addLine(layer.travel, this._travelColor.getHex());
-    }
   }
 
   setInches(): void {
@@ -554,7 +583,7 @@ export class WebGLPreview {
   drawBuildVolume(): void {
     if (!this.buildVolume) return;
 
-    this.scene.add(new GridHelper(this.buildVolume.x, 10, this.buildVolume.y, 10));
+    this.scene.add(new GridHelper(this.buildVolume.x, 60, this.buildVolume.y, 60));
 
     const geometryBox = LineBox(this.buildVolume.x, this.buildVolume.z, this.buildVolume.y, 0x888888);
 
