@@ -43,6 +43,19 @@ type Arc = GVector3 & { r: number; i: number; j: number };
 
 type Point = GVector3;
 type BuildVolume = GVector3;
+
+type IsActualCutting = (startState: State, endState: State) => boolean;
+type TravelDistance = {
+  total: number;
+  air: number;
+  actual: number;
+};
+type TravelDuration = {
+  total: number;
+  air: number;
+  actual: number;
+};
+
 export class State {
   x: number;
   y: number;
@@ -93,6 +106,8 @@ export type GCodePreviewOptions = {
   targetId?: string;
   /** @experimental */
   devMode?: boolean | DevModeOptions;
+
+  isActualCutting: IsActualCutting;
 };
 
 const target = {
@@ -132,6 +147,8 @@ export class WebGLPreview {
   nonTravelmoves: string[] = [];
   disableGradient = false;
 
+  isActualCutting: IsActualCutting;
+
   // gcode processing state
   private state: State = State.initial;
   private beyondFirstMove = false; // TODO: move to state
@@ -152,6 +169,14 @@ export class WebGLPreview {
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
+
+  // cutting statistics
+  private _totalTravelDistance?: number[] = [];
+  private _airTravelDistance?: number[] = [];
+  private _actualTravelDistance?: number[] = [];
+  private _totalTravelDuration?: number[] = [];
+  private _airTravelDuration?: number[] = [];
+  private _actualTravelDuration?: number[] = [];
 
   // debug
   private devMode?: boolean | DevModeOptions = false;
@@ -202,6 +227,11 @@ export class WebGLPreview {
       for (const [key, value] of Object.entries(opts.toolColors)) {
         this._toolColors[parseInt(key)] = new Color(value);
       }
+    }
+    if (opts.isActualCutting) {
+      this.isActualCutting = opts.isActualCutting;
+    } else {
+      this.isActualCutting = (start, end) => end.z < 0;
     }
 
     if (opts.disableGradient !== undefined) {
@@ -279,7 +309,7 @@ export class WebGLPreview {
   }
 
   // get travel color based on current state
-  get currentTravelColor(): Color {
+  getCurrentTravelColor(startState: State, endState: State): Color {
     if (this._travelColor === undefined) {
       this._travelColor = WebGLPreview.defaultTravelColor;
     }
@@ -287,8 +317,8 @@ export class WebGLPreview {
       return this._travelColor;
     }
 
-    const airCutting = this.state.z >= 0;
-    const color = airCutting ? this._travelColor[0] : this._travelColor[1];
+    const actualCutting = this.isActualCutting(startState, endState);
+    const color = actualCutting ? this._travelColor[0] : this._travelColor[1];
 
     return color ?? WebGLPreview.defaultTravelColor[0];
   }
@@ -330,6 +360,26 @@ export class WebGLPreview {
   }
   set lastSegmentColor(value: ColorRepresentation | undefined) {
     this._lastSegmentColor = value !== undefined ? new Color(value) : undefined;
+  }
+
+  get travelDistance(): TravelDistance {
+    const total = this._totalTravelDistance.reduce((pre, cur) => pre + cur, 0);
+    const air = this._airTravelDistance.reduce((pre, cur) => pre + cur, 0);
+    const actual = this._actualTravelDistance.reduce((pre, cur) => pre + cur, 0);
+    return { total, air, actual };
+  }
+
+  initTravelDistance(layerIdx: number): void {
+    this._totalTravelDistance[layerIdx] = 0;
+    this._airTravelDistance[layerIdx] = 0;
+    this._actualTravelDistance[layerIdx] = 0;
+  }
+
+  get travelDuration(): TravelDuration {
+    const total = this._totalTravelDuration.reduce((pre, cur) => pre + cur, 0);
+    const air = this._airTravelDuration.reduce((pre, cur) => pre + cur, 0);
+    const actual = this._actualTravelDuration.reduce((pre, cur) => pre + cur, 0);
+    return { total, air, actual };
   }
 
   /**
@@ -472,6 +522,7 @@ export class WebGLPreview {
       z: this.state.z,
       height: l.height
     };
+    this.initTravelDistance(index);
 
     for (const cmd of l.commands) {
       if (cmd.gcode == 'g20') {
@@ -515,13 +566,11 @@ export class WebGLPreview {
                 this.addLineSegment(currentLayer, this.state, next, extrude);
               }
             }
+            if (this.renderTravel) {
+              const newTravelLines = currentLayer.travel.slice(travelLineSize, currentLayer.travel.length);
+              this.doRenderTravel(newTravelLines, this.state, next, index);
+            }
           }
-        }
-
-        if (this.renderTravel) {
-          const travelColor = this.currentTravelColor;
-          const newTravelLines = currentLayer.travel.slice(travelLineSize, currentLayer.travel.length);
-          this.addLine(newTravelLines, travelColor.getHex());
         }
 
         // update this.state
@@ -571,6 +620,42 @@ export class WebGLPreview {
     }
   }
 
+  /** @internal */
+  doRenderTravel(newLines: number[], curState: State, nextState: State, layerIdx: number): void {
+    if (!newLines || newLines.length < 3) {
+      return;
+    }
+    const travelColor = this.getCurrentTravelColor(curState, nextState);
+    this.addLine(newLines, travelColor.getHex());
+    this.calcTravelDistanceAndDuration(newLines, curState, nextState, layerIdx);
+  }
+
+  /** @internal */
+  calcTravelDistanceAndDuration(newLines: number[], curState: State, nextState: State, layerIdx: number): void {
+    let [totalDistance, airDistance, actualDistance] = [0, 0, 0];
+    let { x, y, z } = curState;
+    for (let index = 0; index <= newLines.length - 3; ) {
+      const nextPoint = newLines.slice(index, index + 3);
+      const [nextX, nextY, nextZ] = nextPoint;
+      const distance = Math.sqrt(Math.pow(nextX - x, 2) + Math.pow(nextY - y, 2) + Math.pow(nextZ - z, 2));
+      totalDistance += distance;
+      const actualCutting = this.isActualCutting(curState, nextState);
+      if (actualCutting) {
+        actualDistance += distance;
+      } else {
+        airDistance += distance;
+      }
+
+      x = nextX;
+      y = nextY;
+      z = nextZ;
+      index += 3;
+    }
+    this._totalTravelDistance[layerIdx] += totalDistance;
+    this._actualTravelDistance[layerIdx] += actualDistance;
+    this._airTravelDistance[layerIdx] += airDistance;
+  }
+
   setInches(): void {
     if (this.beyondFirstMove) {
       console.warn('Switching units after movement is already made is discouraged and is not supported.');
@@ -583,7 +668,9 @@ export class WebGLPreview {
   drawBuildVolume(): void {
     if (!this.buildVolume) return;
 
-    this.scene.add(new GridHelper(this.buildVolume.x, 60, this.buildVolume.y, 60));
+    this.scene.add(
+      new GridHelper(this.buildVolume.x, this.buildVolume.x / 10, this.buildVolume.y, this.buildVolume.y / 10)
+    );
 
     const geometryBox = LineBox(this.buildVolume.x, this.buildVolume.z, this.buildVolume.y, 0x888888);
 
