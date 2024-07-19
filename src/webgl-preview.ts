@@ -164,7 +164,7 @@ export class WebGLPreview {
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
-  static readonly defaultTravelColor = [new Color('green'), new Color('red')];
+  static readonly defaultTravelColor = [new Color('red'), new Color('green')];
   private _travelColor: Color | Color[] = WebGLPreview.defaultTravelColor;
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
