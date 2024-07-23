@@ -65,10 +65,10 @@ export class State {
   i: number;
   j: number;
   t: number; // tool index
-  // feedrate?
+  f: number; // feedrate
   static get initial(): State {
     const state = new State();
-    Object.assign(state, { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 });
+    Object.assign(state, { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0, f: 20000 });
     return state;
   }
 }
@@ -382,6 +382,12 @@ export class WebGLPreview {
     return { total, air, actual };
   }
 
+  initTravelDuration(layerIdx: number): void {
+    this._totalTravelDuration[layerIdx] = 0;
+    this._airTravelDuration[layerIdx] = 0;
+    this._actualTravelDuration[layerIdx] = 0;
+  }
+
   /**
    * @internal Do not use externally.
    */
@@ -523,6 +529,7 @@ export class WebGLPreview {
       height: l.height
     };
     this.initTravelDistance(index);
+    this.initTravelDuration(index);
 
     for (const cmd of l.commands) {
       if (cmd.gcode == 'g20') {
@@ -550,6 +557,7 @@ export class WebGLPreview {
           e: g.params.e ?? this.state.e,
           i: g.params.i ?? this.state.i,
           j: g.params.j ?? this.state.j,
+          f: g.params.f ?? this.state.f,
           t: this.state.t
         };
 
@@ -577,6 +585,7 @@ export class WebGLPreview {
         this.state.x = next.x;
         this.state.y = next.y;
         this.state.z = next.z;
+        this.state.f = next.f;
         // if (next.e) state.e = next.e; // where not really tracking e as distance (yet) but we only check if some commands are extruding (positive e)
         if (!this.beyondFirstMove) this.beyondFirstMove = true;
       }
@@ -633,17 +642,23 @@ export class WebGLPreview {
   /** @internal */
   calcTravelDistanceAndDuration(newLines: number[], curState: State, nextState: State, layerIdx: number): void {
     let [totalDistance, airDistance, actualDistance] = [0, 0, 0];
-    let { x, y, z } = curState;
+    let [totalDuration, airDuration, actualDuration] = [0, 0, 0];
+    let { x, y, z, f } = curState;
     for (let index = 0; index <= newLines.length - 3; ) {
       const nextPoint = newLines.slice(index, index + 3);
       const [nextX, nextY, nextZ] = nextPoint;
       const distance = Math.sqrt(Math.pow(nextX - x, 2) + Math.pow(nextY - y, 2) + Math.pow(nextZ - z, 2));
       totalDistance += distance;
+      const duration = (distance / f) * 60;
+
+      totalDuration += duration;
       const actualCutting = this.isActualCutting(curState, nextState);
       if (actualCutting) {
         actualDistance += distance;
+        actualDuration += duration;
       } else {
         airDistance += distance;
+        airDuration += duration;
       }
 
       x = nextX;
@@ -654,6 +669,10 @@ export class WebGLPreview {
     this._totalTravelDistance[layerIdx] += totalDistance;
     this._actualTravelDistance[layerIdx] += actualDistance;
     this._airTravelDistance[layerIdx] += airDistance;
+
+    this._totalTravelDuration[layerIdx] += totalDuration;
+    this._actualTravelDuration[layerIdx] += actualDuration;
+    this._airTravelDuration[layerIdx] += airDuration;
   }
 
   setInches(): void {
