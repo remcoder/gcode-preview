@@ -33,7 +33,7 @@ import {
 
 import { ExtrusionGeometry } from './extrusion-geometry';
 
-type RenderLayer = { extrusion: number[]; travel: number[]; z: number; height: number };
+type RenderLayer = { extrusion: number[]; travel: number[][]; z: number; height: number };
 type GVector3 = {
   x: number;
   y: number;
@@ -77,7 +77,7 @@ export type GCodePreviewOptions = {
   renderTravel?: boolean;
   startLayer?: number;
   topLayerColor?: ColorRepresentation;
-  travelColor?: ColorRepresentation;
+  travelColor?: ColorRepresentation | (() => ColorRepresentation);
   toolColors?: Record<number, ColorRepresentation>;
   disableGradient?: boolean;
   extrusionWidth?: number;
@@ -148,6 +148,7 @@ export class WebGLPreview {
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
   private _travelColor = new Color(0x990000);
+  private _travelColorFunc?: () => ColorRepresentation = undefined;
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
@@ -188,7 +189,8 @@ export class WebGLPreview {
       this.extrusionColor = opts.extrusionColor;
     }
     if (opts.travelColor !== undefined) {
-      this.travelColor = new Color(opts.travelColor);
+      if (typeof opts.travelColor === 'function') this._travelColorFunc = opts.travelColor;
+      else this.travelColor = opts.travelColor;
     }
     if (opts.topLayerColor !== undefined) {
       this.topLayerColor = new Color(opts.topLayerColor);
@@ -505,40 +507,40 @@ export class WebGLPreview {
 
   /** @internal */
   doRenderExtrusion(layer: RenderLayer, index: number): void {
-    if (this.renderExtrusion) {
-      let extrusionColor = this.currentToolColor;
+    // if (this.renderExtrusion) {
+    //   let extrusionColor = this.currentToolColor;
 
-      if (!this.singleLayerMode && !this.renderTubes && !this.disableGradient) {
-        const brightness = 0.1 + (0.7 * index) / this.layers.length;
+    //   if (!this.singleLayerMode && !this.renderTubes && !this.disableGradient) {
+    //     const brightness = 0.1 + (0.7 * index) / this.layers.length;
 
-        extrusionColor.getHSL(target);
-        extrusionColor = new Color().setHSL(target.h, target.s, brightness);
-      }
+    //     extrusionColor.getHSL(target);
+    //     extrusionColor = new Color().setHSL(target.h, target.s, brightness);
+    //   }
 
-      if (index == this.layers.length - 1) {
-        const layerColor = this._topLayerColor ?? extrusionColor;
-        const lastSegmentColor = this._lastSegmentColor ?? layerColor;
+    //   if (index == this.layers.length - 1) {
+    //     const layerColor = this._topLayerColor ?? extrusionColor;
+    //     const lastSegmentColor = this._lastSegmentColor ?? layerColor;
 
-        const endPoint = layer.extrusion.splice(-3);
-        const preendPoint = layer.extrusion.splice(-3);
-        if (this.renderTubes) {
-          this.addTubeLine(layer.extrusion, layerColor.getHex(), layer.height);
-          this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex(), layer.height);
-        } else {
-          this.addLine(layer.extrusion, layerColor.getHex());
-          this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
-        }
-      } else {
-        if (this.renderTubes) {
-          this.addTubeLine(layer.extrusion, extrusionColor.getHex(), layer.height);
-        } else {
-          this.addLine(layer.extrusion, extrusionColor.getHex());
-        }
-      }
-    }
+    //     const endPoint = layer.extrusion.splice(-3);
+    //     const preendPoint = layer.extrusion.splice(-3);
+    //     if (this.renderTubes) {
+    //       this.addTubeLine(layer.extrusion, layerColor.getHex(), layer.height);
+    //       this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex(), layer.height);
+    //     } else {
+    //       this.addLine(layer.extrusion, layerColor.getHex());
+    //       this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+    //     }
+    //   } else {
+    //     if (this.renderTubes) {
+    //       this.addTubeLine(layer.extrusion, extrusionColor.getHex(), layer.height);
+    //     } else {
+    //       this.addLine(layer.extrusion, extrusionColor.getHex());
+    //     }
+    //   }
+    // }
 
     if (this.renderTravel) {
-      this.addLine(layer.travel, this._travelColor.getHex());
+      this.addLine(layer.travel);
     }
   }
 
@@ -590,13 +592,13 @@ export class WebGLPreview {
 
   /** @internal */
   addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void {
-    const line = extrude ? layer.extrusion : layer.travel;
-    line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+    // const line = extrude ? layer.extrusion : layer.travel;
+    layer.travel.push([p1.x, p1.y, p1.z, p2.x, p2.y, p2.z]);
   }
 
   /** @internal */
   addArcSegment(layer: RenderLayer, p1: Point, p2: Arc, extrude: boolean, cw: boolean): void {
-    const line = extrude ? layer.extrusion : layer.travel;
+    const line = layer.travel;
 
     const currX = p1.x,
       currY = p1.y,
@@ -691,25 +693,29 @@ export class WebGLPreview {
     points.push({ x: p2.x, y: p2.y, z: p2.z });
 
     for (let idx = 0; idx < points.length - 1; idx++) {
-      line.push(points[idx].x, points[idx].y, points[idx].z, points[idx + 1].x, points[idx + 1].y, points[idx + 1].z);
+      line.push([points[idx].x, points[idx].y, points[idx].z, points[idx + 1].x, points[idx + 1].y, points[idx + 1].z]);
     }
   }
 
   /** @internal */
-  addLine(vertices: number[], color: number): void {
-    if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
-      this.addThickLine(vertices, color);
-      return;
+  addLine(lines: number[][]): void {
+    // if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
+    //   this.addThickLine(vertices, color);
+    //   return;
+    // }
+
+    for (const vertices of lines) {
+      const travel = vertices[2] > 0 || vertices[5] > 0;
+      const color = travel ? 'red' : 'green';
+      const geometry = new BufferGeometry();
+      geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+      this.disposables.push(geometry);
+      const material = new LineBasicMaterial({ color: color });
+      this.disposables.push(material);
+      const lineSegments = new LineSegments(geometry, material);
+
+      this.group?.add(lineSegments);
     }
-
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
-    this.disposables.push(geometry);
-    const material = new LineBasicMaterial({ color: color });
-    this.disposables.push(material);
-    const lineSegments = new LineSegments(geometry, material);
-
-    this.group?.add(lineSegments);
   }
 
   /** @internal */

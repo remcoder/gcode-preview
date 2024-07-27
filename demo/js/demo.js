@@ -88,6 +88,25 @@ const settingsPresets = {
       z: ''
     }
   },
+  cnc2: {
+    file: 'gcodes/cnc.gcode',
+    lineWidth: 1,
+    singleLayerMode: false,
+    renderExtrusion: false,
+    renderTubes: false,
+    extrusionColors: [],
+    travel: true,
+    travelColor: (fromState, toState) => (toState.z > 0 ? '#00FF00' : '#FF0000'),
+    highlightTopLayer: false,
+    topLayerColor: undefined,
+    lastSegmentColor: undefined,
+    drawBuildVolume: true,
+    buildVolume: {
+      x: 400,
+      y: 400,
+      z: ''
+    }
+  },
   arcs: {
     file: 'gcodes/screw.gcode',
     lineWidth: 2,
@@ -160,6 +179,7 @@ export function initDemo() {
     initialCameraPosition: [180, 150, 300],
     backgroundColor: initialBackgroundColor,
     lineHeight: 0.3,
+
     devMode: {
       camera: true,
       renderer: true,
