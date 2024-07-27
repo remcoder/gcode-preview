@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "classnames": "^2.5.1",
     "gcode-preview": "file:..",
     "next": "14.2.5",
     "react": "^18",

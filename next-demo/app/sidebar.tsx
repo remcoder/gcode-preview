@@ -4,6 +4,7 @@ export const Sidebar = () => {
       <nav className="panel">
         <p className="panel-heading">GCode preview</p>
         <p className="panel-tabs">
+          <a>Meta</a>
           <a className="is-active">Rendering</a>
           <a>Other</a>
           <a>Settings</a>
