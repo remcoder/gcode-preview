@@ -88,6 +88,25 @@ const settingsPresets = {
       z: ''
     }
   },
+  'cnc (cutting color)': {
+    file: 'gcodes/xuzhen1994.gcode',
+    lineWidth: 1,
+    singleLayerMode: false,
+    renderExtrusion: false,
+    renderTubes: false,
+    extrusionColors: [],
+    travel: true,
+    travelColor: '#00FF00',
+    highlightTopLayer: false,
+    topLayerColor: undefined,
+    lastSegmentColor: undefined,
+    drawBuildVolume: true,
+    buildVolume: {
+      x: 20,
+      y: 20,
+      z: ''
+    }
+  },
   arcs: {
     file: 'gcodes/screw.gcode',
     lineWidth: 2,
