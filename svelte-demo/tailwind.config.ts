@@ -7,22 +7,22 @@ export default {
 
 	theme: {
 		extend: {
-      colors: {
-        // flowbite-svelte
-        primary: {
-          50: '#FFF5F2',
-          100: '#FFF1EE',
-          200: '#FFE4DE',
-          300: '#FFD5CC',
-          400: '#FFBCAD',
-          500: '#FE795D',
-          600: '#EF562F',
-          700: '#EB4F27',
-          800: '#CC4522',
-          900: '#A5371B'
-        }
-      }
-    }
+		colors: {
+		// flowbite-svelte
+		primary: {
+			50: '#F5F2FF',
+			100: '#F1EEFF',
+			200: '#E4DEFF',
+			300: '#D5CCFF',
+			400: '#BCADFF',
+			500: '#795DFF',
+			600: '#562FFF',
+			700: '#4F27EB',
+			800: '#4522CC',
+			900: '#371BA5'
+		}
+		}
+	}
 	},
 
 	plugins: [flowbitePlugin]
