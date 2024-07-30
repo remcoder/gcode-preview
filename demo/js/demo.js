@@ -97,13 +97,14 @@ const settingsPresets = {
     extrusionColors: [],
     travel: true,
     travelColor: '#00FF00',
+    travelColorFun: (fromState, toState) => (toState.z > 0 ? '#00FF00' : '#FF0000'),
     highlightTopLayer: false,
     topLayerColor: undefined,
     lastSegmentColor: undefined,
     drawBuildVolume: true,
     buildVolume: {
-      x: 20,
-      y: 20,
+      x: 400,
+      y: 400,
       z: ''
     }
   },
@@ -179,6 +180,7 @@ export function initDemo() {
     initialCameraPosition: [180, 150, 300],
     backgroundColor: initialBackgroundColor,
     lineHeight: 0.3,
+
     devMode: {
       camera: true,
       renderer: true,
