@@ -47,7 +47,7 @@ const drawBuildVolume = document.getElementById('drawBuildVolume');
 const travelColor = document.getElementById('travel-color');
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 
-const defaultPreset = 'multicolor';
+const defaultPreset = 'cnc (cutting color)';
 
 const settingsPresets = {
   multicolor: {
