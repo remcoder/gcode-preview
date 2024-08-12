@@ -47,6 +47,7 @@ const buildVolumeZ = document.getElementById('buildVolumeZ');
 const drawBuildVolume = document.getElementById('drawBuildVolume');
 const travelColor = document.getElementById('travel-color');
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+const imgThumb = document.getElementById('thumb');
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 export function initDemo() {
@@ -402,10 +403,16 @@ function updateUI() {
 
   if (thumb != gcodePreview.parser.metadata.thumbnails['220x124']) {
     thumb = gcodePreview.parser.metadata.thumbnails['220x124'];
-    document.getElementById('thumb').src = thumb?.src ?? 'https://via.placeholder.com/120x60?text=noThumbnail';
+    updateThumb(thumb?.src);
   }
 
   showExtrusionColors();
+}
+
+function updateThumb(url) {
+  imgThumb.src = url ?? 'https://via.placeholder.com/220x124?text=noThumbnail';
+  imgThumb.style.filter = 'brightness(1)';
+  imgThumb.style.opacity = 1;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
