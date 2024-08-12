@@ -39,7 +39,6 @@ const toggleHighlight = document.getElementById('highlight');
 const topLayerColorInput = document.getElementById('top-layer-color');
 const lastSegmentColorInput = document.getElementById('last-segment-color');
 const layerCount = document.getElementById('layer-count');
-const fileName = document.getElementById('file-name');
 const fileSelector = document.getElementById('file-selector');
 const fileSize = document.getElementById('file-size');
 const buildVolumeX = document.getElementById('buildVolumeX');
@@ -210,7 +209,6 @@ export function initDemo() {
     const files = evt.dataTransfer.files;
     const file = files[0];
 
-    fileName.innerText = file.name;
     fileSize.innerText = humanFileSize(file.size);
 
     // await preview._readFromStream(file.stream());
@@ -420,12 +418,10 @@ async function loadGCodeFromServer(filename) {
 
   const gcode = await response.text();
   _handleGCode(filename, gcode);
-  fileName.setAttribute('href', filename);
 }
 
 function _handleGCode(filename, text) {
   gcode = text;
-  fileName.innerText = filename;
   fileSize.innerText = humanFileSize(text.length);
 
   updateUI();
