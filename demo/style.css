@@ -181,6 +181,14 @@ output {
   display: flex;
 }
 
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-align-end {
+  align-items: flex-end;
+}
+
 .just-between {
   justify-content: space-between;
 }
@@ -200,4 +208,8 @@ output {
   position: absolute !important;
   right: -80px !important;
   left: unset !important;
+}
+
+select {
+  min-width: 190px;
 }
