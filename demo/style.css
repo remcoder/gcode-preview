@@ -78,19 +78,6 @@ body {
   }
 }
 
-.version-box {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 10px;
-  transform: translateZ(0);
-  filter: grayscale(1);
-}
-
-.version-box a {
-  text-decoration: none;
-}
-
 .controls {
   display: flex;
   justify-content: space-between;
@@ -150,8 +137,7 @@ canvas:focus {
 /* for performance & stacking */
 canvas#renderer,
 .sidebar,
-.dnd,
-.version-box {
+.dnd {
   transform: translateZ(0);
 }
 
