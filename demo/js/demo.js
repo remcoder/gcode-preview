@@ -1,7 +1,7 @@
 import * as GCodePreview from 'gcode-preview';
 import * as THREE from 'three';
 import { settingsPresets } from './presets.js';
-import { debounce, throttle, humanFileSize, storeSettings } from './utils.js';
+import { debounce, throttle, humanFileSize } from './utils.js';
 
 const defaultPreset = 'multicolor';
 const maxToolCount = 8;
@@ -226,8 +226,6 @@ export function initDemo() {
     changeBuildVolume({ x, y, z });
 
     preview.render();
-
-    storeSettings(gcodePreview);
   }
 
   buildVolumeX.addEventListener('input', updateBuildVolume);

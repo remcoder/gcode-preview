@@ -19,16 +19,3 @@ export function humanFileSize(size) {
   var i = Math.floor(Math.log(size) / Math.log(1024));
   return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
 }
-
-export function storeSettings(preview) {
-  localStorage.setItem(
-    'settings',
-    JSON.stringify({
-      buildVolume: {
-        x: preview.buildVolume.x,
-        y: preview.buildVolume.y,
-        z: preview.buildVolume.z
-      }
-    })
-  );
-}
