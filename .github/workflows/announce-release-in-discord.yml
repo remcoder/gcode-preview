@@ -1,3 +1,5 @@
+name: 'Announce release in Discord'
+  
 on:
   release:
     types: 
