@@ -52,13 +52,12 @@ const imgThumb = document.getElementById('thumb');
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 export function initDemo() {
   // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
-  const settings = JSON.parse(localStorage.getItem('settings'));
 
   const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
 
   const preview = (window.preview = new GCodePreview.init({
     canvas: canvasElement,
-    buildVolume: settings?.buildVolume ?? { x: 190, y: 210, z: 0 },
+    buildVolume: settingsPresets[defaultPreset]?.buildVolume,
     initialCameraPosition: [-250, 350, 300],
     backgroundColor: initialBackgroundColor,
     lineHeight: 0.3,
@@ -71,7 +70,6 @@ export function initDemo() {
       statsContainer: document.querySelector('.sidebar')
     }
   }));
-
   backgroundColor.value = initialBackgroundColor;
 
   loadSettingPreset(defaultPreset);
