@@ -15,7 +15,7 @@ export const settingsPresets = {
     buildVolume: {
       x: 180,
       y: 180,
-      z: 200
+      z: 0
     }
   },
   mach3: {
@@ -51,9 +51,9 @@ export const settingsPresets = {
     lastSegmentColor: undefined,
     drawBuildVolume: true,
     buildVolume: {
-      x: 200,
-      y: 200,
-      z: 180
+      x: 150,
+      y: 150,
+      z: 150
     }
   },
   'vase-mode': {
@@ -72,7 +72,7 @@ export const settingsPresets = {
     buildVolume: {
       x: 200,
       y: 200,
-      z: 220
+      z: 180
     }
   },
   'travel-moves': {
@@ -91,7 +91,7 @@ export const settingsPresets = {
     buildVolume: {
       x: 200,
       y: 200,
-      z: 220
+      z: 180
     }
   }
 };
