@@ -39,6 +39,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   transform: translateZ(0);
+  font-size: 90%;
 }
 
 .scroll-container {
