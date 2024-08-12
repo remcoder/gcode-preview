@@ -2,7 +2,7 @@ name: 'Announce release in Discord'
   
 on:
   release:
-    types: [released, edited]
+    types: [edited]
 
 jobs:
   github-releases-to-discord:
