@@ -33,7 +33,7 @@ import {
 
 import { ExtrusionGeometry } from './extrusion-geometry';
 
-type RenderLayer = { extrusion: number[]; travel: number[]; z: number; height: number };
+type RenderLayer = { extrusion: number[]; travel: number[][]; z: number; height: number };
 type GVector3 = {
   x: number;
   y: number;
@@ -43,6 +43,19 @@ type Arc = GVector3 & { r: number; i: number; j: number };
 
 type Point = GVector3;
 type BuildVolume = GVector3;
+
+type IsActualCutting = (startState: State, endState: State) => boolean;
+type TravelDistance = {
+  total: number;
+  air: number;
+  actual: number;
+};
+type TravelDuration = {
+  total: number;
+  air: number;
+  actual: number;
+};
+
 export class State {
   x: number;
   y: number;
@@ -52,10 +65,10 @@ export class State {
   i: number;
   j: number;
   t: number; // tool index
-  // feedrate?
+  f: number; // feedrate
   static get initial(): State {
     const state = new State();
-    Object.assign(state, { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 });
+    Object.assign(state, { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0, f: 20000 });
     return state;
   }
 }
@@ -77,7 +90,7 @@ export type GCodePreviewOptions = {
   renderTravel?: boolean;
   startLayer?: number;
   topLayerColor?: ColorRepresentation;
-  travelColor?: ColorRepresentation;
+  travelColor?: ColorRepresentation | ColorRepresentation[];
   toolColors?: Record<number, ColorRepresentation>;
   disableGradient?: boolean;
   extrusionWidth?: number;
@@ -93,6 +106,8 @@ export type GCodePreviewOptions = {
   targetId?: string;
   /** @experimental */
   devMode?: boolean | DevModeOptions;
+
+  isActualCutting: IsActualCutting;
 };
 
 const target = {
@@ -132,6 +147,8 @@ export class WebGLPreview {
   nonTravelmoves: string[] = [];
   disableGradient = false;
 
+  isActualCutting: IsActualCutting;
+
   // gcode processing state
   private state: State = State.initial;
   private beyondFirstMove = false; // TODO: move to state
@@ -147,10 +164,20 @@ export class WebGLPreview {
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
-  private _travelColor = new Color(0x990000);
+  static readonly defaultTravelColor = [new Color('red'), new Color('green')];
+  private _travelColor: Color | Color[] = WebGLPreview.defaultTravelColor;
+  private _travelColorFunc?: () => ColorRepresentation = undefined;
   private _topLayerColor?: Color;
   private _lastSegmentColor?: Color;
   private _toolColors: Record<number, Color> = {};
+
+  // cutting statistics
+  private _totalTravelDistance?: number[] = [];
+  private _airTravelDistance?: number[] = [];
+  private _actualTravelDistance?: number[] = [];
+  private _totalTravelDuration?: number[] = [];
+  private _airTravelDuration?: number[] = [];
+  private _actualTravelDuration?: number[] = [];
 
   // debug
   private devMode?: boolean | DevModeOptions = false;
@@ -188,7 +215,7 @@ export class WebGLPreview {
       this.extrusionColor = opts.extrusionColor;
     }
     if (opts.travelColor !== undefined) {
-      this.travelColor = new Color(opts.travelColor);
+      this.travelColor = opts.travelColor;
     }
     if (opts.topLayerColor !== undefined) {
       this.topLayerColor = new Color(opts.topLayerColor);
@@ -201,6 +228,11 @@ export class WebGLPreview {
       for (const [key, value] of Object.entries(opts.toolColors)) {
         this._toolColors[parseInt(key)] = new Color(value);
       }
+    }
+    if (opts.isActualCutting) {
+      this.isActualCutting = opts.isActualCutting;
+    } else {
+      this.isActualCutting = (start, end) => end.z < 0;
     }
 
     if (opts.disableGradient !== undefined) {
@@ -277,6 +309,21 @@ export class WebGLPreview {
     return this._extrusionColor[this.state.t] ?? WebGLPreview.defaultExtrusionColor;
   }
 
+  // get travel color based on current state
+  getCurrentTravelColor(startState: State, endState: State): Color {
+    if (this._travelColor === undefined) {
+      this._travelColor = WebGLPreview.defaultTravelColor;
+    }
+    if (this._travelColor instanceof Color) {
+      return this._travelColor;
+    }
+
+    const actualCutting = this.isActualCutting(startState, endState);
+    const color = actualCutting ? this._travelColor[0] : this._travelColor[1];
+
+    return color ?? WebGLPreview.defaultTravelColor[0];
+  }
+
   get backgroundColor(): Color {
     return this._backgroundColor;
   }
@@ -286,10 +333,19 @@ export class WebGLPreview {
     this.scene.background = this._backgroundColor;
   }
 
-  get travelColor(): Color {
+  get travelColor(): Color | Color[] {
     return this._travelColor;
   }
-  set travelColor(value: number | string | Color) {
+  set travelColor(value: number | string | Color | ColorRepresentation[]) {
+    if (Array.isArray(value)) {
+      this._travelColor = [];
+      // loop over the object and convert all colors to Color
+      for (const [index, color] of value.entries()) {
+        this._travelColor[index] = new Color(color);
+      }
+
+      return;
+    }
     this._travelColor = new Color(value);
   }
 
@@ -305,6 +361,32 @@ export class WebGLPreview {
   }
   set lastSegmentColor(value: ColorRepresentation | undefined) {
     this._lastSegmentColor = value !== undefined ? new Color(value) : undefined;
+  }
+
+  get travelDistance(): TravelDistance {
+    const total = this._totalTravelDistance.reduce((pre, cur) => pre + cur, 0);
+    const air = this._airTravelDistance.reduce((pre, cur) => pre + cur, 0);
+    const actual = this._actualTravelDistance.reduce((pre, cur) => pre + cur, 0);
+    return { total, air, actual };
+  }
+
+  initTravelDistance(layerIdx: number): void {
+    this._totalTravelDistance[layerIdx] = 0;
+    this._airTravelDistance[layerIdx] = 0;
+    this._actualTravelDistance[layerIdx] = 0;
+  }
+
+  get travelDuration(): TravelDuration {
+    const total = this._totalTravelDuration.reduce((pre, cur) => pre + cur, 0);
+    const air = this._airTravelDuration.reduce((pre, cur) => pre + cur, 0);
+    const actual = this._actualTravelDuration.reduce((pre, cur) => pre + cur, 0);
+    return { total, air, actual };
+  }
+
+  initTravelDuration(layerIdx: number): void {
+    this._totalTravelDuration[layerIdx] = 0;
+    this._airTravelDuration[layerIdx] = 0;
+    this._actualTravelDuration[layerIdx] = 0;
   }
 
   /**
@@ -447,6 +529,8 @@ export class WebGLPreview {
       z: this.state.z,
       height: l.height
     };
+    this.initTravelDistance(index);
+    this.initTravelDuration(index);
 
     for (const cmd of l.commands) {
       if (cmd.gcode == 'g20') {
@@ -474,12 +558,15 @@ export class WebGLPreview {
           e: g.params.e ?? this.state.e,
           i: g.params.i ?? this.state.i,
           j: g.params.j ?? this.state.j,
+          f: g.params.f ?? this.state.f,
           t: this.state.t
         };
 
+        const travelLineSize = currentLayer.travel.length;
         if (index >= this.minLayerIndex) {
           const extrude = (g.params.e ?? 0) > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
           const moving = next.x != this.state.x || next.y != this.state.y || next.z != this.state.z;
+
           if (moving) {
             if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
               if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
@@ -488,6 +575,10 @@ export class WebGLPreview {
                 this.addLineSegment(currentLayer, this.state, next, extrude);
               }
             }
+            if (this.renderTravel) {
+              const newTravelLines = currentLayer.travel.slice(travelLineSize, currentLayer.travel.length);
+              this.doRenderTravel(newTravelLines, this.state, next, index);
+            }
           }
         }
 
@@ -495,6 +586,7 @@ export class WebGLPreview {
         this.state.x = next.x;
         this.state.y = next.y;
         this.state.z = next.z;
+        this.state.f = next.f;
         // if (next.e) state.e = next.e; // where not really tracking e as distance (yet) but we only check if some commands are extruding (positive e)
         if (!this.beyondFirstMove) this.beyondFirstMove = true;
       }
@@ -505,41 +597,78 @@ export class WebGLPreview {
 
   /** @internal */
   doRenderExtrusion(layer: RenderLayer, index: number): void {
-    if (this.renderExtrusion) {
-      let extrusionColor = this.currentToolColor;
+    // if (this.renderExtrusion) {
+    //   let extrusionColor = this.currentToolColor;
+    //   if (!this.singleLayerMode && !this.renderTubes && !this.disableGradient) {
+    //     const brightness = 0.1 + (0.7 * index) / this.layers.length;
+    //     extrusionColor.getHSL(target);
+    //     extrusionColor = new Color().setHSL(target.h, target.s, brightness);
+    //   }
+    //   if (index == this.layers.length - 1) {
+    //     const layerColor = this._topLayerColor ?? extrusionColor;
+    //     const lastSegmentColor = this._lastSegmentColor ?? layerColor;
+    //     const endPoint = layer.extrusion.splice(-3);
+    //     const preendPoint = layer.extrusion.splice(-3);
+    //     if (this.renderTubes) {
+    //       this.addTubeLine(layer.extrusion, layerColor.getHex(), layer.height);
+    //       this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex(), layer.height);
+    //     } else {
+    //       this.addLine(layer.extrusion, layerColor.getHex());
+    //       this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
+    //     }
+    //   } else {
+    //     if (this.renderTubes) {
+    //       this.addTubeLine(layer.extrusion, extrusionColor.getHex(), layer.height);
+    //     } else {
+    //       this.addLine(layer.extrusion, extrusionColor.getHex());
+    //     }
+    //   }
+    // }
+  }
 
-      if (!this.singleLayerMode && !this.renderTubes && !this.disableGradient) {
-        const brightness = 0.1 + (0.7 * index) / this.layers.length;
-
-        extrusionColor.getHSL(target);
-        extrusionColor = new Color().setHSL(target.h, target.s, brightness);
-      }
-
-      if (index == this.layers.length - 1) {
-        const layerColor = this._topLayerColor ?? extrusionColor;
-        const lastSegmentColor = this._lastSegmentColor ?? layerColor;
-
-        const endPoint = layer.extrusion.splice(-3);
-        const preendPoint = layer.extrusion.splice(-3);
-        if (this.renderTubes) {
-          this.addTubeLine(layer.extrusion, layerColor.getHex(), layer.height);
-          this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex(), layer.height);
-        } else {
-          this.addLine(layer.extrusion, layerColor.getHex());
-          this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
-        }
-      } else {
-        if (this.renderTubes) {
-          this.addTubeLine(layer.extrusion, extrusionColor.getHex(), layer.height);
-        } else {
-          this.addLine(layer.extrusion, extrusionColor.getHex());
-        }
-      }
-    }
-
+  doRenderTravel(travel: number[][], curState: State, nextState: State, layerIdx: number): void {
     if (this.renderTravel) {
-      this.addLine(layer.travel, this._travelColor.getHex());
+      this.addLine(travel);
     }
+    // const travelColor = this.getCurrentTravelColor(curState, nextState);
+    // this.addLine(newLines, travelColor.getHex());
+    // this.calcTravelDistanceAndDuration(newLines, curState, nextState, layerIdx);
+  }
+
+  /** @internal */
+  calcTravelDistanceAndDuration(newLines: number[], curState: State, nextState: State, layerIdx: number): void {
+    let [totalDistance, airDistance, actualDistance] = [0, 0, 0];
+    let [totalDuration, airDuration, actualDuration] = [0, 0, 0];
+    let { x, y, z, f } = curState;
+    for (let index = 0; index <= newLines.length - 3; ) {
+      const nextPoint = newLines.slice(index, index + 3);
+      const [nextX, nextY, nextZ] = nextPoint;
+      const distance = Math.sqrt(Math.pow(nextX - x, 2) + Math.pow(nextY - y, 2) + Math.pow(nextZ - z, 2));
+      totalDistance += distance;
+      const duration = (distance / f) * 60;
+
+      totalDuration += duration;
+      const actualCutting = this.isActualCutting(curState, nextState);
+      if (actualCutting) {
+        actualDistance += distance;
+        actualDuration += duration;
+      } else {
+        airDistance += distance;
+        airDuration += duration;
+      }
+
+      x = nextX;
+      y = nextY;
+      z = nextZ;
+      index += 3;
+    }
+    this._totalTravelDistance[layerIdx] += totalDistance;
+    this._actualTravelDistance[layerIdx] += actualDistance;
+    this._airTravelDistance[layerIdx] += airDistance;
+
+    this._totalTravelDuration[layerIdx] += totalDuration;
+    this._actualTravelDuration[layerIdx] += actualDuration;
+    this._airTravelDuration[layerIdx] += airDuration;
   }
 
   setInches(): void {
@@ -554,7 +683,9 @@ export class WebGLPreview {
   drawBuildVolume(): void {
     if (!this.buildVolume) return;
 
-    this.scene.add(new GridHelper(this.buildVolume.x, 10, this.buildVolume.y, 10));
+    this.scene.add(
+      new GridHelper(this.buildVolume.x, this.buildVolume.x / 10, this.buildVolume.y, this.buildVolume.y / 10)
+    );
 
     const geometryBox = LineBox(this.buildVolume.x, this.buildVolume.z, this.buildVolume.y, 0x888888);
 
@@ -590,13 +721,13 @@ export class WebGLPreview {
 
   /** @internal */
   addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void {
-    const line = extrude ? layer.extrusion : layer.travel;
-    line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+    // const line = extrude ? layer.extrusion : layer.travel;
+    layer.travel.push([p1.x, p1.y, p1.z, p2.x, p2.y, p2.z]);
   }
 
   /** @internal */
   addArcSegment(layer: RenderLayer, p1: Point, p2: Arc, extrude: boolean, cw: boolean): void {
-    const line = extrude ? layer.extrusion : layer.travel;
+    const line = layer.travel;
 
     const currX = p1.x,
       currY = p1.y,
@@ -691,25 +822,29 @@ export class WebGLPreview {
     points.push({ x: p2.x, y: p2.y, z: p2.z });
 
     for (let idx = 0; idx < points.length - 1; idx++) {
-      line.push(points[idx].x, points[idx].y, points[idx].z, points[idx + 1].x, points[idx + 1].y, points[idx + 1].z);
+      line.push([points[idx].x, points[idx].y, points[idx].z, points[idx + 1].x, points[idx + 1].y, points[idx + 1].z]);
     }
   }
 
   /** @internal */
-  addLine(vertices: number[], color: number): void {
-    if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
-      this.addThickLine(vertices, color);
-      return;
+  addLine(lines: number[][]): void {
+    // if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
+    //   this.addThickLine(vertices, color);
+    //   return;
+    // }
+
+    for (const vertices of lines) {
+      const travel = vertices[2] > 0 || vertices[5] > 0;
+      const color = travel ? 'red' : 'green';
+      const geometry = new BufferGeometry();
+      geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+      this.disposables.push(geometry);
+      const material = new LineBasicMaterial({ color: color });
+      this.disposables.push(material);
+      const lineSegments = new LineSegments(geometry, material);
+
+      this.group?.add(lineSegments);
     }
-
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
-    this.disposables.push(geometry);
-    const material = new LineBasicMaterial({ color: color });
-    this.disposables.push(material);
-    const lineSegments = new LineSegments(geometry, material);
-
-    this.group?.add(lineSegments);
   }
 
   /** @internal */

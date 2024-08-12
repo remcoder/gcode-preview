@@ -47,7 +47,7 @@ const drawBuildVolume = document.getElementById('drawBuildVolume');
 const travelColor = document.getElementById('travel-color');
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 
-const defaultPreset = 'multicolor';
+const defaultPreset = 'cnc (cutting color)';
 
 const settingsPresets = {
   multicolor: {
@@ -85,6 +85,26 @@ const settingsPresets = {
     buildVolume: {
       x: 20,
       y: 20,
+      z: ''
+    }
+  },
+  'cnc (cutting color)': {
+    file: 'gcodes/xuzhen1994.gcode',
+    lineWidth: 1,
+    singleLayerMode: false,
+    renderExtrusion: false,
+    renderTubes: false,
+    extrusionColors: [],
+    travel: true,
+    travelColor: '#00FF00',
+    travelColorFun: (fromState, toState) => (toState.z > 0 ? '#00FF00' : '#FF0000'),
+    highlightTopLayer: false,
+    topLayerColor: undefined,
+    lastSegmentColor: undefined,
+    drawBuildVolume: true,
+    buildVolume: {
+      x: 400,
+      y: 400,
       z: ''
     }
   },
@@ -160,6 +180,7 @@ export function initDemo() {
     initialCameraPosition: [180, 150, 300],
     backgroundColor: initialBackgroundColor,
     lineHeight: 0.3,
+
     devMode: {
       camera: true,
       renderer: true,
