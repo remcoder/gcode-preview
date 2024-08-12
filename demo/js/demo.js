@@ -59,7 +59,7 @@ export function initDemo() {
   const preview = (window.preview = new GCodePreview.init({
     canvas: canvasElement,
     buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
-    initialCameraPosition: [180, 150, 300],
+    initialCameraPosition: [-250, 350, 300],
     backgroundColor: initialBackgroundColor,
     lineHeight: 0.3,
     devMode: {
