@@ -1,6 +1,5 @@
 import * as GCodePreview from 'gcode-preview';
 import * as THREE from 'three';
-import * as Canvas2Image from 'canvas2image';
 
 let gcodePreview;
 let favIcon;
@@ -39,7 +38,6 @@ const layerCount = document.getElementById('layer-count');
 const fileName = document.getElementById('file-name');
 const fileSelector = document.getElementById('file-selector');
 const fileSize = document.getElementById('file-size');
-const snapshot = document.getElementById('snapshot');
 const buildVolumeX = document.getElementById('buildVolumeX');
 const buildVolumeY = document.getElementById('buildVolumeY');
 const buildVolumeZ = document.getElementById('buildVolumeZ');
@@ -343,13 +341,6 @@ export function initDemo() {
 
   window.addEventListener('resize', function () {
     preview.resize();
-  });
-
-  snapshot.addEventListener('click', function (evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
-
-    Canvas2Image.saveAsJPEG(gcodePreview.canvas, innerWidth, innerHeight, fileName.innerText.replace('.gcode', '.jpg'));
   });
 
   function changeFile(name) {
