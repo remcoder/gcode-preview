@@ -3,15 +3,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
-import { GridHelper } from './gridHelper';
-import { LineBox } from './lineBox';
+import { BuildVolume } from './build-volume';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
 import { DevGUI, DevModeOptions } from './dev-gui';
 
 import {
   AmbientLight,
-  AxesHelper,
   BatchedMesh,
   BufferGeometry,
   Color,
@@ -42,7 +40,6 @@ type GVector3 = {
 type Arc = GVector3 & { r: number; i: number; j: number };
 
 type Point = GVector3;
-type BuildVolume = GVector3;
 export class State {
   x: number;
   y: number;
@@ -173,7 +170,7 @@ export class WebGLPreview {
     this.startLayer = opts.startLayer;
     this.lineWidth = opts.lineWidth;
     this.lineHeight = opts.lineHeight;
-    this.buildVolume = opts.buildVolume;
+    this.buildVolume = opts.buildVolume && new BuildVolume(opts.buildVolume.x, opts.buildVolume.y, opts.buildVolume.z);
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
     this.renderExtrusion = opts.renderExtrusion ?? this.renderExtrusion;
@@ -348,9 +345,7 @@ export class WebGLPreview {
     }
 
     if (this.debug && this.buildVolume) {
-      // show webgl axes
-      const axesHelper = new AxesHelper(Math.max(this.buildVolume.x / 2, this.buildVolume.y / 2) + 20);
-      this.scene.add(axesHelper);
+      this.scene.add(this.buildVolume.axesHelper());
     }
 
     if (this.buildVolume) {
@@ -554,12 +549,8 @@ export class WebGLPreview {
   drawBuildVolume(): void {
     if (!this.buildVolume) return;
 
-    this.scene.add(new GridHelper(this.buildVolume.x, 10, this.buildVolume.y, 10));
-
-    const geometryBox = LineBox(this.buildVolume.x, this.buildVolume.z, this.buildVolume.y, 0x888888);
-
-    geometryBox.position.setY(this.buildVolume.z / 2);
-    this.scene.add(geometryBox);
+    this.scene.add(this.buildVolume.gridHelper());
+    this.scene.add(this.buildVolume.geomertry());
   }
 
   // reset parser & processing state
