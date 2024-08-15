@@ -9,6 +9,9 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { DevGUI, DevModeOptions } from './dev-gui';
 
+import { Path, PathType } from './path';
+import { Interpreter } from './interpreter';
+
 import {
   AmbientLight,
   AxesHelper,
@@ -31,7 +34,7 @@ import {
   WebGLRenderer
 } from 'three';
 
-import { ExtrusionGeometry } from './extrusion-geometry';
+// import { ExtrusionGeometry } from './extrusion-geometry';
 
 type RenderLayer = { extrusion: number[]; travel: number[]; z: number; height: number };
 type GVector3 = {
@@ -143,7 +146,9 @@ export class WebGLPreview {
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private animationFrameId?: number;
   private renderLayerIndex = 0;
-  private _geometries: Record<number, ExtrusionGeometry[]> = {};
+  private _geometries: Record<number, BufferGeometry[]> = {};
+  paths: Path[];
+  interpreter: Interpreter;
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
@@ -183,6 +188,8 @@ export class WebGLPreview {
     this.extrusionWidth = opts.extrusionWidth ?? this.extrusionWidth;
     this.devMode = opts.devMode ?? this.devMode;
     this.stats = this.devMode ? new Stats() : undefined;
+    this.paths = [];
+    this.interpreter = new Interpreter();
 
     if (opts.extrusionColor !== undefined) {
       this.extrusionColor = opts.extrusionColor;
@@ -521,15 +528,15 @@ export class WebGLPreview {
         const endPoint = layer.extrusion.splice(-3);
         const preendPoint = layer.extrusion.splice(-3);
         if (this.renderTubes) {
-          this.addTubeLine(layer.extrusion, layerColor.getHex(), layer.height);
-          this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex(), layer.height);
+          // this.addTubeLine(layer.extrusion, layerColor.getHex(), layer.height);
+          // this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex(), layer.height);
         } else {
           this.addLine(layer.extrusion, layerColor.getHex());
           this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
         }
       } else {
         if (this.renderTubes) {
-          this.addTubeLine(layer.extrusion, extrusionColor.getHex(), layer.height);
+          // this.addTubeLine(layer.extrusion, extrusionColor.getHex(), layer.height);
         } else {
           this.addLine(layer.extrusion, extrusionColor.getHex());
         }
@@ -577,6 +584,7 @@ export class WebGLPreview {
     this.state = State.initial;
     this.devGui?.reset();
     this._geometries = {};
+    this.paths = [];
   }
 
   resize(): void {
@@ -589,6 +597,18 @@ export class WebGLPreview {
 
   /** @internal */
   addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void {
+    const lastPath = this.paths[this.paths.length - 1];
+    if (
+      lastPath === undefined ||
+      !lastPath.checkLineContinuity(p1.x, p1.y, p1.z) ||
+      lastPath.type !== (extrude ? PathType.Extrusion : PathType.Travel)
+    ) {
+      this.paths.push(new Path(extrude ? PathType.Extrusion : PathType.Travel, this.extrusionWidth, this.lineHeight));
+      this.paths[this.paths.length - 1].addPoint(p1.x, p1.y, p1.z);
+    }
+
+    this.paths[this.paths.length - 1].addPoint(p2.x, p2.y, p2.z);
+
     const line = extrude ? layer.extrusion : layer.travel;
     line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
@@ -712,7 +732,7 @@ export class WebGLPreview {
   }
 
   /** @internal */
-  addTubeLine(vertices: number[], color: number, layerHeight = 0.2): void {
+  addTubeLine(vertices: number[]): void {
     let curvePoints: Vector3[] = [];
     const extrusionPaths: Vector3[][] = [];
 
@@ -732,11 +752,11 @@ export class WebGLPreview {
       }
     }
 
-    extrusionPaths.forEach((extrusionPath) => {
-      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, this.lineHeight || layerHeight, 4);
-      this._geometries[color] ||= [];
-      this._geometries[color].push(geometry);
-    });
+    // extrusionPaths.forEach((extrusionPath) => {
+    //   // const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, this.lineHeight || layerHeight, 4);
+    //   // this._geometries[color] ||= [];
+    //   // this._geometries[color].push(geometry);
+    // });
   }
 
   /** @internal */
@@ -803,6 +823,27 @@ export class WebGLPreview {
   }
 
   private batchGeometries() {
+    if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
+      const print = this.interpreter.execute(this.parser.commands);
+      console.log(this._extrusionColor);
+
+      let color: number;
+      print.paths
+        .filter(({ type }) => {
+          return type === PathType.Extrusion;
+        })
+        .forEach((path) => {
+          if (Array.isArray(this._extrusionColor)) {
+            color = this._extrusionColor[path.tool].getHex();
+          } else {
+            color = this._extrusionColor.getHex();
+          }
+
+          this._geometries[color] ||= [];
+          this._geometries[color].push(path.geometry());
+        });
+    }
+
     if (this._geometries) {
       for (const color in this._geometries) {
         const batchedMesh = this.createBatchMesh(parseInt(color));

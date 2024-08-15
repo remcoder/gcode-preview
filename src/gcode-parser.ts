@@ -60,13 +60,66 @@ type MoveCommandParamName = 'x' | 'y' | 'z' | 'r' | 'e' | 'f' | 'i' | 'j';
 type MoveCommandParams = {
   [key in MoveCommandParamName]?: number;
 };
+
+export enum Code {
+  G0 = 'G0',
+  G1 = 'G1',
+  G2 = 'G2',
+  G3 = 'G3',
+  T0 = 'T0',
+  T1 = 'T1',
+  T2 = 'T2',
+  T3 = 'T3',
+  T4 = 'T4',
+  T5 = 'T5',
+  T6 = 'T6',
+  T7 = 'T7'
+}
 export class GCodeCommand {
+  public code?: Code;
   constructor(
     public src: string,
     public gcode: string,
     public params: CommandParams,
     public comment?: string
-  ) {}
+  ) {
+    this.code = this.match(gcode);
+  }
+
+  match(gcode: string): Code {
+    switch (gcode) {
+      case 'g0':
+      case 'g00':
+        return Code.G0;
+      case 'g1':
+      case 'g01':
+        return Code.G1;
+      case 'g2':
+      case 'g02':
+        return Code.G2;
+      case 'g3':
+      case 'g03':
+        return Code.G3;
+      case 't0':
+        return Code.T0;
+      case 't1':
+        return Code.T1;
+      case 't2':
+        return Code.T2;
+      case 't3':
+        return Code.T3;
+      case 't4':
+        return Code.T4;
+      case 't5':
+        return Code.T5;
+      case 't6':
+        return Code.T6;
+      case 't7':
+        return Code.T7;
+      default:
+        return undefined;
+    }
+  }
 }
 
 export class MoveCommand extends GCodeCommand {
@@ -104,6 +157,7 @@ export class Layer {
 
 export class Parser {
   lines: string[] = [];
+  commands: GCodeCommand[] = [];
 
   /**
    * @experimental GCode commands before extrusion starts.
@@ -133,12 +187,12 @@ export class Parser {
 
     this.lines = this.lines.concat(lines);
 
-    const commands = this.lines2commands(lines);
+    this.commands = this.lines2commands(lines);
 
-    this.groupIntoLayers(commands);
+    this.groupIntoLayers(this.commands);
 
     // merge thumbs
-    const thumbs = this.parseMetadata(commands.filter((cmd) => cmd.comment)).thumbnails;
+    const thumbs = this.parseMetadata(this.commands.filter((cmd) => cmd.comment)).thumbnails;
     for (const [key, value] of Object.entries(thumbs)) {
       this.metadata.thumbnails[key] = value;
     }
