@@ -51,7 +51,7 @@ h1 img {
 .scroll-container {
   padding: 10px;
 
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
   overflow-x: hidden;
   height: 100%;
 }
@@ -98,6 +98,7 @@ h1 {
   font-size: 160%;
   margin: 0 0 20px 0;
   font-weight: normal;
+  padding: 10px 10px 0 10px;
 }
 
 section {
@@ -227,4 +228,5 @@ select {
 
 footer {
   text-align: center;
+  padding-bottom: 10px;
 }
