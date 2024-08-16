@@ -1,11 +1,14 @@
 import * as GCodePreview from 'gcode-preview';
 import * as THREE from 'three';
-import * as Canvas2Image from 'canvas2image';
+import { settingsPresets } from './presets.js';
+import { debounce, throttle, humanFileSize } from './utils.js';
+
+const defaultPreset = 'multicolor';
+const maxToolCount = 8;
 
 let gcodePreview;
 let favIcon;
 let thumb;
-const maxToolCount = 8;
 let toolCount = 4;
 let gcode;
 let renderProgressive = true;
@@ -36,128 +39,26 @@ const toggleHighlight = document.getElementById('highlight');
 const topLayerColorInput = document.getElementById('top-layer-color');
 const lastSegmentColorInput = document.getElementById('last-segment-color');
 const layerCount = document.getElementById('layer-count');
-const fileName = document.getElementById('file-name');
 const fileSelector = document.getElementById('file-selector');
 const fileSize = document.getElementById('file-size');
-const snapshot = document.getElementById('snapshot');
 const buildVolumeX = document.getElementById('buildVolumeX');
 const buildVolumeY = document.getElementById('buildVolumeY');
 const buildVolumeZ = document.getElementById('buildVolumeZ');
 const drawBuildVolume = document.getElementById('drawBuildVolume');
 const travelColor = document.getElementById('travel-color');
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
-
-const defaultPreset = 'multicolor';
-
-const settingsPresets = {
-  multicolor: {
-    file: 'gcodes/3DBenchy-Multi-part.gcode',
-    lineWidth: 1,
-    singleLayerMode: false,
-    renderExtrusion: true,
-    renderTubes: false,
-    extrusionColors: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
-    travel: false,
-    travelColor: '#00FF00',
-    highlightTopLayer: false,
-    topLayerColor: undefined,
-    lastSegmentColor: undefined,
-    drawBuildVolume: true,
-    buildVolume: {
-      x: 180,
-      y: 180,
-      z: 200
-    }
-  },
-  mach3: {
-    file: 'gcodes/mach3.gcode',
-    lineWidth: 1,
-    singleLayerMode: false,
-    renderExtrusion: false,
-    renderTubes: false,
-    extrusionColors: [],
-    travel: true,
-    travelColor: '#00FF00',
-    highlightTopLayer: false,
-    topLayerColor: undefined,
-    lastSegmentColor: undefined,
-    drawBuildVolume: true,
-    buildVolume: {
-      x: 20,
-      y: 20,
-      z: ''
-    }
-  },
-  arcs: {
-    file: 'gcodes/screw.gcode',
-    lineWidth: 2,
-    singleLayerMode: true,
-    renderExtrusion: true,
-    renderTubes: true,
-    extrusionColors: ['rgb(83,209,104)'],
-    travel: false,
-    travelColor: '#00FF00',
-    highlightTopLayer: false,
-    topLayerColor: undefined,
-    lastSegmentColor: undefined,
-    drawBuildVolume: true,
-    buildVolume: {
-      x: 200,
-      y: 200,
-      z: 180
-    }
-  },
-  'vase-mode': {
-    file: 'gcodes/vase.gcode',
-    lineWidth: 1,
-    singleLayerMode: true,
-    renderExtrusion: true,
-    renderTubes: true,
-    extrusionColors: ['rgb(84,74,187)'],
-    travel: false,
-    travelColor: '#00FF00',
-    highlightTopLayer: true,
-    topLayerColor: '#40BFBF',
-    lastSegmentColor: '#ffffff',
-    drawBuildVolume: true,
-    buildVolume: {
-      x: 200,
-      y: 200,
-      z: 220
-    }
-  },
-  'travel-moves': {
-    file: 'gcodes/plant-sign.gcode',
-    lineWidth: 2,
-    singleLayerMode: false,
-    renderExtrusion: true,
-    renderTubes: true,
-    extrusionColors: ['#777777'],
-    travel: true,
-    travelColor: '#00FF00',
-    highlightTopLayer: true,
-    topLayerColor: '#aaaaaa',
-    lastSegmentColor: undefined,
-    drawBuildVolume: true,
-    buildVolume: {
-      x: 200,
-      y: 200,
-      z: 220
-    }
-  }
-};
+const imgThumb = document.getElementById('thumb');
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 export function initDemo() {
   // eslint-disable-line no-unused-vars, @typescript-eslint/no-unused-vars
-  const settings = JSON.parse(localStorage.getItem('settings'));
 
   const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
 
   const preview = (window.preview = new GCodePreview.init({
     canvas: canvasElement,
-    buildVolume: settings?.buildVolume || { x: 190, y: 210, z: 0 },
-    initialCameraPosition: [180, 150, 300],
+    buildVolume: settingsPresets[defaultPreset]?.buildVolume,
+    initialCameraPosition: [-250, 350, 300],
     backgroundColor: initialBackgroundColor,
     lineHeight: 0.3,
     devMode: {
@@ -169,7 +70,6 @@ export function initDemo() {
       statsContainer: document.querySelector('.sidebar')
     }
   }));
-
   backgroundColor.value = initialBackgroundColor;
 
   loadSettingPreset(defaultPreset);
@@ -308,7 +208,6 @@ export function initDemo() {
     const files = evt.dataTransfer.files;
     const file = files[0];
 
-    fileName.innerText = file.name;
     fileSize.innerText = humanFileSize(file.size);
 
     // await preview._readFromStream(file.stream());
@@ -327,8 +226,6 @@ export function initDemo() {
     changeBuildVolume({ x, y, z });
 
     preview.render();
-
-    storeSettings();
   }
 
   buildVolumeX.addEventListener('input', updateBuildVolume);
@@ -343,13 +240,6 @@ export function initDemo() {
 
   window.addEventListener('resize', function () {
     preview.resize();
-  });
-
-  snapshot.addEventListener('click', function (evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
-
-    Canvas2Image.saveAsJPEG(gcodePreview.canvas, innerWidth, innerHeight, fileName.innerText.replace('.gcode', '.jpg'));
   });
 
   function changeFile(name) {
@@ -492,19 +382,6 @@ export function initDemo() {
   return preview;
 }
 
-function storeSettings() {
-  localStorage.setItem(
-    'settings',
-    JSON.stringify({
-      buildVolume: {
-        x: gcodePreview.buildVolume.x,
-        y: gcodePreview.buildVolume.y,
-        z: gcodePreview.buildVolume.z
-      }
-    })
-  );
-}
-
 function updateUI() {
   startLayer.setAttribute('max', gcodePreview.layers.length);
   endLayer.setAttribute('max', gcodePreview.layers.length);
@@ -522,10 +399,16 @@ function updateUI() {
 
   if (thumb != gcodePreview.parser.metadata.thumbnails['220x124']) {
     thumb = gcodePreview.parser.metadata.thumbnails['220x124'];
-    document.getElementById('thumb').src = thumb?.src ?? 'https://via.placeholder.com/120x60?text=noThumbnail';
+    updateThumb(thumb?.src);
   }
 
   showExtrusionColors();
+}
+
+function updateThumb(url) {
+  imgThumb.src = url ?? 'https://via.placeholder.com/220x124?text=noThumbnail';
+  imgThumb.style.filter = 'brightness(1)';
+  imgThumb.style.opacity = 1;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
@@ -538,12 +421,10 @@ async function loadGCodeFromServer(filename) {
 
   const gcode = await response.text();
   _handleGCode(filename, gcode);
-  fileName.setAttribute('href', filename);
 }
 
 function _handleGCode(filename, text) {
   gcode = text;
-  fileName.innerText = filename;
   fileSize.innerText = humanFileSize(text.length);
 
   updateUI();
@@ -569,11 +450,6 @@ async function startLoadingProgressive(gcode) {
   endLayer.removeAttribute('disabled');
 }
 
-function humanFileSize(size) {
-  var i = Math.floor(Math.log(size) / Math.log(1024));
-  return (size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
-}
-
 function setFavicons(favImg) {
   const headTitle = document.querySelector('head');
   const setFavicon = document.createElement('link');
@@ -581,23 +457,6 @@ function setFavicons(favImg) {
   setFavicon.setAttribute('href', favImg);
   headTitle.appendChild(setFavicon);
 }
-
-let throttleTimer;
-const throttle = (callback, time) => {
-  if (throttleTimer) return;
-  throttleTimer = true;
-  setTimeout(() => {
-    callback();
-    throttleTimer = false;
-  }, time);
-};
-
-// debounce function
-let debounceTimer;
-const debounce = (callback) => {
-  if (debounceTimer) clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(callback, 300);
-};
 
 function showExtrusionColors() {
   // loop through inputs and show/hide them

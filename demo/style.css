@@ -1,3 +1,5 @@
+@import 'https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/versions/bulma-prefixed.min.css';
+
 html,
 body {
   margin: 0;
@@ -9,6 +11,9 @@ body {
   font-family: Verdana;
   color: #eee;
   background: #eee;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
 }
 
 /* Light mode */
@@ -27,8 +32,11 @@ body {
   }
 }
 
+h1 img {
+  vertical-align: bottom;
+}
+
 .sidebar {
-  position: absolute;
   background: rgba(32, 83, 119, 0.5);
   left: 0;
   top: 0;
@@ -39,12 +47,13 @@ body {
   flex-direction: column;
   justify-content: space-between;
   transform: translateZ(0);
+  font-size: 90%;
 }
 
 .scroll-container {
   padding: 10px;
 
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
   overflow-x: hidden;
   height: 100%;
 }
@@ -78,19 +87,6 @@ body {
   }
 }
 
-.version-box {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 10px;
-  transform: translateZ(0);
-  filter: grayscale(1);
-}
-
-.version-box a {
-  text-decoration: none;
-}
-
 .controls {
   display: flex;
   justify-content: space-between;
@@ -104,6 +100,7 @@ h1 {
   font-size: 160%;
   margin: 0 0 20px 0;
   font-weight: normal;
+  padding: 10px 10px 0 10px;
 }
 
 section {
@@ -143,15 +140,35 @@ canvas:focus {
   font-weight: normal;
 }
 
+.thumb-wrapper {
+  display: inline-block;
+}
+
 #thumb {
   display: block;
+  width: 220px;
+  height: 124px;
+  filter: brightness(0);
+  background: black;
+  transition: filter 0.2s;
+  color: transparent;
+}
+
+#thumb:show {
+  filter: brightness(1);
+}
+
+.file-info {
+  text-align: center;
+  background: grey;
+  font-size: smaller;
+  color: black;
 }
 
 /* for performance & stacking */
 canvas#renderer,
 .sidebar,
-.dnd,
-.version-box {
+.dnd {
   transform: translateZ(0);
 }
 
@@ -174,6 +191,14 @@ output {
   display: flex;
 }
 
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-align-end {
+  align-items: flex-end;
+}
+
 .just-between {
   justify-content: space-between;
 }
@@ -193,4 +218,21 @@ output {
   position: absolute !important;
   right: -80px !important;
   left: unset !important;
+}
+
+select {
+  min-width: 190px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+footer {
+  text-align: center;
+  padding-bottom: 10px;
+}
+
+.wrapper {
+  flex-grow: 1;
 }
