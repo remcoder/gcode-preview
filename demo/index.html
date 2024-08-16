@@ -29,7 +29,9 @@
   <div class="sidebar">
    <div class="scroll-container">
     <div>
-      <h1>GCode Preview</h1>
+      <h1>GCode Preview  <a href="https://www.npmjs.com/package/gcode-preview">
+        <img src="https://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
+        </a></h1>
       <section class="flex flex-column">
         <div class="flex just-between">
           <span>
@@ -65,7 +67,16 @@
           <div class="file-info"><span id="layer-count"></span> / <span id="file-size">0MB</span></div>
         </div>
       </section>
+
       <section>
+        <div class="controls">
+          <label>Start layer <output id="start-layer-value" ></output></label>&nbsp;<input
+            type="range"
+            min="1"
+            value="1"
+            id="start-layer"
+          />
+        </div>
         <div class="controls">
           <label>End layer <output id="end-layer-value" ></output></label>&nbsp;<input
             type="range"
@@ -75,13 +86,25 @@
           />
         </div>
         <div class="controls">
-          <label>Start layer <output id="start-layer-value" ></output></label>&nbsp;<input
-            type="range"
-            min="1"
-            value="1"
-            id="start-layer"
-          />
+          <label for="single-layer-mode">Single layer mode</label>
+          <input type="checkbox" id="single-layer-mode" />
         </div>
+        </section>
+        <section>
+          <div class="controls">
+            <label for="travel">Render travel</label>
+            <input type="checkbox" id="travel" />
+          </div>
+          <div class="controls">
+            <label for="travel-color">Travel color</label>
+            <input type="color" id="travel-color" value="#0000ff" />
+          </div>
+        </section>
+        <section>
+          <div class="controls">
+            <label for="extrusion">Render extrusion</label
+            ><input type="checkbox" id="extrusion" checked />
+          </div>
         <div class="controls">
           <label>Line width <output id="line-width-value" ></output></label>&nbsp;<input
             type="range"
@@ -92,6 +115,10 @@
           />
         </div>
         <div class="controls">
+          <label for="render-tubes">Render as tubes <span class="badge-warn">experimental</span></label
+          ><input type="checkbox" id="render-tubes" />
+        </div>
+        <div class="controls">
           <label>Tube width <output id="extrusion-width-value" ></output></label>&nbsp;<input
             type="range"
             min="0.05"
@@ -100,18 +127,6 @@
             step="0.05"
             id="extrusion-width"
           />
-        </div>
-        <div class="controls">
-          <label for="single-layer-mode">Single layer mode</label
-          ><input type="checkbox" id="single-layer-mode" />
-        </div>
-        <div class="controls">
-          <label for="extrusion">Extrusion</label
-          ><input type="checkbox" id="extrusion" checked />
-        </div>
-        <div class="controls">
-          <label for="render-tubes">Render tubes <span class="badge-warn">experimental</span></label
-          ><input type="checkbox" id="render-tubes" />
         </div>
       </section>
 
@@ -154,15 +169,8 @@
         </div>
       </section>
 
+      
       <section>
-        <div class="controls">
-          <label for="travel">Travel</label
-          ><input type="checkbox" id="travel" />
-        </div>
-        <div class="controls">
-          <label for="travel-color">Travel color</label>
-          <input type="color" id="travel-color" value="#0000ff" />
-        </div>
         <div class="controls">
           <label for="highlight">Highlight top layer</label
           ><input type="checkbox" id="highlight" />
@@ -175,6 +183,7 @@
           <label for="last-segment-color">Last segment color</label>
           <input type="color" id="last-segment-color" value="#ffffff" />
         </div>
+
         <div class="controls">
           <label for="background-color">Background color</label>
           <input type="color" id="background-color" value="#e0e0e0" />
@@ -183,7 +192,7 @@
 
       <section>
         <div  class="controls">
-          <label for="drawBuildVolume">Draw build volume</label
+          <label for="drawBuildVolume">Render build volume</label
           ><input type="checkbox" id="drawBuildVolume" checked />
         </div>
         <div class="controls">
@@ -203,7 +212,7 @@
 
     </div>
     <div>
-      <section>
+      <footer>
         <div><a href="http://twitter.com/remcoder">@remcoder</a> ©2020 - 2024</div>
 
         <div>
@@ -211,12 +220,7 @@
           - <a href="/docs">API docs</a>
           - MIT license
         </div>
-      </section>
-      <section>
-        <a href="https://www.npmjs.com/package/gcode-preview">
-          <img src="https://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
-          </a>
-      </section>
+      </footer>
     </div>
    </div>
   </div>
