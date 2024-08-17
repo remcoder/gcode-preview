@@ -282,6 +282,11 @@ export function initDemo() {
   function changeRenderTubes(enabled) {
     preview.renderTubes = enabled;
     toggleRenderTubes.checked = enabled;
+    if (!enabled) {
+      extrusionWidth.setAttribute('disabled', 'disabled');
+    } else {
+      extrusionWidth.removeAttribute('disabled');
+    }
   }
 
   function changeRenderTravel(enabled) {
