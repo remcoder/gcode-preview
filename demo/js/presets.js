@@ -2,26 +2,24 @@ export const settingsPresets = {
   multicolor: {
     title: 'Multicolor',
     file: 'gcodes/3DBenchy-Multi-part.gcode',
-    lineWidth: 1, // no
-    singleLayerMode: true, // no, no a constructor option
-    renderExtrusion: true, // yes
-    renderTubes: true, //yes
+    lineWidth: 1,
+    renderExtrusion: true,
+    renderTubes: true,
     extrusionColor: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
-    renderTravel: false, // yes
-    travelColor: 'red', // yes
-    topLayerColor: undefined, //yes
-    lastSegmentColor: undefined, //yes
+    renderTravel: false,
+    travelColor: 'red',
+    topLayerColor: undefined,
+    lastSegmentColor: undefined,
     buildVolume: {
       x: 180,
       y: 180,
       z: 100
-    } //yes
+    }
   },
   mach3: {
     title: 'CNC tool path',
     file: 'gcodes/mach3.gcode',
     lineWidth: 1,
-    singleLayerMode: false,
     renderExtrusion: false,
     renderTubes: false,
     extrusionColor: [],
@@ -39,7 +37,6 @@ export const settingsPresets = {
     title: 'Arcs with G2/G3',
     file: 'gcodes/screw.gcode',
     lineWidth: 2,
-    singleLayerMode: true,
     renderExtrusion: true,
     renderTubes: true,
     extrusionColor: ['rgb(83,209,104)'],
@@ -57,7 +54,6 @@ export const settingsPresets = {
     title: 'Vase mode',
     file: 'gcodes/vase.gcode',
     lineWidth: 1,
-    singleLayerMode: true,
     renderExtrusion: true,
     renderTubes: true,
     extrusionColor: ['rgb(84,74,187)'],
@@ -75,7 +71,6 @@ export const settingsPresets = {
     title: 'Travel moves',
     file: 'gcodes/plant-sign.gcode',
     lineWidth: 2,
-    singleLayerMode: false,
     renderExtrusion: true,
     renderTubes: true,
     extrusionColor: ['#777777'],

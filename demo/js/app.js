@@ -29,7 +29,6 @@ export const app = () =>
       selectPreset(preset) {
         const opts = {
           canvas: canvasElement,
-          buildVolume: undefined, //{ ...preset.buildVolume },
           initialCameraPosition: [-250, 350, 300],
           backgroundColor: initialBackgroundColor,
           lineHeight: 0.3,
@@ -45,7 +44,6 @@ export const app = () =>
         const settings = presets[preset];
         Object.assign(opts, settings);
         window.preview = new GCodePreview.init(opts);
-        // Object.assign(window.preview, settings);
 
         loadGCodeFromServer(settings.file);
       }
