@@ -1,5 +1,9 @@
 @import 'https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/versions/bulma-prefixed.min.css';
 
+a[href] {
+  text-decoration: underline;
+}
+
 html,
 body {
   margin: 0;
