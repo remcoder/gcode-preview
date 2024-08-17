@@ -222,13 +222,13 @@
 
     </div>
     <div>
-      <footer>
+      <footer id="app">
         <div><a href="http://twitter.com/remcoder">@remcoder</a> ©2020 - 2024</div>
 
         <div>
           <a href="https://github.com/remcoder/gcode-preview">code</a>
           - <a href="/docs">API docs</a>
-          - MIT license
+          - MIT license {{message}}
         </div>
       </footer>
     </div>
@@ -239,19 +239,21 @@
   </div>
   <div class="dnd">☝️ Drop a gcode file to view it</div>
   
-
   <script type="importmap">
     {
         "imports": {
             "three": "./build/three/build/three.module.js",
             "gcode-preview": "./build/gcode-preview.es.js",
             "lil-gui": "./build/lil-gui/dist/lil-gui.esm.min.js",
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
         }
     }
 </script>
   <script type="module">
     import {initDemo} from './js/demo.js';
     import {tabs} from './js/tabs.js';
+    import {app} from './js/app.js';
+    app();
     tabs();
     const gcodeDemo = initDemo();
   </script>
