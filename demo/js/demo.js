@@ -223,7 +223,7 @@ export function initDemo() {
     const draw = !!drawBuildVolume.checked;
 
     changeDrawBuildVolume(draw);
-    changeBuildVolume({ x, y, z });
+    changeBuildVolume(draw ? { x, y, z } : undefined);
 
     preview.render();
   }
@@ -330,12 +330,14 @@ export function initDemo() {
   }
 
   function changeBuildVolume(volume) {
+    if (!volume) {
+      preview.buildVolume = undefined;
+      return;
+    }
     buildVolumeX.value = volume.x;
     buildVolumeY.value = volume.y;
     buildVolumeZ.value = volume.z;
-    preview.buildVolume.x = volume.x;
-    preview.buildVolume.y = volume.y;
-    preview.buildVolume.z = volume.z;
+    preview.buildVolume = { ...volume };
   }
 
   function changeDrawBuildVolume(draw) {

@@ -124,6 +124,9 @@ class DevGUI {
   }
 
   private setupBuildVolumeFolder(): void {
+    if (!this.watchedObject.buildVolume) {
+      return;
+    }
     const buildVolume = this.gui.addFolder('Build Volume');
     if (!this.openFolders.includes('Build Volume')) {
       buildVolume.close();
