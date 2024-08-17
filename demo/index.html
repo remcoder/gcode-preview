@@ -22,8 +22,8 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 
-<body>
-  <div class="sidebar">
+<body >
+  <div class="sidebar" id="app">
     <h1>GCode Preview  <a href="https://www.npmjs.com/package/gcode-preview">
       <img src="https://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
       </a></h1>
@@ -68,13 +68,13 @@
       </section>
       <div class="bulma-tabs bulma-is-small">
         <ul>
-          <li class="bulma-is-active"><a data-tab=layers>Layers</a></li>
-          <li><a data-tab=travel>Travel</a></li>
-          <li><a data-tab=extrusion>Extrusion</a></li>
-          <li><a data-tab=build-volume>Build volume</a></li>
+          <li :class="{ 'bulma-is-active': activeTab == 'layers' }"><a @click="selectTab('layers')">Layers</a></li>
+          <li :class="{ 'bulma-is-active': activeTab == 'travel' }"><a @click="selectTab('travel')">Travel</a></li>
+          <li :class="{ 'bulma-is-active': activeTab == 'extrusion' }"><a @click="selectTab('extrusion')">Extrusion</a></li>
+          <li :class="{ 'bulma-is-active': activeTab == 'build-volume' }"><a @click="selectTab('build-volume')">Build volume</a></li>
         </ul>
       </div>  
-      <div class="panel" data-panel="layers">
+      <div class="panel" v-show="activeTab == 'layers'">
       <section>
         <div class="controls">
           <label>Start layer <output id="start-layer-value" ></output></label>&nbsp;<input
@@ -98,7 +98,7 @@
         </div>
         </section>
       </div>
-      <div class="panel is-hidden" data-panel="travel">
+      <div class="panel" v-show="activeTab == 'travel'">
         <section>
           <div class="controls">
             <label for="travel">Render travel</label>
@@ -110,7 +110,8 @@
           </div>
         </section>
       </div>
-      <div class="panel is-hidden" data-panel="extrusion">
+      
+      <div class="panel" v-show="activeTab == 'extrusion'">
         <section>
           <div class="controls">
             <label for="extrusion">Render extrusion</label
@@ -194,7 +195,7 @@
         </div>
       </section>
       </div>
-      <div class="panel is-hidden" data-panel="build-volume">
+      <div class="panel" v-show="activeTab == 'build-volume'">
       <section>
         <div  class="controls">
           <label for="drawBuildVolume">Render build volume</label
@@ -222,13 +223,13 @@
 
     </div>
     <div>
-      <footer id="app">
+      <footer>
         <div><a href="http://twitter.com/remcoder">@remcoder</a> ©2020 - 2024</div>
 
         <div>
           <a href="https://github.com/remcoder/gcode-preview">code</a>
           - <a href="/docs">API docs</a>
-          - MIT license {{message}}
+          - MIT license
         </div>
       </footer>
     </div>
@@ -248,13 +249,11 @@
             "vue": "./js/vue.esm-browser.js"
         }
     }
-</script>
+  </script>
   <script type="module">
     import {initDemo} from './js/demo.js';
-    import {tabs} from './js/tabs.js';
     import {app} from './js/app.js';
     app();
-    tabs();
     const gcodeDemo = initDemo();
   </script>
 </body>

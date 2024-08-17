@@ -3,9 +3,15 @@ import { createApp, ref } from 'vue';
 export const app = () =>
   createApp({
     setup() {
-      const message = ref('Hello Vue!');
+      const activeTab = ref('layers');
       return {
-        message
+        activeTab
       };
+    },
+    methods: {
+      selectTab(t) {
+        console.log(t, this.activeTab);
+        this.activeTab = t;
+      }
     }
   }).mount('#app');
