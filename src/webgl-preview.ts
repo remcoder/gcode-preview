@@ -358,7 +358,6 @@ export class WebGLPreview {
     }
 
     if (this.renderTubes) {
-      console.warn('Volumetric rendering is experimental. It may not work as expected or change in the future.');
       const light = new AmbientLight(0xcccccc, 0.3 * Math.PI);
       // threejs assumes meters but we use mm. So we need to scale the decay of the light
       const dLight = new PointLight(0xffffff, Math.PI, undefined, 1 / 1000);
