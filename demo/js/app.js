@@ -1,5 +1,5 @@
 import { createApp, ref } from 'vue';
-import { settingsPresets } from './presets.js';
+import { settingsPresets as presets } from './presets.js';
 import * as GCodePreview from 'gcode-preview';
 
 const defaultPreset = 'multicolor';
@@ -10,12 +10,11 @@ const canvasElement = document.querySelector('canvas');
 export const app = () =>
   createApp({
     setup() {
-      const presets = ref(settingsPresets);
       const activeTab = ref('layers');
 
       return {
         defaultPreset: ref(defaultPreset),
-        presets,
+        presets: ref(presets),
         activeTab
       };
     },
@@ -28,10 +27,7 @@ export const app = () =>
         this.activeTab = t;
       },
       selectPreset(preset) {
-        console.log(preset);
-        this.settings = this.presets[preset];
-
-        window.preview = new GCodePreview.init({
+        const opts = {
           canvas: canvasElement,
           buildVolume: undefined, //{ ...preset.buildVolume },
           initialCameraPosition: [-250, 350, 300],
@@ -45,9 +41,13 @@ export const app = () =>
             devHelpers: true,
             statsContainer: document.querySelector('.sidebar')
           }
-        });
+        };
+        const settings = presets[preset];
+        Object.assign(opts, settings);
+        window.preview = new GCodePreview.init(opts);
+        // Object.assign(window.preview, settings);
 
-        loadGCodeFromServer(this.settings.file);
+        loadGCodeFromServer(settings.file);
       }
     }
   }).mount('#app');

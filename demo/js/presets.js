@@ -2,22 +2,20 @@ export const settingsPresets = {
   multicolor: {
     title: 'Multicolor',
     file: 'gcodes/3DBenchy-Multi-part.gcode',
-    lineWidth: 1,
-    singleLayerMode: false,
-    renderExtrusion: true,
-    renderTubes: true,
-    extrusionColors: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
-    travel: false,
-    travelColor: '#00FF00',
-    highlightTopLayer: false,
-    topLayerColor: undefined,
-    lastSegmentColor: undefined,
-    drawBuildVolume: true,
+    lineWidth: 1, // no
+    singleLayerMode: true, // no, no a constructor option
+    renderExtrusion: true, // yes
+    renderTubes: true, //yes
+    extrusionColor: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
+    renderTravel: false, // yes
+    travelColor: 'red', // yes
+    topLayerColor: undefined, //yes
+    lastSegmentColor: undefined, //yes
     buildVolume: {
       x: 180,
       y: 180,
-      z: 0
-    }
+      z: 100
+    } //yes
   },
   mach3: {
     title: 'CNC tool path',
@@ -26,13 +24,11 @@ export const settingsPresets = {
     singleLayerMode: false,
     renderExtrusion: false,
     renderTubes: false,
-    extrusionColors: [],
-    travel: true,
+    extrusionColor: [],
+    renderTravel: true,
     travelColor: '#00FF00',
-    highlightTopLayer: false,
     topLayerColor: undefined,
     lastSegmentColor: undefined,
-    drawBuildVolume: true,
     buildVolume: {
       x: 20,
       y: 20,
@@ -46,13 +42,11 @@ export const settingsPresets = {
     singleLayerMode: true,
     renderExtrusion: true,
     renderTubes: true,
-    extrusionColors: ['rgb(83,209,104)'],
-    travel: false,
+    extrusionColor: ['rgb(83,209,104)'],
+    renderTravel: false,
     travelColor: '#00FF00',
-    highlightTopLayer: false,
     topLayerColor: undefined,
     lastSegmentColor: undefined,
-    drawBuildVolume: true,
     buildVolume: {
       x: 150,
       y: 150,
@@ -66,13 +60,11 @@ export const settingsPresets = {
     singleLayerMode: true,
     renderExtrusion: true,
     renderTubes: true,
-    extrusionColors: ['rgb(84,74,187)'],
-    travel: false,
+    extrusionColor: ['rgb(84,74,187)'],
+    renderTravel: false,
     travelColor: '#00FF00',
-    highlightTopLayer: true,
     topLayerColor: '#40BFBF',
     lastSegmentColor: '#ffffff',
-    drawBuildVolume: true,
     buildVolume: {
       x: 200,
       y: 200,
@@ -86,13 +78,11 @@ export const settingsPresets = {
     singleLayerMode: false,
     renderExtrusion: true,
     renderTubes: true,
-    extrusionColors: ['#777777'],
-    travel: true,
+    extrusionColor: ['#777777'],
+    renderTravel: true,
     travelColor: '#00FF00',
-    highlightTopLayer: true,
     topLayerColor: '#aaaaaa',
     lastSegmentColor: undefined,
-    drawBuildVolume: true,
     buildVolume: {
       x: 200,
       y: 200,
