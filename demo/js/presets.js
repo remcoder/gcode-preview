@@ -1,5 +1,6 @@
 export const settingsPresets = {
   multicolor: {
+    title: 'Multicolor',
     file: 'gcodes/3DBenchy-Multi-part.gcode',
     lineWidth: 1,
     singleLayerMode: false,
@@ -19,6 +20,7 @@ export const settingsPresets = {
     }
   },
   mach3: {
+    title: 'CNC tool path',
     file: 'gcodes/mach3.gcode',
     lineWidth: 1,
     singleLayerMode: false,
@@ -38,6 +40,7 @@ export const settingsPresets = {
     }
   },
   arcs: {
+    title: 'Arcs with G2/G3',
     file: 'gcodes/screw.gcode',
     lineWidth: 2,
     singleLayerMode: true,
@@ -57,6 +60,7 @@ export const settingsPresets = {
     }
   },
   'vase-mode': {
+    title: 'Vase mode',
     file: 'gcodes/vase.gcode',
     lineWidth: 1,
     singleLayerMode: true,
@@ -76,6 +80,7 @@ export const settingsPresets = {
     }
   },
   'travel-moves': {
+    title: 'Travel moves',
     file: 'gcodes/plant-sign.gcode',
     lineWidth: 2,
     singleLayerMode: false,

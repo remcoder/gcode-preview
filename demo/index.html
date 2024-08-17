@@ -36,11 +36,12 @@
             Preset
           </span>
           <select id="settings-presets">
-            <option value="multicolor">Multicolor</option>
+            <option v-for="(preset, name) in presets" :value="name">{{preset.title}}</option>
+            <!-- <option value="multicolor">Multicolor</option>
             <option value="mach3">CNC tool path</option>
             <option value="arcs">Arcs with G2/G3</option>
             <option value="vase-mode">Vase mode</option>
-            <option value="travel-moves">Travel moves</option>
+            <option value="travel-moves">Travel moves</option> -->
           </select>
         </div>
 
@@ -254,6 +255,5 @@
     import {initDemo} from './js/demo.js';
     import {app} from './js/app.js';
     app();
-    const gcodeDemo = initDemo();
   </script>
 </body>
