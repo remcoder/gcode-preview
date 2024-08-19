@@ -56,6 +56,14 @@ export class Machine {
 
     return layers;
   }
+
+  extrusions(): Path[] {
+    return this.paths.filter((path) => path.travelType === PathType.Extrusion);
+  }
+
+  travels(): Path[] {
+    return this.paths.filter((path) => path.travelType === PathType.Travel);
+  }
 }
 
 export class Interpreter {

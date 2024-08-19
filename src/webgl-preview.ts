@@ -5,8 +5,6 @@ import { LineBox } from './lineBox';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { DevGUI, DevModeOptions } from './dev-gui';
-
-import { Path, PathType } from './path';
 import { Interpreter, Machine } from './interpreter';
 
 import {
@@ -19,6 +17,9 @@ import {
   Euler,
   Fog,
   Group,
+  Line,
+  LineBasicMaterial,
+  LineSegments,
   MeshLambertMaterial,
   PerspectiveCamera,
   PointLight,
@@ -295,6 +296,7 @@ export class WebGLPreview {
     this.initScene();
 
     this.renderGeometries();
+    this.renderLines();
 
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
@@ -351,23 +353,53 @@ export class WebGLPreview {
     this.animationFrameId = undefined;
   }
 
+  private renderLines() {
+    if (this.renderTravel) {
+      const material = new LineBasicMaterial({ color: this._travelColor, linewidth: this.lineWidth });
+      this.disposables.push(material);
+
+      this.virtualMachine.travels().forEach((path) => {
+        const geometry = path.line();
+        const line = new Line(geometry, material);
+        this.group?.add(line);
+      });
+    }
+
+    if (this.renderExtrusion && !this.renderTubes) {
+      const lineMaterials = {} as Record<number, LineBasicMaterial>;
+
+      if (Array.isArray(this._extrusionColor)) {
+        this._extrusionColor.forEach((color, index) => {
+          lineMaterials[index] = new LineBasicMaterial({ color, linewidth: this.lineWidth });
+        });
+      } else {
+        lineMaterials[0] = new LineBasicMaterial({
+          color: this._extrusionColor,
+          linewidth: this.lineWidth
+        });
+      }
+
+      this.virtualMachine.extrusions().forEach((path) => {
+        const geometry = path.line();
+        const line = new LineSegments(geometry, lineMaterials[path.tool]);
+        this.group?.add(line);
+      });
+    }
+  }
+
   private renderGeometries() {
     if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
       let color: number;
-      this.virtualMachine.paths
-        .filter(({ travelType }) => {
-          return travelType === PathType.Extrusion;
-        })
-        .forEach((path) => {
-          if (Array.isArray(this._extrusionColor)) {
-            color = this._extrusionColor[path.tool].getHex();
-          } else {
-            color = this._extrusionColor.getHex();
-          }
+      this.virtualMachine.extrusions().forEach((path) => {
+        if (Array.isArray(this._extrusionColor)) {
+          color = this._extrusionColor[path.tool].getHex();
+        } else {
+          color = this._extrusionColor.getHex();
+        }
 
-          this._geometries[color] ||= [];
-          this._geometries[color].push(path.geometry());
-        });
+        this._geometries[color] ||= [];
+        this._geometries[color].push(path.geometry());
+      });
     }
 
     if (this._geometries) {
