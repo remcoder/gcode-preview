@@ -24,6 +24,38 @@ export class Machine {
     this.paths = [];
     this.state = state || State.initial;
   }
+
+  isPlanar(): boolean {
+    return (
+      this.paths.find(
+        (path) =>
+          path.travelType === PathType.Extrusion && path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2])
+      ) === undefined
+    );
+  }
+
+  layers(): Path[][] | null {
+    if (!this.isPlanar()) {
+      return null;
+    }
+
+    const layers: Path[][] = [];
+    let currentLayer: Path[] = [];
+
+    this.paths.forEach((path) => {
+      if (path.travelType === PathType.Extrusion) {
+        currentLayer.push(path);
+      } else {
+        if (path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2])) {
+          layers.push(currentLayer);
+          currentLayer = [];
+        }
+        currentLayer.push(path);
+      }
+    });
+
+    return layers;
+  }
 }
 
 export class Interpreter {

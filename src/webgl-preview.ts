@@ -54,7 +54,6 @@ export type GCodePreviewOptions = {
   toolColors?: Record<number, ColorRepresentation>;
   disableGradient?: boolean;
   extrusionWidth?: number;
-  /** @experimental */
   renderTubes?: boolean;
   /**
    * @deprecated Please see the demo how to implement drag and drop.
@@ -99,7 +98,6 @@ export class WebGLPreview {
   private animationFrameId?: number;
   private renderLayerIndex = 0;
   private _geometries: Record<number, BufferGeometry[]> = {};
-  paths: Path[];
   interpreter: Interpreter;
   virtualMachine: Machine = new Machine();
 
@@ -140,7 +138,6 @@ export class WebGLPreview {
     this.extrusionWidth = opts.extrusionWidth ?? this.extrusionWidth;
     this.devMode = opts.devMode ?? this.devMode;
     this.stats = this.devMode ? new Stats() : undefined;
-    this.paths = [];
     this.interpreter = new Interpreter();
 
     if (opts.extrusionColor !== undefined) {
@@ -330,7 +327,6 @@ export class WebGLPreview {
     this.singleLayerMode = false;
     this.devGui?.reset();
     this._geometries = {};
-    this.paths = [];
   }
 
   resize(): void {

@@ -9,7 +9,7 @@ export enum PathType {
 
 export class Path {
   travelType: PathType;
-  vertices: number[];
+  public vertices: number[];
   extrusionWidth: number;
   lineHeight: number;
   geometryCache: BufferGeometry | undefined;
