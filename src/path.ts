@@ -8,15 +8,15 @@ export enum PathType {
 }
 
 export class Path {
-  type: PathType;
+  travelType: PathType;
   vertices: number[];
   extrusionWidth: number;
   lineHeight: number;
   geometryCache: BufferGeometry | undefined;
   tool: number;
 
-  constructor(type: PathType, extrusionWidth = 0.6, lineHeight = 0.2, tool = 0) {
-    this.type = type;
+  constructor(travelType: PathType, extrusionWidth = 0.6, lineHeight = 0.2, tool = 0) {
+    this.travelType = travelType;
     this.vertices = [];
     this.extrusionWidth = extrusionWidth;
     this.lineHeight = lineHeight;

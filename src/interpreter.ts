@@ -44,10 +44,8 @@ export class Interpreter {
     let lastPath = machine.paths[machine.paths.length - 1];
     const pathType = e ? PathType.Extrusion : PathType.Travel;
 
-    if (lastPath === undefined || lastPath.type !== pathType) {
-      lastPath = new Path(pathType, 0.6, 0.2, state.tool);
-      machine.paths.push(lastPath);
-      lastPath.addPoint(state.x, state.y, state.z);
+    if (lastPath === undefined || lastPath.travelType !== pathType) {
+      lastPath = this.breakPath(machine, pathType);
     }
 
     state.x = x || state.x;
@@ -68,10 +66,8 @@ export class Interpreter {
     let lastPath = machine.paths[machine.paths.length - 1];
     const pathType = e ? PathType.Extrusion : PathType.Travel;
 
-    if (lastPath === undefined || lastPath.type !== pathType) {
-      lastPath = new Path(pathType, 0.6, 0.2, state.tool);
-      machine.paths.push(lastPath);
-      lastPath.addPoint(state.x, state.y, state.z);
+    if (lastPath === undefined || lastPath.travelType !== pathType) {
+      lastPath = this.breakPath(machine, pathType);
     }
 
     if (r) {
@@ -193,5 +189,12 @@ export class Interpreter {
   }
   G21(command: GCodeCommand, machine: Machine): void {
     machine.state.units = 'mm';
+  }
+
+  private breakPath(machine: Machine, newType: PathType): Path {
+    const lastPath = new Path(newType, 0.6, 0.2, machine.state.tool);
+    machine.paths.push(lastPath);
+    lastPath.addPoint(machine.state.x, machine.state.y, machine.state.z);
+    return lastPath;
   }
 }

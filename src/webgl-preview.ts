@@ -393,8 +393,8 @@ export class WebGLPreview {
     if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
       let color: number;
       this.virtualMachine.paths
-        .filter(({ type }) => {
-          return type === PathType.Extrusion;
+        .filter(({ travelType }) => {
+          return travelType === PathType.Extrusion;
         })
         .forEach((path) => {
           if (Array.isArray(this._extrusionColor)) {
