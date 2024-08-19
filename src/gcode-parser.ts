@@ -66,6 +66,7 @@ export enum Code {
   G1 = 'G1',
   G2 = 'G2',
   G3 = 'G3',
+  G28 = 'G28',
   T0 = 'T0',
   T1 = 'T1',
   T2 = 'T2',
@@ -182,6 +183,7 @@ export class Parser {
   parseGCode(input: string | string[]): {
     layers: Layer[];
     metadata: Metadata;
+    commands: GCodeCommand[];
   } {
     const lines = Array.isArray(input) ? input : input.split('\n');
 
@@ -189,7 +191,7 @@ export class Parser {
 
     this.commands = this.lines2commands(lines);
 
-    this.groupIntoLayers(this.commands);
+    // this.groupIntoLayers(this.commands);
 
     // merge thumbs
     const thumbs = this.parseMetadata(this.commands.filter((cmd) => cmd.comment)).thumbnails;
@@ -197,7 +199,7 @@ export class Parser {
       this.metadata.thumbnails[key] = value;
     }
 
-    return { layers: this.layers, metadata: this.metadata };
+    return { layers: this.layers, metadata: this.metadata, commands: this.commands };
   }
 
   private lines2commands(lines: string[]) {
@@ -246,16 +248,6 @@ export class Parser {
       default:
         return new GCodeCommand(line, gcode, params, comment);
     }
-  }
-
-  // G0 & G1
-  private parseMove(params: string[]): MoveCommandParams {
-    return params.reduce((acc: MoveCommandParams, cur: string) => {
-      const key = cur.charAt(0).toLowerCase();
-      if (key == 'x' || key == 'y' || key == 'z' || key == 'e' || key == 'r' || key == 'f' || key == 'i' || key == 'j')
-        acc[key] = parseFloat(cur.slice(1));
-      return acc;
-    }, {});
   }
 
   private isAlpha(char: string | singleLetter): char is singleLetter {
@@ -337,10 +329,3 @@ export class Parser {
     return { thumbnails };
   }
 }
-
-// backwards compat;
-// eslint-disable-next-line no-redeclare
-export interface Parser {
-  parseGcode: typeof Parser.prototype.parseGCode;
-}
-Parser.prototype.parseGcode = Parser.prototype.parseGCode;

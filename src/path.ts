@@ -39,20 +39,27 @@ export class Path {
     return x === lastX && y === lastY && z === lastZ;
   }
 
+  path(): Vector3[] {
+    const path: Vector3[] = [];
+
+    for (let i = 0; i < this.vertices.length; i += 3) {
+      path.push(new Vector3(this.vertices[i], this.vertices[i + 1], this.vertices[i + 2]));
+    }
+    return path;
+  }
+
   geometry(): BufferGeometry {
     if (!this.geometryCache) {
       if (this.vertices.length < 3) {
         return new BufferGeometry();
       }
 
-      const extrusionPaths: Vector3[] = [];
-
-      for (let i = 0; i < this.vertices.length; i += 3) {
-        extrusionPaths.push(new Vector3(this.vertices[i], this.vertices[i + 1], this.vertices[i + 2]));
-      }
-
-      this.geometryCache = new ExtrusionGeometry(extrusionPaths, this.extrusionWidth, this.lineHeight, 4);
+      this.geometryCache = new ExtrusionGeometry(this.path(), this.extrusionWidth, this.lineHeight, 4);
     }
     return this.geometryCache;
+  }
+
+  line(): BufferGeometry {
+    return new BufferGeometry().setFromPoints(this.path());
   }
 }

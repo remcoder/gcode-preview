@@ -1,5 +1,5 @@
 import { Path, PathType } from './path';
-import { GCodeCommand, SelectToolCommand } from './gcode-parser';
+import { Code, GCodeCommand, SelectToolCommand } from './gcode-parser';
 
 export class State {
   x: number;
@@ -18,7 +18,7 @@ export class State {
   }
 }
 
-class Print {
+export class Machine {
   paths: Path[];
   state: State;
 
@@ -29,28 +29,26 @@ class Print {
 }
 
 export class Interpreter {
-  execute(commands: GCodeCommand[], initialState?: State): Print {
-    const print = new Print(initialState);
-
+  execute(commands: GCodeCommand[], machine = new Machine()): Machine {
     commands.forEach((command) => {
       if (command.code !== undefined) {
-        this[command.code](command, print);
+        this[command.code](command, machine);
       }
     });
 
-    return print;
+    return machine;
   }
 
-  G0(command: GCodeCommand, print: Print): void {
+  G0(command: GCodeCommand, machine: Machine): void {
     const { x, y, z, e } = command.params;
-    const { state } = print;
+    const { state } = machine;
 
-    let lastPath = print.paths[print.paths.length - 1];
+    let lastPath = machine.paths[machine.paths.length - 1];
     const pathType = e ? PathType.Extrusion : PathType.Travel;
 
     if (lastPath === undefined || lastPath.type !== pathType) {
       lastPath = new Path(pathType, 0.6, 0.2, state.t);
-      print.paths.push(lastPath);
+      machine.paths.push(lastPath);
       lastPath.addPoint(state.x, state.y, state.z);
     }
 
@@ -62,35 +60,134 @@ export class Interpreter {
   }
 
   G1 = this.G0;
-  G2(command: GCodeCommand, print: Print): void {
-    console.log(command.src, print);
-  }
-  G3(command: GCodeCommand, print: Print): void {
-    console.log(command.src, print);
+
+  G2(command: GCodeCommand, machine: Machine): void {
+    const { x, y, z, e } = command.params;
+    let { i, j, r } = command.params;
+    const { state } = machine;
+
+    const cw = command.code === Code.G2;
+    let lastPath = machine.paths[machine.paths.length - 1];
+    const pathType = e ? PathType.Extrusion : PathType.Travel;
+
+    if (lastPath === undefined || lastPath.type !== pathType) {
+      lastPath = new Path(pathType, 0.6, 0.2, state.t);
+      machine.paths.push(lastPath);
+      lastPath.addPoint(state.x, state.y, state.z);
+    }
+
+    if (r) {
+      // in r mode a minimum radius will be applied if the distance can otherwise not be bridged
+      const deltaX = x - state.x; // assume abs mode
+      const deltaY = y - state.y;
+
+      // apply a minimal radius to bridge the distance
+      const minR = Math.sqrt(Math.pow(deltaX / 2, 2) + Math.pow(deltaY / 2, 2));
+      r = Math.max(r, minR);
+
+      const dSquared = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
+      const hSquared = Math.pow(r, 2) - dSquared / 4;
+      // if (dSquared == 0 || hSquared < 0) {
+      //   return { position: { x: x, y: z, z: y }, points: [] }; //we'll abort the render and move te position to the new position.
+      // }
+      let hDivD = Math.sqrt(hSquared / dSquared);
+
+      // Ref RRF DoArcMove for details
+      if ((cw && r < 0.0) || (!cw && r > 0.0)) {
+        hDivD = -hDivD;
+      }
+      i = deltaX / 2 + deltaY * hDivD;
+      j = deltaY / 2 - deltaX * hDivD;
+      // } else {
+      //     //the radial point is an offset from the current position
+      //     ///Need at least on point
+      //     if (i == 0 && j == 0) {
+      //         return { position: { x: x, y: y, z: z }, points: [] }; //we'll abort the render and move te position to the new position.
+      //     }
+    }
+
+    const wholeCircle = state.x == x && state.y == y;
+    const centerX = state.x + i;
+    const centerY = state.y + j;
+
+    const arcRadius = Math.sqrt(i * i + j * j);
+    const arcCurrentAngle = Math.atan2(-j, -i);
+    const finalTheta = Math.atan2(y - centerY, x - centerX);
+
+    let totalArc;
+    if (wholeCircle) {
+      totalArc = 2 * Math.PI;
+    } else {
+      totalArc = cw ? arcCurrentAngle - finalTheta : finalTheta - arcCurrentAngle;
+      if (totalArc < 0.0) {
+        totalArc += 2 * Math.PI;
+      }
+    }
+    let totalSegments = (arcRadius * totalArc) / 1.8;
+    // if (this.inches) {
+    //   totalSegments *= 25;
+    // }
+    if (totalSegments < 1) {
+      totalSegments = 1;
+    }
+    let arcAngleIncrement = totalArc / totalSegments;
+    arcAngleIncrement *= cw ? -1 : 1;
+
+    const zDist = state.z - (z || state.z);
+    const zStep = zDist / totalSegments;
+
+    // get points for the arc
+    let px = state.x;
+    let py = state.y;
+    let pz = state.z;
+    // calculate segments
+    let currentAngle = arcCurrentAngle;
+
+    for (let moveIdx = 0; moveIdx < totalSegments - 1; moveIdx++) {
+      currentAngle += arcAngleIncrement;
+      px = centerX + arcRadius * Math.cos(currentAngle);
+      py = centerY + arcRadius * Math.sin(currentAngle);
+      pz += zStep;
+      lastPath.addPoint(px, py, pz);
+    }
+
+    state.x = x || state.x;
+    state.y = y || state.y;
+    state.z = z || state.z;
+
+    lastPath.addPoint(state.x, state.y, state.z);
   }
 
-  T0(command: SelectToolCommand, print: Print): void {
-    print.state.t = 0;
+  G3 = this.G2;
+
+  G28(command: GCodeCommand, machine: Machine): void {
+    machine.state.x = 0;
+    machine.state.y = 0;
+    machine.state.z = 0;
   }
-  T1(command: SelectToolCommand, print: Print): void {
-    print.state.t = 1;
+
+  T0(command: SelectToolCommand, machine: Machine): void {
+    machine.state.t = 0;
   }
-  T2(command: SelectToolCommand, print: Print): void {
-    print.state.t = 2;
+  T1(command: SelectToolCommand, machine: Machine): void {
+    machine.state.t = 1;
   }
-  T3(command: SelectToolCommand, print: Print): void {
-    print.state.t = 3;
+  T2(command: SelectToolCommand, machine: Machine): void {
+    machine.state.t = 2;
   }
-  T4(command: SelectToolCommand, print: Print): void {
-    print.state.t = 4;
+  T3(command: SelectToolCommand, machine: Machine): void {
+    machine.state.t = 3;
   }
-  T5(command: SelectToolCommand, print: Print): void {
-    print.state.t = 5;
+  T4(command: SelectToolCommand, machine: Machine): void {
+    machine.state.t = 4;
   }
-  T6(command: SelectToolCommand, print: Print): void {
-    print.state.t = 6;
+  T5(command: SelectToolCommand, machine: Machine): void {
+    machine.state.t = 5;
   }
-  T7(command: SelectToolCommand, print: Print): void {
-    print.state.t = 7;
+  T6(command: SelectToolCommand, machine: Machine): void {
+    machine.state.t = 6;
+  }
+  T7(command: SelectToolCommand, machine: Machine): void {
+    machine.state.t = 7;
   }
 }
