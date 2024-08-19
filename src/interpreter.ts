@@ -5,15 +5,13 @@ export class State {
   x: number;
   y: number;
   z: number;
-  r: number;
   e: number;
-  i: number;
-  j: number;
-  t: number;
+  tool: number;
+  units: 'mm' | 'in';
 
   static get initial(): State {
     const state = new State();
-    Object.assign(state, { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 });
+    Object.assign(state, { x: 0, y: 0, z: 0, e: 0, tool: 0, units: 'mm' });
     return state;
   }
 }
@@ -47,7 +45,7 @@ export class Interpreter {
     const pathType = e ? PathType.Extrusion : PathType.Travel;
 
     if (lastPath === undefined || lastPath.type !== pathType) {
-      lastPath = new Path(pathType, 0.6, 0.2, state.t);
+      lastPath = new Path(pathType, 0.6, 0.2, state.tool);
       machine.paths.push(lastPath);
       lastPath.addPoint(state.x, state.y, state.z);
     }
@@ -71,7 +69,7 @@ export class Interpreter {
     const pathType = e ? PathType.Extrusion : PathType.Travel;
 
     if (lastPath === undefined || lastPath.type !== pathType) {
-      lastPath = new Path(pathType, 0.6, 0.2, state.t);
+      lastPath = new Path(pathType, 0.6, 0.2, state.tool);
       machine.paths.push(lastPath);
       lastPath.addPoint(state.x, state.y, state.z);
     }
@@ -124,9 +122,9 @@ export class Interpreter {
       }
     }
     let totalSegments = (arcRadius * totalArc) / 1.8;
-    // if (this.inches) {
-    //   totalSegments *= 25;
-    // }
+    if (state.units == 'in') {
+      totalSegments *= 25;
+    }
     if (totalSegments < 1) {
       totalSegments = 1;
     }
@@ -167,27 +165,33 @@ export class Interpreter {
   }
 
   T0(command: SelectToolCommand, machine: Machine): void {
-    machine.state.t = 0;
+    machine.state.tool = 0;
   }
   T1(command: SelectToolCommand, machine: Machine): void {
-    machine.state.t = 1;
+    machine.state.tool = 1;
   }
   T2(command: SelectToolCommand, machine: Machine): void {
-    machine.state.t = 2;
+    machine.state.tool = 2;
   }
   T3(command: SelectToolCommand, machine: Machine): void {
-    machine.state.t = 3;
+    machine.state.tool = 3;
   }
   T4(command: SelectToolCommand, machine: Machine): void {
-    machine.state.t = 4;
+    machine.state.tool = 4;
   }
   T5(command: SelectToolCommand, machine: Machine): void {
-    machine.state.t = 5;
+    machine.state.tool = 5;
   }
   T6(command: SelectToolCommand, machine: Machine): void {
-    machine.state.t = 6;
+    machine.state.tool = 6;
   }
   T7(command: SelectToolCommand, machine: Machine): void {
-    machine.state.t = 7;
+    machine.state.tool = 7;
+  }
+  G20(command: GCodeCommand, machine: Machine): void {
+    machine.state.units = 'in';
+  }
+  G21(command: GCodeCommand, machine: Machine): void {
+    machine.state.units = 'mm';
   }
 }
