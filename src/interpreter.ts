@@ -1,5 +1,5 @@
 import { Path, PathType } from './path';
-import { Code, GCodeCommand, SelectToolCommand } from './gcode-parser';
+import { Code, GCodeCommand } from './gcode-parser';
 
 export class State {
   x: number;
@@ -121,7 +121,7 @@ export class Interpreter {
         totalArc += 2 * Math.PI;
       }
     }
-    let totalSegments = (arcRadius * totalArc) / 1.8;
+    let totalSegments = (arcRadius * totalArc) / 0.5;
     if (state.units == 'in') {
       totalSegments *= 25;
     }
@@ -164,28 +164,28 @@ export class Interpreter {
     machine.state.z = 0;
   }
 
-  T0(command: SelectToolCommand, machine: Machine): void {
+  T0(command: GCodeCommand, machine: Machine): void {
     machine.state.tool = 0;
   }
-  T1(command: SelectToolCommand, machine: Machine): void {
+  T1(command: GCodeCommand, machine: Machine): void {
     machine.state.tool = 1;
   }
-  T2(command: SelectToolCommand, machine: Machine): void {
+  T2(command: GCodeCommand, machine: Machine): void {
     machine.state.tool = 2;
   }
-  T3(command: SelectToolCommand, machine: Machine): void {
+  T3(command: GCodeCommand, machine: Machine): void {
     machine.state.tool = 3;
   }
-  T4(command: SelectToolCommand, machine: Machine): void {
+  T4(command: GCodeCommand, machine: Machine): void {
     machine.state.tool = 4;
   }
-  T5(command: SelectToolCommand, machine: Machine): void {
+  T5(command: GCodeCommand, machine: Machine): void {
     machine.state.tool = 5;
   }
-  T6(command: SelectToolCommand, machine: Machine): void {
+  T6(command: GCodeCommand, machine: Machine): void {
     machine.state.tool = 6;
   }
-  T7(command: SelectToolCommand, machine: Machine): void {
+  T7(command: GCodeCommand, machine: Machine): void {
     machine.state.tool = 7;
   }
   G20(command: GCodeCommand, machine: Machine): void {

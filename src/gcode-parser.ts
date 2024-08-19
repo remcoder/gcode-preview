@@ -136,17 +136,6 @@ export class MoveCommand extends GCodeCommand {
   }
 }
 
-export class SelectToolCommand extends GCodeCommand {
-  constructor(
-    src: string,
-    gcode: string,
-    comment?: string,
-    public toolIndex?: number
-  ) {
-    super(src, gcode, undefined, comment);
-  }
-}
-
 type Metadata = { thumbnails: Record<string, Thumbnail> };
 
 export class Layer {
@@ -231,22 +220,6 @@ export class Parser {
       case 'g3':
       case 'g03':
         return new MoveCommand(line, gcode, params, comment);
-      case 't0':
-        return new SelectToolCommand(line, gcode, comment, 0);
-      case 't1':
-        return new SelectToolCommand(line, gcode, comment, 1);
-      case 't2':
-        return new SelectToolCommand(line, gcode, comment, 2);
-      case 't3':
-        return new SelectToolCommand(line, gcode, comment, 3);
-      case 't4':
-        return new SelectToolCommand(line, gcode, comment, 4);
-      case 't5':
-        return new SelectToolCommand(line, gcode, comment, 5);
-      case 't6':
-        return new SelectToolCommand(line, gcode, comment, 6);
-      case 't7':
-        return new SelectToolCommand(line, gcode, comment, 7);
       default:
         return new GCodeCommand(line, gcode, params, comment);
     }
