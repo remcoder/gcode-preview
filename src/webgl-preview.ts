@@ -60,10 +60,6 @@ export type GCodePreviewOptions = {
    * @deprecated Please see the demo how to implement drag and drop.
    */
   allowDragNDrop?: boolean;
-  /**
-   * @deprecated Please use the `canvas` param instead.
-   */
-  targetId?: string;
   /** @experimental */
   devMode?: boolean | DevModeOptions;
 };
@@ -71,10 +67,6 @@ export type GCodePreviewOptions = {
 export class WebGLPreview {
   minLayerThreshold = 0.05;
   parser: Parser;
-  /**
-   * @deprecated Please use the `canvas` param instead.
-   */
-  targetId?: string;
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
@@ -134,7 +126,6 @@ export class WebGLPreview {
     if (opts.backgroundColor !== undefined) {
       this.backgroundColor = new Color(opts.backgroundColor);
     }
-    this.targetId = opts.targetId;
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
     this.lineWidth = opts.lineWidth;
@@ -178,28 +169,11 @@ export class WebGLPreview {
     console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
 
-    if (this.targetId) {
-      console.warn('`targetId` is deprecated and will removed in the future. Use `canvas` instead.');
-    }
-
-    if (!opts.canvas) {
-      if (!this.targetId) {
-        throw Error('Set either opts.canvas or opts.targetId');
-      }
-      const container = document.getElementById(this.targetId);
-      if (!container) throw new Error('Unable to find element ' + this.targetId);
-
-      this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true });
-      this.canvas = this.renderer.domElement;
-
-      container.appendChild(this.canvas);
-    } else {
-      this.canvas = opts.canvas;
-      this.renderer = new WebGLRenderer({
-        canvas: this.canvas,
-        preserveDrawingBuffer: true
-      });
-    }
+    this.canvas = opts.canvas;
+    this.renderer = new WebGLRenderer({
+      canvas: this.canvas,
+      preserveDrawingBuffer: true
+    });
 
     this.camera = new PerspectiveCamera(25, this.canvas.offsetWidth / this.canvas.offsetHeight, 10, 5000);
     this.camera.position.fromArray(this.initialCameraPosition);
