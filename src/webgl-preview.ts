@@ -330,14 +330,6 @@ export class WebGLPreview {
     this._lastRenderTime = performance.now() - startRender;
   }
 
-  setInches(): void {
-    // if (this.beyondFirstMove) {
-    //   console.warn('Switching units after movement is already made is discouraged and is not supported.');
-    //   return;
-    // }
-    // this.inches = true;
-  }
-
   /** @internal */
   drawBuildVolume(): void {
     if (!this.buildVolume) return;
