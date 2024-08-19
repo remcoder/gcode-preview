@@ -5,7 +5,8 @@ import { LineBox } from './lineBox';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { DevGUI, DevModeOptions } from './dev-gui';
-import { Interpreter, Machine } from './interpreter';
+import { Interpreter } from './interpreter';
+import { Machine } from './machine';
 
 import {
   AmbientLight,
