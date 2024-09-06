@@ -1,4 +1,4 @@
-import { createApp, ref } from 'vue';
+import { createApp, ref, watch } from 'vue';
 import { settingsPresets as presets } from './presets.js';
 import * as GCodePreview from 'gcode-preview';
 
@@ -11,44 +11,53 @@ export const app = () =>
   createApp({
     setup() {
       const activeTab = ref('layers');
+      const selectedPreset = ref(defaultPreset);
+
+      watch(
+        selectedPreset,
+        (preset) => {
+          selectPreset(preset);
+        },
+        { immediate: true }
+      );
 
       return {
-        defaultPreset: ref(defaultPreset),
+        selectedPreset,
         presets: ref(presets),
         activeTab
       };
     },
-    mounted() {
-      this.selectPreset(this.defaultPreset);
-    },
+    mounted() {},
     methods: {
       selectTab(t) {
         console.log(t, this.activeTab);
         this.activeTab = t;
-      },
-      selectPreset(preset) {
-        const opts = {
-          canvas: canvasElement,
-          initialCameraPosition: [-250, 350, 300],
-          backgroundColor: initialBackgroundColor,
-          lineHeight: 0.3,
-          devMode: {
-            camera: true,
-            renderer: true,
-            parser: true,
-            buildVolume: true,
-            devHelpers: true,
-            statsContainer: document.querySelector('.sidebar')
-          }
-        };
-        const settings = presets[preset];
-        Object.assign(opts, settings);
-        window.preview = new GCodePreview.init(opts);
-
-        loadGCodeFromServer(settings.file);
       }
     }
   }).mount('#app');
+
+function selectPreset(preset) {
+  console.log('selectPreset', preset);
+  const opts = {
+    canvas: canvasElement,
+    initialCameraPosition: [-250, 350, 300],
+    backgroundColor: initialBackgroundColor,
+    lineHeight: 0.3,
+    devMode: {
+      camera: true,
+      renderer: true,
+      parser: true,
+      buildVolume: true,
+      devHelpers: true,
+      statsContainer: document.querySelector('.sidebar')
+    }
+  };
+  const settings = presets[preset];
+  Object.assign(opts, settings);
+  window.preview = new GCodePreview.init(opts);
+
+  loadGCodeFromServer(settings.file);
+}
 
 async function loadGCodeFromServer(filename) {
   const response = await fetch(filename);
