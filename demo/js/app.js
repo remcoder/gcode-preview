@@ -13,13 +13,9 @@ export const app = () =>
       const activeTab = ref('layers');
       const selectedPreset = ref(defaultPreset);
 
-      watch(
-        selectedPreset,
-        (preset) => {
-          selectPreset(preset);
-        },
-        { immediate: true }
-      );
+      watch(selectedPreset, (preset) => {
+        selectPreset(preset);
+      });
 
       return {
         selectedPreset,
@@ -27,7 +23,9 @@ export const app = () =>
         activeTab
       };
     },
-    mounted() {},
+    mounted() {
+      selectPreset(defaultPreset);
+    },
     methods: {
       selectTab(t) {
         console.log(t, this.activeTab);
