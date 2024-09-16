@@ -151,41 +151,15 @@
 
       <section class="extrusion-colors">
         <div class="flex just-between"># of extrusion colors  <div class="controls">
-          <button id="add-color">+</button>
-          <button id="remove-color">-</button>
+          <button @click="addColor">+</button>
+          <button @click="removeColor">-</button>
         </div></div>
-        <div class="controls">
-          <label for="extrusion-color-t0">Extrusion color (T0)</label>
-          <input type="color" id="extrusion-color-t0" value="#ff0000" />
+
+        <div class="controls" v-for="color,index in colors">
+          <label for="extrusion-color-t0">Extrusion color (T{{index}})</label>
+          <input type="color" v-model="colors[index]" :key="index" />
         </div>
-        <div class="controls">
-          <label for="extrusion-color-t1">Extrusion color (T1)</label>
-          <input type="color" id="extrusion-color-t1" value="#00ff00" />
-        </div>
-        <div class="controls">
-          <label for="extrusion-color-t2">Extrusion color (T2)</label>
-          <input type="color" id="extrusion-color-t2" value="#0000ff" />
-        </div>
-        <div class="controls">
-          <label for="extrusion-color-t3">Extrusion color (T3)</label>
-          <input type="color" id="extrusion-color-t3" value="#ff00ff" />
-        </div>
-        <div class="controls">
-          <label for="extrusion-color-t4">Extrusion color (T4)</label>
-          <input type="color" id="extrusion-color-t4" value="#00ffff" />
-        </div>
-        <div class="controls">
-          <label for="extrusion-color-t5">Extrusion color (T5)</label>
-          <input type="color" id="extrusion-color-t5" value="#ffff00" />
-        </div>
-        <div class="controls">
-          <label for="extrusion-color-t6">Extrusion color (T6)</label>
-          <input type="color" id="extrusion-color-t6" value="#ff0000" />
-        </div>
-        <div class="controls">
-          <label for="extrusion-color-t7">Extrusion color (T7)</label>
-          <input type="color" id="extrusion-color-t7" value="#00ff00" />
-        </div>
+        
       </section>
       <section>
         <div class="controls">

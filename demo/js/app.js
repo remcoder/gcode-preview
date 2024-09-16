@@ -34,6 +34,7 @@ export const app = (window.app = createApp({
     const lineWidth = ref(0.4);
     const renderTubes = ref(true);
     const tubeWidth = ref(0.4);
+    const colors = ref(['#ff0000', '#00ff00', '#0000ff', '#ffff00']);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -93,6 +94,16 @@ export const app = (window.app = createApp({
       preview.render();
     });
 
+    watch(
+      colors,
+      (value) => {
+        if (!watching.value) return;
+        preview.extrusionColor = value.length === 1 ? value[0] : value;
+        preview.render();
+      },
+      { deep: true }
+    );
+
     return {
       selectedPreset,
       presets,
@@ -106,7 +117,8 @@ export const app = (window.app = createApp({
       renderExtrusion,
       lineWidth,
       renderTubes,
-      tubeWidth
+      tubeWidth,
+      colors
     };
   },
   mounted() {
@@ -115,6 +127,12 @@ export const app = (window.app = createApp({
   methods: {
     selectTab(t) {
       this.activeTab = t;
+    },
+    addColor() {
+      this.colors.push('#000000'); // TODO: random color
+    },
+    removeColor() {
+      this.colors.pop();
     }
   }
 }).mount('#app'));
@@ -135,7 +153,7 @@ async function selectPreset(preset, options) {
 
   app.watching = false;
 
-  // reset to default values
+  // reset UI to default values
   app.maxLayer = preview.layers.length;
   app.endLayer = preview.layers.length;
   preview.endLayer = preview.layers.length;
@@ -145,6 +163,7 @@ async function selectPreset(preset, options) {
   app.lineWidth = 0.4;
   app.renderTubes = true;
   app.tubeWidth = 0.4;
+  app.colors = preview.extrusionColor.map((c) => '#' + c.getHexString());
 
   // prevent an extra render
   nextTick(() => {
