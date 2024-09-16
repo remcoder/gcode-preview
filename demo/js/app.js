@@ -54,6 +54,7 @@ export const app = (window.app = createApp({
     });
 
     watch(singleLayerMode, (enabled) => {
+      if (!watching.value) return;
       preview.singleLayerMode = enabled;
       preview.render();
     });
