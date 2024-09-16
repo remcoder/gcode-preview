@@ -59,7 +59,7 @@ export const app = (window.app = createApp({
 
     return {
       selectedPreset,
-      presets: ref(presets),
+      presets,
       activeTab,
       startLayer,
       endLayer,
