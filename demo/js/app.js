@@ -30,6 +30,7 @@ export const app = (window.app = createApp({
     const singleLayerMode = ref(false);
     const watching = ref(false);
     const renderTravel = ref(false);
+    const renderExtrusion = ref(true);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -65,6 +66,12 @@ export const app = (window.app = createApp({
       preview.render();
     });
 
+    watch(renderExtrusion, (enabled) => {
+      if (!watching.value) return;
+      preview.renderExtrusion = enabled;
+      preview.render();
+    });
+
     return {
       selectedPreset,
       presets,
@@ -74,7 +81,8 @@ export const app = (window.app = createApp({
       maxLayer,
       singleLayerMode,
       watching,
-      renderTravel
+      renderTravel,
+      renderExtrusion
     };
   },
   mounted() {
@@ -102,11 +110,14 @@ async function selectPreset(preset, options) {
   await loadGCodeFromServer(settings.file);
 
   app.watching = false;
+
   app.maxLayer = preview.layers.length;
   app.endLayer = preview.layers.length;
+  preview.endLayer = preview.layers.length;
   app.singleLayerMode = false;
   app.renderTravel = false;
-  preview.endLayer = preview.layers.length;
+  app.renderExtrusion = true;
+
   // prevent an extra render
   nextTick(() => {
     app.watching = true;
