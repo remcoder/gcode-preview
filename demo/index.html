@@ -183,20 +183,20 @@
       <div class="panel" v-cloak v-show="activeTab == 'build-volume'">
       <section>
         <div  class="controls">
-          <label for="drawBuildVolume">Render build volume</label
-          ><input type="checkbox" id="drawBuildVolume" checked />
+          <label for="drawBuildVolume">Render build volume</label>
+          <input type="checkbox" v-model="drawBuildVolume" />
         </div>
         <div class="controls">
-          <label for="buildVolumeX">Build volume (x)&nbsp;</label
-          ><input type="number" id="buildVolumeX" step=10 value=150 />
+          <label for="buildVolumeX">Build volume (x)&nbsp;</label>
+          <input type="number" v-model="buildVolume.x" step=10 :disabled="!drawBuildVolume" />
         </div>
         <div  class="controls">
-          <label for="buildVolumeY">Build volume (y)&nbsp;</label
-          ><input type="number" id="buildVolumeY" step=10 value=150 />
+          <label for="buildVolumeY">Build volume (y)&nbsp;</label>
+          <input type="number" v-model="buildVolume.y" step=10 :disabled="!drawBuildVolume" />
         </div>
         <div  class="controls">
-          <label for="buildVolumeZ">Build volume (z)&nbsp;</label
-          ><input type="number" id="buildVolumeZ" step=10 value=150 />
+          <label for="buildVolumeZ">Build volume (z)&nbsp;</label>
+          <input type="number" v-model="buildVolume.z" step=10 :disabled="!drawBuildVolume" />
         </div>
         <div class="controls">
           <label for="background-color">Background color</label>

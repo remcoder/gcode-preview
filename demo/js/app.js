@@ -39,6 +39,8 @@ export const app = (window.app = createApp({
     const topLayerColor = ref('#40BFBF');
     const highlightLastSegment = ref(false);
     const lastSegmentColor = ref('#FFFFFF');
+    const drawBuildVolume = ref(true);
+    const buildVolume = ref({ x: 180, y: 180, z: 100 });
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -131,6 +133,22 @@ export const app = (window.app = createApp({
       preview.lastSegmentColor = color;
       preview.render();
     });
+
+    watch(drawBuildVolume, (enabled) => {
+      if (!watching.value) return;
+      preview.buildVolume = enabled ? buildVolume.value : undefined;
+      preview.render();
+    });
+
+    watch(
+      buildVolume,
+      (value) => {
+        if (!watching.value) return;
+        preview.buildVolume = value;
+        preview.render();
+      },
+      { deep: true }
+    );
 
     return {
       selectedPreset,
