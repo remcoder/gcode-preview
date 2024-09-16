@@ -37,15 +37,16 @@ export const app = (window.app = createApp({
       preview.startLayer = +layer;
       // TODO: move clamping into library
       endLayer.value = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
-      preview.renderAnimated();
+      preview.render();
     });
 
     watch(endLayer, (layer) => {
       preview.endLayer = +layer;
       // TODO: move clamping into library
       startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
-      preview.renderAnimated();
+      preview.render();
     });
+
     watch(singleLayerMode, (enabled) => {
       preview.singleLayerMode = enabled;
       preview.render();
