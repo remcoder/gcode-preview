@@ -171,8 +171,12 @@
           <input type="color" v-model="topLayerColor"  :disabled="!highlightTopLayer" />
         </div>
         <div class="controls">
+          <label for="last-segment-color">Highlight last segment</label>
+          <input type="checkbox" v-model="highlightLastSegment" />
+        </div>
+        <div class="controls">
           <label for="last-segment-color">Last segment color</label>
-          <input type="color" id="last-segment-color" value="#ffffff" />
+          <input type="color" id="last-segment-color" v-model="lastSegmentColor" :disabled="!highlightLastSegment" />
         </div>
       </section>
       </div>

@@ -37,6 +37,8 @@ export const app = (window.app = createApp({
     const colors = ref(['#ff0000', '#00ff00', '#0000ff', '#ffff00']);
     const highlightTopLayer = ref(false);
     const topLayerColor = ref('#40BFBF');
+    const highlightLastSegment = ref(false);
+    const lastSegmentColor = ref('#FFFFFF');
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -112,6 +114,24 @@ export const app = (window.app = createApp({
       preview.render();
     });
 
+    watch(topLayerColor, (color) => {
+      if (!watching.value) return;
+      preview.topLayerColor = color;
+      preview.render();
+    });
+
+    watch(highlightLastSegment, (enabled) => {
+      if (!watching.value) return;
+      preview.lastSegmentColor = enabled ? lastSegmentColor.value : undefined;
+      preview.render();
+    });
+
+    watch(lastSegmentColor, (color) => {
+      if (!watching.value) return;
+      preview.lastSegmentColor = color;
+      preview.render();
+    });
+
     return {
       selectedPreset,
       presets,
@@ -128,7 +148,9 @@ export const app = (window.app = createApp({
       tubeWidth,
       colors,
       highlightTopLayer,
-      topLayerColor
+      topLayerColor,
+      highlightLastSegment,
+      lastSegmentColor
     };
   },
   mounted() {
@@ -174,8 +196,10 @@ async function selectPreset(preset, options) {
   app.renderTubes = true;
   app.tubeWidth = 0.4;
   app.colors = preview.extrusionColor.map((c) => '#' + c.getHexString());
-  app.topLayerColor = preview.topLayerColor;
+  app.topLayerColor = '#' + preview.topLayerColor?.getHexString();
   app.highlightTopLayer = !!preview.topLayerColor;
+  app.lastSegmentColor = '#' + preview.lastSegmentColor?.getHexString();
+  app.highlightLastSegment = !!preview.lastSegmentColor;
 
   // prevent an extra render
   nextTick(() => {
