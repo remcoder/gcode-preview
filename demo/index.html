@@ -82,6 +82,7 @@
             :max="maxLayer"
             id="start-layer"
             v-model="startLayer"
+            :disabled="singleLayerMode"
           />
         </div>
         <div class="controls">
@@ -96,7 +97,7 @@
         </div>
         <div class="controls">
           <label for="single-layer-mode">Single layer mode</label>
-          <input type="checkbox" id="single-layer-mode" />
+          <input type="checkbox" id="single-layer-mode" v-model="singleLayerMode" />
         </div>
         </section>
       </div>

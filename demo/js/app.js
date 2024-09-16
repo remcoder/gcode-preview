@@ -27,6 +27,7 @@ export const app = (window.app = createApp({
     const startLayer = ref(1);
     const endLayer = ref(1);
     const maxLayer = ref(1000000); // Infinity doesn't work
+    const singleLayerMode = ref(false);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -45,6 +46,10 @@ export const app = (window.app = createApp({
       startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
       preview.renderAnimated();
     });
+    watch(singleLayerMode, (enabled) => {
+      preview.singleLayerMode = enabled;
+      preview.render();
+    });
 
     return {
       selectedPreset,
@@ -52,7 +57,8 @@ export const app = (window.app = createApp({
       activeTab,
       startLayer,
       endLayer,
-      maxLayer
+      maxLayer,
+      singleLayerMode
     };
   },
   mounted() {
