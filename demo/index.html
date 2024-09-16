@@ -75,19 +75,23 @@
       <div class="panel" v-show="activeTab == 'layers'">
       <section>
         <div class="controls">
-          <label>Start layer <output id="start-layer-value" ></output></label>&nbsp;<input
+          <label>Start layer <output id="start-layer-value" >{{startLayer}}</output></label>&nbsp;
+          <input
             type="range"
             min="1"
-            value="1"
+            :max="maxLayer"
             id="start-layer"
+            v-model="startLayer"
           />
         </div>
         <div class="controls">
-          <label>End layer <output id="end-layer-value" ></output></label>&nbsp;<input
+          <label>End layer <output id="end-layer-value" >{{endLayer}}</output></label>&nbsp;
+          <input
             type="range"
             min="1"
-            value="0"
+            :max="maxLayer"
             id="end-layer"
+            v-model="endLayer"
           />
         </div>
         <div class="controls">
@@ -251,6 +255,5 @@
   <script type="module">
     import {initDemo} from './js/demo.js';
     import {app} from './js/app.js';
-    app();
   </script>
 </body>

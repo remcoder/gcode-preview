@@ -4,57 +4,82 @@ import * as GCodePreview from 'gcode-preview';
 
 const defaultPreset = 'multicolor';
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
-const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
-const canvasElement = document.querySelector('canvas');
+const backgroundColor = preferDarkMode.matches ? '#111' : '#eee';
+const canvas = document.querySelector('canvas');
+const statsContainer = document.querySelector('.sidebar');
+const initialCameraPosition = [-250, 350, 300];
 
-export const app = () =>
-  createApp({
-    setup() {
-      const activeTab = ref('layers');
-      const selectedPreset = ref(defaultPreset);
+const devMode = {
+  camera: true,
+  renderer: true,
+  parser: true,
+  buildVolume: true,
+  devHelpers: true,
+  statsContainer
+};
 
-      watch(selectedPreset, (preset) => {
-        selectPreset(preset);
-      });
+let preview = null;
 
-      return {
-        selectedPreset,
-        presets: ref(presets),
-        activeTab
-      };
-    },
-    mounted() {
-      selectPreset(defaultPreset);
-    },
-    methods: {
-      selectTab(t) {
-        console.log(t, this.activeTab);
-        this.activeTab = t;
-      }
+export const app = (window.app = createApp({
+  setup() {
+    const activeTab = ref('layers');
+    const selectedPreset = ref(defaultPreset);
+    const startLayer = ref(1);
+    const endLayer = ref(1);
+    const maxLayer = ref(1000000); // Infinity doesn't work
+
+    watch(selectedPreset, (preset) => {
+      selectPreset(preset);
+    });
+
+    watch(startLayer, (layer) => {
+      preview.startLayer = +layer;
+      // TODO: move clamping into library
+      endLayer.value = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
+      preview.renderAnimated();
+    });
+
+    watch(endLayer, (layer) => {
+      preview.endLayer = +layer;
+      // TODO: move clamping into library
+      startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
+      preview.renderAnimated();
+    });
+
+    return {
+      selectedPreset,
+      presets: ref(presets),
+      activeTab,
+      startLayer,
+      endLayer,
+      maxLayer
+    };
+  },
+  mounted() {
+    selectPreset(defaultPreset);
+  },
+  methods: {
+    selectTab(t) {
+      this.activeTab = t;
     }
-  }).mount('#app');
+  }
+}).mount('#app'));
 
-function selectPreset(preset) {
-  console.log('selectPreset', preset);
-  const opts = {
-    canvas: canvasElement,
-    initialCameraPosition: [-250, 350, 300],
-    backgroundColor: initialBackgroundColor,
+async function selectPreset(preset, options) {
+  const defaultOpts = {
+    canvas,
+    initialCameraPosition,
+    backgroundColor,
     lineHeight: 0.3,
-    devMode: {
-      camera: true,
-      renderer: true,
-      parser: true,
-      buildVolume: true,
-      devHelpers: true,
-      statsContainer: document.querySelector('.sidebar')
-    }
+    devMode
   };
   const settings = presets[preset];
-  Object.assign(opts, settings);
-  window.preview = new GCodePreview.init(opts);
+  Object.assign(defaultOpts, settings, options ?? {});
+  preview = new GCodePreview.init(defaultOpts);
 
-  loadGCodeFromServer(settings.file);
+  await loadGCodeFromServer(settings.file);
+  app.maxLayer = preview.layers.length;
+  app.endLayer = preview.layers.length;
 }
 
 async function loadGCodeFromServer(filename) {
@@ -69,11 +94,11 @@ async function loadGCodeFromServer(filename) {
 }
 
 async function startLoadingProgressive(gcode) {
-  window.preview.clear();
+  preview.clear();
   if (true) {
-    window.preview.parser.parseGCode(gcode);
-    await window.preview.renderAnimated(Math.ceil(window.preview.layers.length / 60));
+    preview.parser.parseGCode(gcode);
+    await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
   } else {
-    window.preview.processGCode(gcode);
+    preview.processGCode(gcode);
   }
 }
