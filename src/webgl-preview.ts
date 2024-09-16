@@ -119,8 +119,8 @@ export class WebGLPreview {
   extrusionWidth = 0.6;
   lineWidth?: number;
   lineHeight?: number;
-  startLayer?: number;
-  endLayer?: number;
+  _startLayer?: number;
+  _endLayer?: number;
   singleLayerMode = false;
   buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
@@ -250,6 +250,21 @@ export class WebGLPreview {
     this.initStats();
   }
 
+  get startLayer(): number | undefined {
+    return this._startLayer;
+  }
+  set startLayer(value: number | undefined) {
+    this._startLayer = value;
+    this._endLayer = Math.max(this._startLayer, this._endLayer);
+  }
+
+  get endLayer(): number | undefined {
+    return this._endLayer;
+  }
+  set endLayer(value: number | undefined) {
+    this._endLayer = value;
+    this._startLayer = Math.min(this._startLayer, this._endLayer);
+  }
   get extrusionColor(): Color | Color[] {
     return this._extrusionColor;
   }
@@ -321,7 +336,7 @@ export class WebGLPreview {
 
   // convert from 1-based to 0-based
   get minLayerIndex(): number {
-    return this.singleLayerMode ? this.maxLayerIndex : (this.startLayer ?? 0) - 1;
+    return this.singleLayerMode ? this.maxLayerIndex : (this._startLayer ?? 0) - 1;
   }
 
   /** @internal */
@@ -569,7 +584,7 @@ export class WebGLPreview {
 
   // reset processing state
   private resetState(): void {
-    this.startLayer = 1;
+    this._startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
 
