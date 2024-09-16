@@ -35,6 +35,8 @@ export const app = (window.app = createApp({
     const renderTubes = ref(true);
     const tubeWidth = ref(0.4);
     const colors = ref(['#ff0000', '#00ff00', '#0000ff', '#ffff00']);
+    const highlightTopLayer = ref(false);
+    const topLayerColor = ref('#40BFBF');
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -104,6 +106,12 @@ export const app = (window.app = createApp({
       { deep: true }
     );
 
+    watch(highlightTopLayer, (enabled) => {
+      if (!watching.value) return;
+      preview.topLayerColor = enabled ? topLayerColor.value : undefined;
+      preview.render();
+    });
+
     return {
       selectedPreset,
       presets,
@@ -118,7 +126,9 @@ export const app = (window.app = createApp({
       lineWidth,
       renderTubes,
       tubeWidth,
-      colors
+      colors,
+      highlightTopLayer,
+      topLayerColor
     };
   },
   mounted() {
@@ -164,6 +174,8 @@ async function selectPreset(preset, options) {
   app.renderTubes = true;
   app.tubeWidth = 0.4;
   app.colors = preview.extrusionColor.map((c) => '#' + c.getHexString());
+  app.topLayerColor = preview.topLayerColor;
+  app.highlightTopLayer = !!preview.topLayerColor;
 
   // prevent an extra render
   nextTick(() => {

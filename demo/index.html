@@ -163,12 +163,12 @@
       </section>
       <section>
         <div class="controls">
-          <label for="highlight">Highlight top layer</label
-          ><input type="checkbox" id="highlight" />
+          <label for="highlight">Highlight top layer</label>
+          <input type="checkbox" v-model="highlightTopLayer" />
         </div>
         <div class="controls">
           <label for="top-layer-color">Top layer color</label>
-          <input type="color" id="top-layer-color" value="#00ffff" />
+          <input type="color" v-model="topLayerColor"  :disabled="!highlightTopLayer" />
         </div>
         <div class="controls">
           <label for="last-segment-color">Last segment color</label>
