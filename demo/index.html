@@ -72,7 +72,7 @@
           <li :class="{ 'bulma-is-active': activeTab == 'build-volume' }"><a @click="selectTab('build-volume')">Build volume</a></li>
         </ul>
       </div>  
-      <div class="panel" v-show="activeTab == 'layers'">
+      <div class="panel" v-cloak v-show="activeTab == 'layers'">
       <section>
         <div class="controls">
           <label>Start layer <output id="start-layer-value" >{{startLayer}}</output></label>&nbsp;
@@ -101,7 +101,7 @@
         </div>
         </section>
       </div>
-      <div class="panel" v-show="activeTab == 'travel'">
+      <div class="panel" v-cloak v-show="activeTab == 'travel'">
         <section>
           <div class="controls">
             <label for="travel">Render travel</label>
@@ -114,33 +114,37 @@
         </section>
       </div>
       
-      <div class="panel" v-show="activeTab == 'extrusion'">
+      <div class="panel" v-cloak v-show="activeTab == 'extrusion'">
         <section>
           <div class="controls">
             <label for="extrusion">Render extrusion</label
-            ><input type="checkbox" id="extrusion" v-model="renderExtrusion" />
+            ><input type="checkbox" v-model="renderExtrusion" />
           </div>
-        <div class="controls">
-          <label>Line width <output id="line-width-value" ></output></label>&nbsp;<input
+          <div class="controls">
+            <label for="render-tubes">Render as tubes</label
+            ><input type="checkbox" v-model="renderTubes" />
+          </div>
+        <div class="controls" v-show="!renderTubes">
+          <label>Line width <output>{{lineWidth}}</output></label>&nbsp;
+          <input
             type="range"
-            min="1"
-            max="50"
-            value="1"
-            id="line-width"
+            min="0.1"
+            step="0.1"
+            max="10"
+            v-model="lineWidth"
+            
           />
         </div>
-        <div class="controls">
-          <label for="render-tubes">Render as tubes</label
-          ><input type="checkbox" id="render-tubes" />
-        </div>
-        <div class="controls">
-          <label>Tube width <output id="extrusion-width-value" ></output></label>&nbsp;<input
+        
+        <div class="controls" v-show="renderTubes">
+          <label>Extrusion width <output>{{tubeWidth}}</output></label>&nbsp;
+          <input
             type="range"
             min="0.05"
             max="3.0"
-            value="0.6"
             step="0.05"
-            id="extrusion-width"
+            v-model="tubeWidth"
+            
           />
         </div>
       </section>
@@ -198,7 +202,7 @@
         </div>
       </section>
       </div>
-      <div class="panel" v-show="activeTab == 'build-volume'">
+      <div class="panel" v-cloak v-show="activeTab == 'build-volume'">
       <section>
         <div  class="controls">
           <label for="drawBuildVolume">Render build volume</label

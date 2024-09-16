@@ -240,3 +240,7 @@ footer {
 .wrapper {
   flex-grow: 1;
 }
+
+[v-cloak] {
+  display: none;
+}

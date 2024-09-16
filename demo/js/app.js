@@ -31,6 +31,9 @@ export const app = (window.app = createApp({
     const watching = ref(false);
     const renderTravel = ref(false);
     const renderExtrusion = ref(true);
+    const lineWidth = ref(0.4);
+    const renderTubes = ref(true);
+    const tubeWidth = ref(0.4);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -72,6 +75,24 @@ export const app = (window.app = createApp({
       preview.render();
     });
 
+    watch(lineWidth, (value) => {
+      if (!watching.value) return;
+      preview.lineWidth = +value;
+      preview.render();
+    });
+
+    watch(renderTubes, (enabled) => {
+      if (!watching.value) return;
+      preview.renderTubes = enabled;
+      preview.render();
+    });
+
+    watch(tubeWidth, (value) => {
+      if (!watching.value) return;
+      preview.extrusionWidth = +value;
+      preview.render();
+    });
+
     return {
       selectedPreset,
       presets,
@@ -82,7 +103,10 @@ export const app = (window.app = createApp({
       singleLayerMode,
       watching,
       renderTravel,
-      renderExtrusion
+      renderExtrusion,
+      lineWidth,
+      renderTubes,
+      tubeWidth
     };
   },
   mounted() {
@@ -111,12 +135,16 @@ async function selectPreset(preset, options) {
 
   app.watching = false;
 
+  // reset to default values
   app.maxLayer = preview.layers.length;
   app.endLayer = preview.layers.length;
   preview.endLayer = preview.layers.length;
   app.singleLayerMode = false;
   app.renderTravel = false;
   app.renderExtrusion = true;
+  app.lineWidth = 0.4;
+  app.renderTubes = true;
+  app.tubeWidth = 0.4;
 
   // prevent an extra render
   nextTick(() => {
