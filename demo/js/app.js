@@ -1,4 +1,4 @@
-import { createApp, ref, watch } from 'vue';
+import { createApp, ref, watch, nextTick } from 'vue';
 import { settingsPresets as presets } from './presets.js';
 import * as GCodePreview from 'gcode-preview';
 
@@ -28,12 +28,15 @@ export const app = (window.app = createApp({
     const endLayer = ref(1);
     const maxLayer = ref(1000000); // Infinity doesn't work
     const singleLayerMode = ref(false);
+    const watching = ref(false);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
     });
 
     watch(startLayer, (layer) => {
+      if (!watching.value) return;
+
       preview.startLayer = +layer;
       // TODO: move clamping into library
       endLayer.value = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
@@ -41,6 +44,8 @@ export const app = (window.app = createApp({
     });
 
     watch(endLayer, (layer) => {
+      if (!watching.value) return;
+
       preview.endLayer = +layer;
       // TODO: move clamping into library
       startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
@@ -59,7 +64,8 @@ export const app = (window.app = createApp({
       startLayer,
       endLayer,
       maxLayer,
-      singleLayerMode
+      singleLayerMode,
+      watching
     };
   },
   mounted() {
@@ -85,8 +91,15 @@ async function selectPreset(preset, options) {
   preview = new GCodePreview.init(defaultOpts);
 
   await loadGCodeFromServer(settings.file);
+
+  app.watching = false;
   app.maxLayer = preview.layers.length;
   app.endLayer = preview.layers.length;
+  preview.endLayer = preview.layers.length;
+  // prevent an extra render
+  nextTick(() => {
+    app.watching = true;
+  });
 }
 
 async function loadGCodeFromServer(filename) {
