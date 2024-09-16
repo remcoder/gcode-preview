@@ -4,7 +4,7 @@ import * as GCodePreview from 'gcode-preview';
 
 const defaultPreset = 'multicolor';
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
-const backgroundColor = preferDarkMode.matches ? '#111' : '#eee';
+const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
 const canvas = document.querySelector('canvas');
 const statsContainer = document.querySelector('.sidebar');
 const initialCameraPosition = [-250, 350, 300];
@@ -41,6 +41,7 @@ export const app = (window.app = createApp({
     const lastSegmentColor = ref('#FFFFFF');
     const drawBuildVolume = ref(true);
     const buildVolume = ref({ x: 180, y: 180, z: 100 });
+    const backgroundColor = ref(initialBackgroundColor);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -150,6 +151,12 @@ export const app = (window.app = createApp({
       { deep: true }
     );
 
+    watch(backgroundColor, (color) => {
+      if (!watching.value) return;
+      preview.backgroundColor = color;
+      preview.render();
+    });
+
     return {
       selectedPreset,
       presets,
@@ -168,7 +175,10 @@ export const app = (window.app = createApp({
       highlightTopLayer,
       topLayerColor,
       highlightLastSegment,
-      lastSegmentColor
+      lastSegmentColor,
+      drawBuildVolume,
+      buildVolume,
+      backgroundColor
     };
   },
   mounted() {
@@ -191,14 +201,13 @@ async function selectPreset(preset, options) {
   const defaultOpts = {
     canvas,
     initialCameraPosition,
-    backgroundColor,
+    backgroundColor: initialBackgroundColor,
     lineHeight: 0.3,
     devMode
   };
   const settings = presets[preset];
   Object.assign(defaultOpts, settings, options ?? {});
   preview = new GCodePreview.init(defaultOpts);
-
   await loadGCodeFromServer(settings.file);
 
   app.watching = false;
@@ -218,6 +227,9 @@ async function selectPreset(preset, options) {
   app.highlightTopLayer = !!preview.topLayerColor;
   app.lastSegmentColor = '#' + preview.lastSegmentColor?.getHexString();
   app.highlightLastSegment = !!preview.lastSegmentColor;
+  app.buildVolume = preview.buildVolume;
+  app.drawBuildVolume = !!preview.buildVolume;
+  app.backgroundColor = '#' + preview.backgroundColor.getHexString();
 
   // prevent an extra render
   nextTick(() => {
