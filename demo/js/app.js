@@ -104,6 +104,8 @@ async function selectPreset(preset, options) {
   app.watching = false;
   app.maxLayer = preview.layers.length;
   app.endLayer = preview.layers.length;
+  app.singleLayerMode = false;
+  app.renderTravel = false;
   preview.endLayer = preview.layers.length;
   // prevent an extra render
   nextTick(() => {
