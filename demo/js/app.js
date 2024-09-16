@@ -29,6 +29,7 @@ export const app = (window.app = createApp({
     const maxLayer = ref(1000000); // Infinity doesn't work
     const singleLayerMode = ref(false);
     const watching = ref(false);
+    const renderTravel = ref(false);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -57,6 +58,12 @@ export const app = (window.app = createApp({
       preview.render();
     });
 
+    watch(renderTravel, (enabled) => {
+      if (!watching.value) return;
+      preview.renderTravel = enabled;
+      preview.render();
+    });
+
     return {
       selectedPreset,
       presets,
@@ -65,7 +72,8 @@ export const app = (window.app = createApp({
       endLayer,
       maxLayer,
       singleLayerMode,
-      watching
+      watching,
+      renderTravel
     };
   },
   mounted() {
