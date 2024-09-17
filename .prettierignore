@@ -3,4 +3,5 @@
 *.yml
 *.json
 dist
-build
+vue.esm-browser.js
+*.min.css

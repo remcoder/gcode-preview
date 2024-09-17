@@ -8,6 +8,7 @@ const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
 const canvas = document.querySelector('canvas');
 const statsContainer = document.querySelector('.sidebar');
 const initialCameraPosition = [-250, 350, 300];
+const loadProgressive = true;
 
 const devMode = {
   camera: true,
@@ -250,7 +251,7 @@ async function loadGCodeFromServer(filename) {
 
 async function startLoadingProgressive(gcode) {
   preview.clear();
-  if (true) {
+  if (loadProgressive) {
     preview.parser.parseGCode(gcode);
     await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
   } else {
