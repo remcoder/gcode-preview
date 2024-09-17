@@ -2,6 +2,8 @@ import { createApp, ref, watch, nextTick } from 'vue';
 import { settingsPresets as presets } from './presets.js';
 import * as GCodePreview from 'gcode-preview';
 
+import { humanFileSize } from './utils.js';
+
 const defaultPreset = 'multicolor';
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
@@ -43,6 +45,9 @@ export const app = (window.app = createApp({
     const drawBuildVolume = ref(true);
     const buildVolume = ref({ x: 180, y: 180, z: 100 });
     const backgroundColor = ref(initialBackgroundColor);
+    const thumbnail = ref(null);
+    const layerCount = ref(0);
+    const fileSize = ref(0);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -179,7 +184,10 @@ export const app = (window.app = createApp({
       lastSegmentColor,
       drawBuildVolume,
       buildVolume,
-      backgroundColor
+      backgroundColor,
+      thumbnail,
+      layerCount,
+      fileSize
     };
   },
   mounted() {
@@ -210,6 +218,9 @@ async function selectPreset(preset, options) {
   Object.assign(defaultOpts, settings, options ?? {});
   preview = new GCodePreview.init(defaultOpts);
   await loadGCodeFromServer(settings.file);
+
+  app.thumbnail = preview.parser.metadata.thumbnails['220x124'].src;
+  app.layerCount = preview.layers.length;
 
   app.watching = false;
 
@@ -246,6 +257,8 @@ async function loadGCodeFromServer(filename) {
   }
 
   const gcode = await response.text();
+  app.fileSize = humanFileSize(gcode.length);
+
   startLoadingProgressive(gcode);
 }
 
