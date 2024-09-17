@@ -144,20 +144,6 @@ canvas:focus {
   font-weight: normal;
 }
 
-.thumb-wrapper {
-  display: inline-block;
-}
-
-#thumb {
-  display: block;
-  width: 220px;
-  height: 124px;
-  filter: brightness(0);
-  background: black;
-  transition: filter 0.2s;
-  color: transparent;
-}
-
 #thumb:show {
   filter: brightness(1);
 }
