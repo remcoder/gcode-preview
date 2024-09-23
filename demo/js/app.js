@@ -47,6 +47,7 @@ export const app = (window.app = createApp({
     const thumbnail = ref(null);
     const layerCount = ref(0);
     const fileSize = ref(0);
+    const dragging = ref(false);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -186,7 +187,8 @@ export const app = (window.app = createApp({
       backgroundColor,
       thumbnail,
       layerCount,
-      fileSize
+      fileSize,
+      dragging
     };
   },
   mounted() {
@@ -201,6 +203,33 @@ export const app = (window.app = createApp({
     },
     removeColor() {
       this.colors.pop();
+    },
+    dragOver(evt) {
+      evt.dataTransfer.dropEffect = 'copy';
+      this.dragging = true;
+    },
+    dragLeave(evt) {
+      this.dragging = false;
+    },
+    drop(evt) {
+      console.log('drop', evt.dataTransfer.files);
+      this.dragging = false;
+
+      preview.topLayerColor = undefined;
+      preview.lastSegmentColor = undefined;
+
+      const files = evt.dataTransfer.files;
+      const file = files[0];
+
+      this.fileSize = humanFileSize(file.size);
+
+      // await preview._readFromStream(file.stream());
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        startLoadingProgressive(e.target.result);
+      };
+      reader.readAsText(file);
     }
   }
 }).mount('#app'));

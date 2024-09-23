@@ -204,7 +204,11 @@
     </div>
    </div>
   <div class="wrapper">
-    <canvas></canvas>
+    <canvas :class="{ 'dragging': dragging }" 
+      
+      @dragover.prevent="dragOver"
+      @dragleave.prevent="dragLeave"
+      @drop.prevent="drop"></canvas>
   </div>
   <div class="dnd">☝️ Drop a gcode file to view it</div>
   
