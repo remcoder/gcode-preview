@@ -208,28 +208,17 @@ export const app = (window.app = createApp({
       evt.dataTransfer.dropEffect = 'copy';
       this.dragging = true;
     },
-    dragLeave(evt) {
+    dragLeave() {
       this.dragging = false;
     },
     drop(evt) {
       console.log('drop', evt.dataTransfer.files);
       this.dragging = false;
 
-      preview.topLayerColor = undefined;
-      preview.lastSegmentColor = undefined;
-
       const files = evt.dataTransfer.files;
       const file = files[0];
 
-      this.fileSize = humanFileSize(file.size);
-
-      // await preview._readFromStream(file.stream());
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        startLoadingProgressive(e.target.result);
-      };
-      reader.readAsText(file);
+      loadDroppedFile(file);
     }
   }
 }).mount('#app'));
@@ -248,7 +237,11 @@ async function selectPreset(preset, options) {
   preview = new GCodePreview.init(defaultOpts);
   await loadGCodeFromServer(settings.file);
 
-  app.thumbnail = preview.parser.metadata.thumbnails['220x124'].src;
+  updateUI();
+}
+
+function updateUI() {
+  app.thumbnail = preview.parser.metadata.thumbnails['220x124']?.src;
   app.layerCount = preview.layers.length;
 
   app.watching = false;
@@ -299,4 +292,26 @@ async function startLoadingProgressive(gcode) {
   } else {
     preview.processGCode(gcode);
   }
+}
+
+async function loadDroppedFile(file) {
+  app.fileSize = humanFileSize(file.size);
+
+  // await preview._readFromStream(file.stream());
+
+  const content = await readFile(file);
+
+  startLoadingProgressive(content);
+
+  updateUI();
+}
+
+function readFile(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      resolve(e.target.result);
+    };
+    reader.readAsText(file);
+  });
 }
