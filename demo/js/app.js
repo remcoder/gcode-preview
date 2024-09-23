@@ -7,8 +7,7 @@ import { humanFileSize } from './utils.js';
 const defaultPreset = 'multicolor';
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
-const canvas = document.querySelector('canvas');
-const statsContainer = document.querySelector('.sidebar');
+const statsContainer = () => document.querySelector('.sidebar');
 const initialCameraPosition = [-250, 350, 300];
 const loadProgressive = true;
 
@@ -207,12 +206,13 @@ export const app = (window.app = createApp({
 }).mount('#app'));
 
 async function selectPreset(preset, options) {
+  const canvas = document.querySelector('canvas');
   const defaultOpts = {
     canvas,
     initialCameraPosition,
     backgroundColor: initialBackgroundColor,
     lineHeight: 0.3,
-    devMode
+    devMode: Object.assign({}, devMode, { statsContainer: statsContainer() }) // delay stats container selection until it's available in the DOM (Vue)
   };
   const settings = presets[preset];
   Object.assign(defaultOpts, settings, options ?? {});

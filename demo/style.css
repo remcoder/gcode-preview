@@ -10,14 +10,10 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-}
-body {
+
   font-family: Verdana;
   color: #eee;
   background: #eee;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
 }
 
 /* Light mode */
@@ -119,7 +115,7 @@ a {
   color: white;
 }
 
-#renderer {
+canvas {
   width: 100%;
   height: 100%;
 }
@@ -229,4 +225,14 @@ footer {
 
 [v-cloak] {
   display: none;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
 }
