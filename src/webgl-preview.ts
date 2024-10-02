@@ -1,11 +1,11 @@
 import { Parser, MoveCommand, Layer, SelectToolCommand } from './gcode-parser';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
-import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry';
-import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
+import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
-import Stats from 'three/examples/jsm/libs/stats.module';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { DevGUI, DevModeOptions } from './dev-gui';
 
