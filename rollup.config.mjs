@@ -1,5 +1,5 @@
 /* eslint-env node */
-import pkg from './package.json';
+import pkg from './package.json' assert { type: 'json' };
 import esbuild from 'rollup-plugin-esbuild';
 import dts from 'rollup-plugin-dts';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
@@ -26,7 +26,7 @@ export default [
   },
   {
     input: 'src/gcode-preview.ts',
-    output: [{ file: 'dist/gcode-preview.d.ts', format: 'es' }],
+    output: { file: 'dist/gcode-preview.d.ts', format: 'es' },
     plugins: [dts()]
   }
 ];
