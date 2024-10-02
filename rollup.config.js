@@ -1,7 +1,7 @@
 /* eslint-env node */
 import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
-import { terser } from 'rollup-plugin-terser';
+import { minify } from 'rollup-plugin-esbuild';
 import dts from 'rollup-plugin-dts';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
@@ -28,7 +28,7 @@ export default [
       typescript({
         typescript: require('typescript')
       }),
-      terser() // minifies generated bundles
+      minify() // minifies generated bundles
     ]
   },
   {
