@@ -10,6 +10,7 @@ const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
 const statsContainer = () => document.querySelector('.sidebar');
 const initialCameraPosition = [-250, 350, 300];
 const loadProgressive = true;
+let observer = null;
 
 const devMode = {
   camera: true,
@@ -235,6 +236,11 @@ async function selectPreset(preset, options) {
   const settings = presets[preset];
   Object.assign(defaultOpts, settings, options ?? {});
   preview = new GCodePreview.init(defaultOpts);
+
+  if (observer) observer.disconnect();
+  observer = new ResizeObserver(() => preview.resize());
+  observer.observe(canvas);
+
   await loadGCodeFromServer(settings.file);
 
   updateUI();
