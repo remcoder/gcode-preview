@@ -1,9 +1,8 @@
 /* eslint-env node */
-import typescript from 'rollup-plugin-typescript2';
-import pkg from './package.json';
-import { terser } from 'rollup-plugin-terser';
-import resolve from 'rollup-plugin-node-resolve';
+import pkg from './package.json' assert { type: 'json' };
+import esbuild from 'rollup-plugin-esbuild';
 import dts from 'rollup-plugin-dts';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 export default [
   {
@@ -15,7 +14,7 @@ export default [
       },
       {
         file: 'dist/gcode-preview.js',
-        format: 'umd',
+        format: 'umd', // deprecated. might not work at some point
         name: 'GCodePreview', // the global which can be used in a browser
         globals: {
           three: 'THREE'
@@ -24,16 +23,15 @@ export default [
     ],
     external: [...Object.keys(pkg.dependencies || {})],
     plugins: [
-      resolve(),
-      typescript({
-        typescript: require('typescript')
-      }),
-      terser() // minifies generated bundles
+      nodeResolve(),
+      esbuild({
+        minify: true
+      })
     ]
   },
   {
     input: 'src/gcode-preview.ts',
-    output: [{ file: 'dist/gcode-preview.d.ts', format: 'es' }],
+    output: { file: 'dist/gcode-preview.d.ts', format: 'es' },
     plugins: [dts()]
   }
 ];
