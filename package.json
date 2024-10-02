@@ -19,7 +19,6 @@
     "@types/three": "^0.159.0",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
-    "canvas2image": "^1.0.5",
     "copyfiles": "^2.4.1",
     "del-cli": "^5.0.0",
     "eslint": "^8.56.0",
@@ -51,7 +50,7 @@
     "version:patch": "npm version patch",
     "version:minor": "npm version minor",
     "xpostversion": "npm publish && npm run deploy",
-    "predeploy": "npm run build && copyfiles -f node_modules/three/build/three.module.js demo/build/three/build && copyfiles -f dist/gcode-preview.es.js demo/build && copyfiles -f node_modules/canvas2image/canvas2image.js demo/build/canvas2image && copyfiles -f node_modules/lil-gui/dist/lil-gui.esm.min.js demo/build/lil-gui/dist",
+    "predeploy": "npm run build && copyfiles -f node_modules/three/build/three.module.js demo/build/three/build && copyfiles -f dist/gcode-preview.es.js demo/build && copyfiles -f node_modules/lil-gui/dist/lil-gui.esm.min.js demo/build/lil-gui/dist",
     "deploy": "firebase deploy --only hosting",
     "typedoc": "typedoc",
     "typedoc:watch": "typedoc --watch"
