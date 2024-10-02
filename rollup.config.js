@@ -1,7 +1,6 @@
 /* eslint-env node */
-import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
-import { minify } from 'rollup-plugin-esbuild';
+import esbuild from 'rollup-plugin-esbuild';
 import dts from 'rollup-plugin-dts';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
@@ -23,13 +22,7 @@ export default [
       }
     ],
     external: [...Object.keys(pkg.dependencies || {})],
-    plugins: [
-      nodeResolve(),
-      typescript({
-        typescript: require('typescript')
-      }),
-      minify() // minifies generated bundles
-    ]
+    plugins: [nodeResolve(), esbuild()]
   },
   {
     input: 'src/gcode-preview.ts',
