@@ -22,7 +22,12 @@ export default [
       }
     ],
     external: [...Object.keys(pkg.dependencies || {})],
-    plugins: [nodeResolve(), esbuild()]
+    plugins: [
+      nodeResolve(),
+      esbuild({
+        minify: true
+      })
+    ]
   },
   {
     input: 'src/gcode-preview.ts',
