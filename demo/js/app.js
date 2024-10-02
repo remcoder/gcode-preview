@@ -1,115 +1,123 @@
-import { createApp, ref, watch, nextTick } from 'vue';
-import { settingsPresets as presets } from './presets.js';
+import { createApp, ref, watch, nextTick, onMounted } from 'vue';
+import { presets } from './presets.js';
 import * as GCodePreview from 'gcode-preview';
+import { defaultSettings } from './default-settings.js';
 
-import { humanFileSize } from './utils.js';
+import { humanFileSize, readFile } from './utils.js';
 
 const defaultPreset = 'multicolor';
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
 const statsContainer = () => document.querySelector('.sidebar');
-const initialCameraPosition = [-250, 350, 300];
 const loadProgressive = true;
 let observer = null;
-
-const devMode = {
-  camera: true,
-  renderer: true,
-  parser: true,
-  buildVolume: true,
-  devHelpers: true,
-  statsContainer
-};
-
 let preview = null;
 
 export const app = (window.app = createApp({
   setup() {
     const activeTab = ref('layers');
     const selectedPreset = ref(defaultPreset);
-    const startLayer = ref(1);
-    const endLayer = ref(1);
-    const maxLayer = ref(1000000); // Infinity doesn't work
-    const singleLayerMode = ref(false);
     const watching = ref(false);
-    const renderTravel = ref(false);
-    const renderExtrusion = ref(true);
-    const lineWidth = ref(0.4);
-    const renderTubes = ref(true);
-    const tubeWidth = ref(0.4);
-    const colors = ref(['#ff0000', '#00ff00', '#0000ff', '#ffff00']);
-    const highlightTopLayer = ref(false);
-    const topLayerColor = ref('#40BFBF');
-    const highlightLastSegment = ref(false);
-    const lastSegmentColor = ref('#FFFFFF');
-    const drawBuildVolume = ref(true);
-    const buildVolume = ref({ x: 180, y: 180, z: 100 });
-    const backgroundColor = ref(initialBackgroundColor);
     const thumbnail = ref(null);
     const layerCount = ref(0);
     const fileSize = ref(0);
     const dragging = ref(false);
 
+    const settings = ref(Object.assign({}, defaultSettings));
+
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
     });
 
-    watch(startLayer, (layer) => {
-      if (!watching.value) return;
+    watch(
+      () => settings.value.startLayer,
+      (layer) => {
+        if (!watching.value) return;
 
-      preview.startLayer = +layer;
-      // TODO: move clamping into library
-      endLayer.value = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
-      preview.render();
-    });
-
-    watch(endLayer, (layer) => {
-      if (!watching.value) return;
-
-      preview.endLayer = +layer;
-      // TODO: move clamping into library
-      startLayer.value = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
-      preview.render();
-    });
-
-    watch(singleLayerMode, (enabled) => {
-      if (!watching.value) return;
-      preview.singleLayerMode = enabled;
-      preview.render();
-    });
-
-    watch(renderTravel, (enabled) => {
-      if (!watching.value) return;
-      preview.renderTravel = enabled;
-      preview.render();
-    });
-
-    watch(renderExtrusion, (enabled) => {
-      if (!watching.value) return;
-      preview.renderExtrusion = enabled;
-      preview.render();
-    });
-
-    watch(lineWidth, (value) => {
-      if (!watching.value) return;
-      preview.lineWidth = +value;
-      preview.render();
-    });
-
-    watch(renderTubes, (enabled) => {
-      if (!watching.value) return;
-      preview.renderTubes = enabled;
-      preview.render();
-    });
-
-    watch(tubeWidth, (value) => {
-      if (!watching.value) return;
-      preview.extrusionWidth = +value;
-      preview.render();
-    });
+        preview.startLayer = +layer;
+        // TODO: move clamping into library
+        settings.value.endLayer = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
+        preview.render();
+      }
+    );
 
     watch(
-      colors,
+      () => settings.value.endLayer,
+      (layer) => {
+        if (!watching.value) return;
+
+        preview.endLayer = +layer;
+        // TODO: move clamping into library
+        settings.value.startLayer = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.singleLayerMode,
+      (enabled) => {
+        if (!watching.value) return;
+        preview.singleLayerMode = enabled;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.renderTravel,
+      (enabled) => {
+        if (!watching.value) return;
+        preview.renderTravel = enabled;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.travelColor,
+      (color) => {
+        if (!watching.value) return;
+        preview.travelColor = color;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.renderExtrusion,
+      (enabled) => {
+        if (!watching.value) return;
+        preview.renderExtrusion = enabled;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.lineWidth,
+      (value) => {
+        if (!watching.value) return;
+        preview.lineWidth = +value;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.renderTubes,
+      (enabled) => {
+        if (!watching.value) return;
+        preview.renderTubes = enabled;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.tubeWidth,
+      (value) => {
+        if (!watching.value) return;
+        preview.extrusionWidth = +value;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.colors,
       (value) => {
         if (!watching.value) return;
         preview.extrusionColor = value.length === 1 ? value[0] : value;
@@ -118,38 +126,53 @@ export const app = (window.app = createApp({
       { deep: true }
     );
 
-    watch(highlightTopLayer, (enabled) => {
-      if (!watching.value) return;
-      preview.topLayerColor = enabled ? topLayerColor.value : undefined;
-      preview.render();
-    });
-
-    watch(topLayerColor, (color) => {
-      if (!watching.value) return;
-      preview.topLayerColor = color;
-      preview.render();
-    });
-
-    watch(highlightLastSegment, (enabled) => {
-      if (!watching.value) return;
-      preview.lastSegmentColor = enabled ? lastSegmentColor.value : undefined;
-      preview.render();
-    });
-
-    watch(lastSegmentColor, (color) => {
-      if (!watching.value) return;
-      preview.lastSegmentColor = color;
-      preview.render();
-    });
-
-    watch(drawBuildVolume, (enabled) => {
-      if (!watching.value) return;
-      preview.buildVolume = enabled ? buildVolume.value : undefined;
-      preview.render();
-    });
+    watch(
+      () => settings.value.highlightTopLayer,
+      (enabled) => {
+        if (!watching.value) return;
+        preview.topLayerColor = enabled ? settings.value.topLayerColor : undefined;
+        preview.render();
+      }
+    );
 
     watch(
-      buildVolume,
+      () => settings.value.topLayerColor,
+      (color) => {
+        if (!watching.value) return;
+        preview.topLayerColor = color;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.highlightLastSegment,
+      (enabled) => {
+        if (!watching.value) return;
+        preview.lastSegmentColor = enabled ? settings.value.lastSegmentColor : undefined;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.lastSegmentColor,
+      (color) => {
+        if (!watching.value) return;
+        preview.lastSegmentColor = color;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.drawBuildVolume,
+      (enabled) => {
+        if (!watching.value) return;
+        preview.buildVolume = enabled ? settings.value.buildVolume : undefined;
+        preview.render();
+      }
+    );
+
+    watch(
+      () => settings.value.buildVolume,
       (value) => {
         if (!watching.value) return;
         preview.buildVolume = value;
@@ -158,166 +181,166 @@ export const app = (window.app = createApp({
       { deep: true }
     );
 
-    watch(backgroundColor, (color) => {
-      if (!watching.value) return;
-      preview.backgroundColor = color;
-      preview.render();
-    });
+    watch(
+      () => settings.value.backgroundColor,
+      (color) => {
+        if (!watching.value) return;
+        preview.backgroundColor = color;
+        preview.render();
+      }
+    );
 
-    return {
-      selectedPreset,
-      presets,
-      activeTab,
-      startLayer,
-      endLayer,
-      maxLayer,
-      singleLayerMode,
-      watching,
-      renderTravel,
-      renderExtrusion,
-      lineWidth,
-      renderTubes,
-      tubeWidth,
-      colors,
-      highlightTopLayer,
-      topLayerColor,
-      highlightLastSegment,
-      lastSegmentColor,
-      drawBuildVolume,
-      buildVolume,
-      backgroundColor,
-      thumbnail,
-      layerCount,
-      fileSize,
-      dragging
+    const selectTab = (t) => {
+      console.log('selectTab', t);
+      activeTab.value = t;
     };
-  },
-  mounted() {
-    selectPreset(defaultPreset);
-  },
-  methods: {
-    selectTab(t) {
-      this.activeTab = t;
-    },
-    addColor() {
-      this.colors.push('#000000'); // TODO: random color
-    },
-    removeColor() {
-      this.colors.pop();
-    },
-    dragOver(evt) {
+
+    const addColor = () => {
+      settings.value.colors.push('#000000'); // TODO: random color
+    };
+
+    const removeColor = () => {
+      settings.value.colors.pop();
+    };
+    const dragOver = (evt) => {
       evt.dataTransfer.dropEffect = 'copy';
-      this.dragging = true;
-    },
-    dragLeave() {
-      this.dragging = false;
-    },
-    drop(evt) {
+      dragging.value = true;
+    };
+    const dragLeave = () => {
+      dragging.value = false;
+    };
+    const drop = (evt) => {
       console.log('drop', evt.dataTransfer.files);
-      this.dragging = false;
+      dragging.value = false;
 
       const files = evt.dataTransfer.files;
       const file = files[0];
 
-      loadDroppedFile(file);
-    }
+      this.loadDroppedFile(file);
+    };
+
+    const resetUI = () => {
+      console.log('resetUI');
+      thumbnail.value = preview.parser.metadata.thumbnails['220x124']?.src;
+      layerCount.value = preview.layers.length;
+
+      watching.value = false;
+
+      // reset UI to default values
+      settings.value.maxLayer = preview.layers.length;
+      settings.value.endLayer = preview.layers.length;
+      preview.endLayer = preview.layers.length;
+
+      settings.value.singleLayerMode = false;
+      settings.value.renderTravel = false;
+      settings.value.renderExtrusion = true;
+      settings.value.lineWidth = 0.4;
+      settings.value.renderTubes = true;
+      settings.value.tubeWidth = 0.4;
+
+      settings.value.colors = preview.extrusionColor.map((c) => '#' + c.getHexString());
+      settings.value.topLayerColor = '#' + preview.topLayerColor?.getHexString();
+      settings.value.highlightTopLayer = !!preview.topLayerColor;
+      settings.value.lastSegmentColor = '#' + preview.lastSegmentColor?.getHexString();
+      settings.value.highlightLastSegment = !!preview.lastSegmentColor;
+      settings.value.buildVolume = preview.buildVolume;
+      settings.value.drawBuildVolume = !!preview.buildVolume;
+      settings.value.backgroundColor = '#' + preview.backgroundColor.getHexString();
+
+      // prevent an extra render
+      nextTick(() => {
+        watching.value = true;
+      });
+    };
+
+    const loadGCodeFromServer = async (filename) => {
+      console.log('loadGCodeFromServer', filename);
+      const response = await fetch(filename);
+      if (response.status !== 200) {
+        console.error('ERROR. Status Code: ' + response.status);
+        return;
+      }
+
+      const gcode = await response.text();
+      fileSize.value = humanFileSize(gcode.length);
+
+      startLoadingProgressive(gcode);
+    };
+
+    const startLoadingProgressive = async (gcode) => {
+      preview.clear();
+      if (loadProgressive) {
+        preview.parser.parseGCode(gcode);
+        await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+      } else {
+        preview.processGCode(gcode);
+      }
+    };
+
+    const loadDroppedFile = async (file) => {
+      this.fileSize = humanFileSize(file.size);
+
+      // await preview._readFromStream(file.stream());
+
+      const content = await readFile(file);
+
+      startLoadingProgressive(content);
+
+      resetUI();
+    };
+    const selectPreset = async (presetName) => {
+      console.log('selectPreset', presetName);
+      const canvas = document.querySelector('canvas');
+
+      const preset = presets[presetName];
+      const options = Object.assign(
+        {
+          canvas,
+          statsContainer: statsContainer(),
+          backgroundColor: initialBackgroundColor
+        },
+        defaultSettings,
+        preset
+      );
+      preview = new GCodePreview.init(options);
+
+      if (observer) observer.disconnect();
+      observer = new ResizeObserver(() => preview.resize());
+      observer.observe(canvas);
+
+      await loadGCodeFromServer(preset.file);
+
+      resetUI();
+    };
+
+    onMounted(() => {
+      selectPreset(defaultPreset);
+    });
+
+    return {
+      presets,
+      activeTab,
+      selectedPreset,
+      watching,
+      thumbnail,
+      layerCount,
+      fileSize,
+      dragging,
+      settings,
+      selectTab,
+      addColor,
+      removeColor,
+      dragOver,
+      dragLeave,
+      drop,
+      resetUI,
+      loadGCodeFromServer,
+      startLoadingProgressive,
+      loadDroppedFile,
+      selectPreset
+    };
+  },
+  mounted() {
+    this.selectPreset(defaultPreset);
   }
 }).mount('#app'));
-
-async function selectPreset(preset, options) {
-  const canvas = document.querySelector('canvas');
-  const defaultOpts = {
-    canvas,
-    initialCameraPosition,
-    backgroundColor: initialBackgroundColor,
-    lineHeight: 0.3,
-    devMode: Object.assign({}, devMode, { statsContainer: statsContainer() }) // delay stats container selection until it's available in the DOM (Vue)
-  };
-  const settings = presets[preset];
-  Object.assign(defaultOpts, settings, options ?? {});
-  preview = new GCodePreview.init(defaultOpts);
-
-  if (observer) observer.disconnect();
-  observer = new ResizeObserver(() => preview.resize());
-  observer.observe(canvas);
-
-  await loadGCodeFromServer(settings.file);
-
-  updateUI();
-}
-
-function updateUI() {
-  app.thumbnail = preview.parser.metadata.thumbnails['220x124']?.src;
-  app.layerCount = preview.layers.length;
-
-  app.watching = false;
-
-  // reset UI to default values
-  app.maxLayer = preview.layers.length;
-  app.endLayer = preview.layers.length;
-  preview.endLayer = preview.layers.length;
-  app.singleLayerMode = false;
-  app.renderTravel = false;
-  app.renderExtrusion = true;
-  app.lineWidth = 0.4;
-  app.renderTubes = true;
-  app.tubeWidth = 0.4;
-  app.colors = preview.extrusionColor.map((c) => '#' + c.getHexString());
-  app.topLayerColor = '#' + preview.topLayerColor?.getHexString();
-  app.highlightTopLayer = !!preview.topLayerColor;
-  app.lastSegmentColor = '#' + preview.lastSegmentColor?.getHexString();
-  app.highlightLastSegment = !!preview.lastSegmentColor;
-  app.buildVolume = preview.buildVolume;
-  app.drawBuildVolume = !!preview.buildVolume;
-  app.backgroundColor = '#' + preview.backgroundColor.getHexString();
-
-  // prevent an extra render
-  nextTick(() => {
-    app.watching = true;
-  });
-}
-
-async function loadGCodeFromServer(filename) {
-  const response = await fetch(filename);
-  if (response.status !== 200) {
-    console.error('ERROR. Status Code: ' + response.status);
-    return;
-  }
-
-  const gcode = await response.text();
-  app.fileSize = humanFileSize(gcode.length);
-
-  startLoadingProgressive(gcode);
-}
-
-async function startLoadingProgressive(gcode) {
-  preview.clear();
-  if (loadProgressive) {
-    preview.parser.parseGCode(gcode);
-    await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
-  } else {
-    preview.processGCode(gcode);
-  }
-}
-
-async function loadDroppedFile(file) {
-  app.fileSize = humanFileSize(file.size);
-
-  // await preview._readFromStream(file.stream());
-
-  const content = await readFile(file);
-
-  startLoadingProgressive(content);
-
-  updateUI();
-}
-
-function readFile(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      resolve(e.target.result);
-    };
-    reader.readAsText(file);
-  });
-}

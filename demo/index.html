@@ -24,12 +24,13 @@
 
 <body >
   <div id="app">
-  <div class="sidebar"  >
-    <h1>GCode Preview  <a href="https://www.npmjs.com/package/gcode-preview">
-      <img src="https://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
-      </a></h1>
-   <div class="scroll-container">
-    <div>
+    <div class="sidebar"  >
+      <h1>GCode Preview  <a href="https://www.npmjs.com/package/gcode-preview">
+        <img src="https://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
+        </a>
+      </h1>
+      <div class="scroll-container">
+        <div>
       
       <section class="flex flex-column">
         <div class="flex just-between">
@@ -59,29 +60,29 @@
       <div class="panel" v-cloak v-show="activeTab == 'layers'">
       <section>
         <div class="controls">
-          <label>Start layer <output id="start-layer-value" >{{startLayer}}</output></label>&nbsp;
+          <label>Start layer <output id="start-layer-value" >{{settings.startLayer}}</output></label>&nbsp;
           <input
             type="range"
             min="1"
-            :max="maxLayer"
+            :max="settings.maxLayer"
             id="start-layer"
-            v-model="startLayer"
-            :disabled="singleLayerMode"
+            v-model="settings.startLayer"
+            :disabled="settings.singleLayerMode"
           />
         </div>
         <div class="controls">
-          <label>End layer <output id="end-layer-value" >{{endLayer}}</output></label>&nbsp;
+          <label>End layer <output id="end-layer-value" >{{settings.endLayer}}</output></label>&nbsp;
           <input
             type="range"
             min="1"
-            :max="maxLayer"
+            :max="settings.maxLayer"
             id="end-layer"
-            v-model="endLayer"
+            v-model="settings.endLayer"
           />
         </div>
         <div class="controls">
           <label for="single-layer-mode">Single layer mode</label>
-          <input type="checkbox" id="single-layer-mode" v-model="singleLayerMode" />
+          <input type="checkbox" id="single-layer-mode" v-model="settings.singleLayerMode" />
         </div>
         </section>
       </div>
@@ -89,11 +90,11 @@
         <section>
           <div class="controls">
             <label for="travel">Render travel</label>
-            <input type="checkbox" id="travel"  v-model="renderTravel" />
+            <input type="checkbox" id="travel"  v-model="settings.renderTravel" />
           </div>
           <div class="controls">
             <label for="travel-color">Travel color</label>
-            <input type="color" id="travel-color" value="#0000ff" />
+            <input type="color" id="travel-color" v-model="settings.travelColor" />
           </div>
         </section>
       </div>
@@ -102,32 +103,32 @@
         <section>
           <div class="controls">
             <label for="extrusion">Render extrusion</label
-            ><input type="checkbox" v-model="renderExtrusion" />
+            ><input type="checkbox" v-model="settings.renderExtrusion" />
           </div>
           <div class="controls">
             <label for="render-tubes">Render as tubes</label
-            ><input type="checkbox" v-model="renderTubes" />
+            ><input type="checkbox" v-model="settings.renderTubes" />
           </div>
-        <div class="controls" v-show="!renderTubes">
-          <label>Line width <output>{{lineWidth}}</output></label>&nbsp;
+        <div class="controls" v-show="!settings.renderTubes">
+          <label>Line width <output>{{settings.lineWidth}}</output></label>&nbsp;
           <input
             type="range"
             min="0.1"
             step="0.1"
             max="10"
-            v-model="lineWidth"
+            v-model="settings.lineWidth"
             
           />
         </div>
         
-        <div class="controls" v-show="renderTubes">
-          <label>Extrusion width <output>{{tubeWidth}}</output></label>&nbsp;
+        <div class="controls" v-show="settings.renderTubes">
+          <label>Extrusion width <output>{{settings.tubeWidth}}</output></label>&nbsp;
           <input
             type="range"
             min="0.05"
             max="3.0"
             step="0.05"
-            v-model="tubeWidth"
+            v-model="settings.tubeWidth"
             
           />
         </div>
@@ -139,28 +140,28 @@
           <button @click="removeColor">-</button>
         </div></div>
 
-        <div class="controls" v-for="color,index in colors">
+        <div class="controls" v-for="color,index in settings.colors">
           <label for="extrusion-color-t0">Extrusion color (T{{index}})</label>
-          <input type="color" v-model="colors[index]" :key="index" />
+          <input type="color" v-model="settings.colors[index]" :key="index" />
         </div>
         
       </section>
       <section>
         <div class="controls">
           <label for="highlight">Highlight top layer</label>
-          <input type="checkbox" v-model="highlightTopLayer" />
+          <input type="checkbox" v-model="settings.highlightTopLayer" />
         </div>
         <div class="controls">
           <label for="top-layer-color">Top layer color</label>
-          <input type="color" v-model="topLayerColor"  :disabled="!highlightTopLayer" />
+          <input type="color" v-model="settings.topLayerColor"  :disabled="!settings.highlightTopLayer" />
         </div>
         <div class="controls">
           <label for="last-segment-color">Highlight last segment</label>
-          <input type="checkbox" v-model="highlightLastSegment" />
+          <input type="checkbox" v-model="settings.highlightLastSegment" />
         </div>
         <div class="controls">
           <label for="last-segment-color">Last segment color</label>
-          <input type="color" id="last-segment-color" v-model="lastSegmentColor" :disabled="!highlightLastSegment" />
+          <input type="color" id="last-segment-color" v-model="settings.lastSegmentColor" :disabled="!settings.highlightLastSegment" />
         </div>
       </section>
       </div>
@@ -168,23 +169,23 @@
       <section>
         <div  class="controls">
           <label for="drawBuildVolume">Render build volume</label>
-          <input type="checkbox" v-model="drawBuildVolume" />
+          <input type="checkbox" v-model="settings.drawBuildVolume" />
         </div>
         <div class="controls">
           <label for="buildVolumeX">Build volume (x)&nbsp;</label>
-          <input type="number" v-model="buildVolume.x" step=10 :disabled="!drawBuildVolume" />
+          <input type="number" v-model="settings.buildVolume.x" step=10 :disabled="!settings.drawBuildVolume" />
         </div>
         <div  class="controls">
           <label for="buildVolumeY">Build volume (y)&nbsp;</label>
-          <input type="number" v-model="buildVolume.y" step=10 :disabled="!drawBuildVolume" />
+          <input type="number" v-model="settings.buildVolume.y" step=10 :disabled="!settings.drawBuildVolume" />
         </div>
         <div  class="controls">
           <label for="buildVolumeZ">Build volume (z)&nbsp;</label>
-          <input type="number" v-model="buildVolume.z" step=10 :disabled="!drawBuildVolume" />
+          <input type="number" v-model="settings.buildVolume.z" step=10 :disabled="!settings.drawBuildVolume" />
         </div>
         <div class="controls">
           <label for="background-color">Background color</label>
-          <input type="color" v-model="backgroundColor" />
+          <input type="color" v-model="settings.backgroundColor" />
         </div>
       </section>
       </div>
@@ -204,7 +205,7 @@
     </div>
    </div>
   <div class="wrapper">
-    <canvas :class="{ 'dragging': dragging }" 
+    <canvas :class="{ 'dragging': settings.dragging }" 
       
       @dragover.prevent="dragOver"
       @dragleave.prevent="dragLeave"
@@ -224,7 +225,6 @@
     }
   </script>
   <script type="module">
-    import {initDemo} from './js/demo.js';
     import {app} from './js/app.js';
   </script>
 </body>

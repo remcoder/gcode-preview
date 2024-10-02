@@ -1,4 +1,4 @@
-export const settingsPresets = {
+export const presets = {
   multicolor: {
     title: 'Multicolor',
     file: 'gcodes/3DBenchy-Multi-part.gcode',
