@@ -14,7 +14,7 @@ export const presets = {
   mach3: {
     title: 'CNC tool path',
     file: 'gcodes/mach3.gcode',
-    lineWidth: 1,
+    lineWidth: 2,
     renderExtrusion: false,
     renderTubes: false,
     extrusionColor: [],
@@ -23,10 +23,11 @@ export const presets = {
     topLayerColor: undefined,
     lastSegmentColor: undefined,
     buildVolume: {
-      x: 20,
-      y: 20,
+      x: 10,
+      y: 10,
       z: ''
-    }
+    },
+    initialCameraPosition: [-20, 20, 1.8]
   },
   arcs: {
     title: 'Arcs with G2/G3',
