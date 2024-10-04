@@ -50,6 +50,10 @@ h1 img {
   font-size: 90%;
 }
 
+#settings-presets {
+  width: 220px;
+}
+
 .scroll-container {
   padding: 10px;
 
@@ -98,9 +102,9 @@ h1 img {
 
 h1 {
   font-size: 160%;
-  margin: 0 0 20px 0;
+  /* margin: 0 0 20px 0; */
   font-weight: normal;
-  padding: 10px 10px 0 10px;
+  /* padding: 10px 10px 0 10px; */
 }
 
 section {
@@ -138,10 +142,6 @@ canvas:focus {
   margin: 0;
   font-variant: small-caps;
   font-weight: normal;
-}
-
-#thumb:show {
-  filter: brightness(1);
 }
 
 .file-info {
@@ -236,4 +236,8 @@ footer {
   display: flex;
   flex-direction: row;
   align-items: stretch;
+}
+
+.w-100 {
+  width: 100%;
 }
