@@ -205,7 +205,7 @@
     </div>
    </div>
   <div class="wrapper">
-    <canvas :class="{ 'dragging': settings.dragging }" 
+    <canvas class="preview" :class="{ 'dragging': settings.dragging }" 
       
       @dragover.prevent="dragOver"
       @dragleave.prevent="dragLeave"

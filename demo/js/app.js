@@ -122,13 +122,11 @@ export const app = (window.app = createApp({
     };
 
     const selectPreset = async (presetName) => {
-      const canvas = document.querySelector('canvas');
+      const canvas = document.querySelector('canvas.preview');
       const preset = presets[presetName];
-      console.log('Selected preset:', presetName, preset);
       const options = Object.assign(
         {
           canvas,
-          statsContainer: statsContainer(),
           backgroundColor: initialBackgroundColor
         },
         defaultSettings,
@@ -146,6 +144,8 @@ export const app = (window.app = createApp({
     };
 
     onMounted(async () => {
+      defaultSettings.devMode.statsContainer = statsContainer();
+
       await selectPreset(defaultPreset);
 
       watchEffect(() => {
