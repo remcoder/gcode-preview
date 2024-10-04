@@ -1,4 +1,4 @@
-import { createApp, ref, watch, nextTick, onMounted } from 'vue';
+import { createApp, ref, watch, nextTick, onMounted, watchEffect } from 'vue';
 import { presets } from './presets.js';
 import * as GCodePreview from 'gcode-preview';
 import { defaultSettings } from './default-settings.js';
@@ -17,7 +17,6 @@ export const app = (window.app = createApp({
   setup() {
     const activeTab = ref('layers');
     const selectedPreset = ref(defaultPreset);
-    const watching = ref(false);
     const thumbnail = ref(null);
     const layerCount = ref(0);
     const fileSize = ref(0);
@@ -29,169 +28,7 @@ export const app = (window.app = createApp({
       selectPreset(preset);
     });
 
-    watch(
-      () => settings.value.startLayer,
-      (layer) => {
-        if (!watching.value) return;
-
-        preview.startLayer = +layer;
-        // TODO: move clamping into library
-        settings.value.endLayer = preview.endLayer = Math.max(preview.startLayer, preview.endLayer);
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.endLayer,
-      (layer) => {
-        if (!watching.value) return;
-
-        preview.endLayer = +layer;
-        // TODO: move clamping into library
-        settings.value.startLayer = preview.startLayer = Math.min(preview.startLayer, preview.endLayer);
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.singleLayerMode,
-      (enabled) => {
-        if (!watching.value) return;
-        preview.singleLayerMode = enabled;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.renderTravel,
-      (enabled) => {
-        if (!watching.value) return;
-        preview.renderTravel = enabled;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.travelColor,
-      (color) => {
-        if (!watching.value) return;
-        preview.travelColor = color;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.renderExtrusion,
-      (enabled) => {
-        if (!watching.value) return;
-        preview.renderExtrusion = enabled;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.lineWidth,
-      (value) => {
-        if (!watching.value) return;
-        preview.lineWidth = +value;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.renderTubes,
-      (enabled) => {
-        if (!watching.value) return;
-        preview.renderTubes = enabled;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.tubeWidth,
-      (value) => {
-        if (!watching.value) return;
-        preview.extrusionWidth = +value;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.colors,
-      (value) => {
-        if (!watching.value) return;
-        preview.extrusionColor = value.length === 1 ? value[0] : value;
-        preview.render();
-      },
-      { deep: true }
-    );
-
-    watch(
-      () => settings.value.highlightTopLayer,
-      (enabled) => {
-        if (!watching.value) return;
-        preview.topLayerColor = enabled ? settings.value.topLayerColor : undefined;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.topLayerColor,
-      (color) => {
-        if (!watching.value) return;
-        preview.topLayerColor = color;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.highlightLastSegment,
-      (enabled) => {
-        if (!watching.value) return;
-        preview.lastSegmentColor = enabled ? settings.value.lastSegmentColor : undefined;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.lastSegmentColor,
-      (color) => {
-        if (!watching.value) return;
-        preview.lastSegmentColor = color;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.drawBuildVolume,
-      (enabled) => {
-        if (!watching.value) return;
-        preview.buildVolume = enabled ? settings.value.buildVolume : undefined;
-        preview.render();
-      }
-    );
-
-    watch(
-      () => settings.value.buildVolume,
-      (value) => {
-        if (!watching.value) return;
-        preview.buildVolume = value;
-        preview.render();
-      },
-      { deep: true }
-    );
-
-    watch(
-      () => settings.value.backgroundColor,
-      (color) => {
-        if (!watching.value) return;
-        preview.backgroundColor = color;
-        preview.render();
-      }
-    );
-
     const selectTab = (t) => {
-      console.log('selectTab', t);
       activeTab.value = t;
     };
 
@@ -210,7 +47,6 @@ export const app = (window.app = createApp({
       dragging.value = false;
     };
     const drop = (evt) => {
-      console.log('drop', evt.dataTransfer.files);
       dragging.value = false;
 
       const files = evt.dataTransfer.files;
@@ -219,12 +55,9 @@ export const app = (window.app = createApp({
       this.loadDroppedFile(file);
     };
 
-    const resetUI = () => {
-      console.log('resetUI');
+    const resetUI = async () => {
       thumbnail.value = preview.parser.metadata.thumbnails['220x124']?.src;
       layerCount.value = preview.layers.length;
-
-      watching.value = false;
 
       // reset UI to default values
       settings.value.maxLayer = preview.layers.length;
@@ -246,15 +79,9 @@ export const app = (window.app = createApp({
       settings.value.buildVolume = preview.buildVolume;
       settings.value.drawBuildVolume = !!preview.buildVolume;
       settings.value.backgroundColor = '#' + preview.backgroundColor.getHexString();
-
-      // prevent an extra render
-      nextTick(() => {
-        watching.value = true;
-      });
     };
 
     const loadGCodeFromServer = async (filename) => {
-      console.log('loadGCodeFromServer', filename);
       const response = await fetch(filename);
       if (response.status !== 200) {
         console.error('ERROR. Status Code: ' + response.status);
@@ -271,7 +98,7 @@ export const app = (window.app = createApp({
       preview.clear();
       if (loadProgressive) {
         preview.parser.parseGCode(gcode);
-        await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+        //await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
       } else {
         preview.processGCode(gcode);
       }
@@ -289,7 +116,6 @@ export const app = (window.app = createApp({
       resetUI();
     };
     const selectPreset = async (presetName) => {
-      console.log('selectPreset', presetName);
       const canvas = document.querySelector('canvas');
 
       const preset = presets[presetName];
@@ -302,6 +128,7 @@ export const app = (window.app = createApp({
         defaultSettings,
         preset
       );
+
       preview = new GCodePreview.init(options);
 
       if (observer) observer.disconnect();
@@ -313,15 +140,33 @@ export const app = (window.app = createApp({
       resetUI();
     };
 
-    onMounted(() => {
-      selectPreset(defaultPreset);
+    onMounted(async () => {
+      await selectPreset(defaultPreset);
+
+      watchEffect(() => {
+        preview.startLayer = +settings.value.startLayer;
+        preview.endLayer = +settings.value.endLayer;
+        preview.singleLayerMode = settings.value.singleLayerMode;
+        preview.renderTravel = settings.value.renderTravel;
+        preview.travelColor = settings.value.travelColor;
+        preview.renderExtrusion = settings.value.renderExtrusion;
+        preview.lineWidth = +settings.value.lineWidth;
+        preview.renderTubes = settings.value.renderTubes;
+        preview.extrusionWidth = +settings.value.tubeWidth;
+        preview.extrusionColor = settings.value.colors.length === 1 ? settings.value.colors[0] : settings.value.colors;
+        preview.topLayerColor = settings.value.highlightTopLayer ? settings.value.topLayerColor : undefined;
+        preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
+        preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
+        preview.backgroundColor = settings.value.backgroundColor;
+
+        preview.render();
+      });
     });
 
     return {
       presets,
       activeTab,
       selectedPreset,
-      watching,
       thumbnail,
       layerCount,
       fileSize,
@@ -339,8 +184,5 @@ export const app = (window.app = createApp({
       loadDroppedFile,
       selectPreset
     };
-  },
-  mounted() {
-    this.selectPreset(defaultPreset);
   }
 }).mount('#app'));
