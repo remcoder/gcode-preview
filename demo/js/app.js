@@ -136,6 +136,8 @@ export const app = (window.app = createApp({
       // reset previous state
       const lilGuiElement = document.querySelector('.lil-gui');
       if (lilGuiElement) document.body.removeChild(lilGuiElement);
+      const stats = document.querySelector('.stats');
+      if (stats) stats.parentNode.removeChild(stats);
       if (defaultSettings.devMode) defaultSettings.devMode.statsContainer = statsContainer();
       preview?.dispose();
 
