@@ -170,28 +170,36 @@ export const app = (window.app = createApp({
       await selectPreset(defaultPreset);
 
       watchEffect(() => {
+        preview.renderTravel = settings.value.renderTravel;
+        preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
+        preview.backgroundColor = settings.value.backgroundColor;
+
+        if (!firstRender) {
+          preview.render();
+        } else {
+          firstRender = false;
+        }
+      });
+
+      watchEffect(() => {
         preview.startLayer = +settings.value.startLayer;
         preview.endLayer = +settings.value.endLayer;
         preview.singleLayerMode = settings.value.singleLayerMode;
-        preview.renderTravel = settings.value.renderTravel;
-        preview.travelColor = settings.value.travelColor;
         preview.renderExtrusion = settings.value.renderExtrusion;
+
+        preview.travelColor = settings.value.travelColor;
         preview.lineWidth = +settings.value.lineWidth;
         preview.renderTubes = settings.value.renderTubes;
         preview.extrusionWidth = +settings.value.extrusionWidth;
         preview.extrusionColor = settings.value.colors.length === 1 ? settings.value.colors[0] : settings.value.colors;
+
+        // TODO: should be a quick update:
         preview.topLayerColor = settings.value.highlightTopLayer ? settings.value.topLayerColor : undefined;
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
-        preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
-        preview.backgroundColor = settings.value.backgroundColor;
-        if (firstRender) {
-          preview.render();
-          firstRender = false;
-        } else {
-          debounce(() => {
-            preview.render();
-          });
-        }
+
+        debounce(() => {
+          preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+        });
       });
     });
 
