@@ -2,7 +2,7 @@ import { createApp, ref, watch, onMounted, watchEffect } from 'vue';
 import { presets } from './presets.js';
 import * as GCodePreview from 'gcode-preview';
 import { defaultSettings } from './default-settings.js';
-import { humanFileSize, readFile } from './utils.js';
+import { debounce, humanFileSize, readFile } from './utils.js';
 
 const defaultPreset = 'multicolor';
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
@@ -12,6 +12,7 @@ const statsContainer = () => document.querySelector('.sidebar');
 const loadProgressive = true;
 let observer = null;
 let preview = null;
+let firstRender = true;
 
 export const app = (window.app = createApp({
   setup() {
@@ -124,6 +125,7 @@ export const app = (window.app = createApp({
     };
 
     const selectPreset = async (presetName) => {
+      firstRender = true;
       const canvas = document.querySelector('canvas.preview');
       const preset = presets[presetName];
       const options = Object.assign(
@@ -182,8 +184,14 @@ export const app = (window.app = createApp({
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
         preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
         preview.backgroundColor = settings.value.backgroundColor;
-
-        preview.render();
+        if (firstRender) {
+          preview.render();
+          firstRender = false;
+        } else {
+          debounce(() => {
+            preview.render();
+          });
+        }
       });
     });
 
