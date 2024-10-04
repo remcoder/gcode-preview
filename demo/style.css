@@ -32,18 +32,22 @@ body {
   }
 }
 
+.border {
+  border: 1px solid #ccc;
+}
+
 h1 img {
   vertical-align: bottom;
 }
 
 .sidebar {
-  background: rgba(32, 83, 119, 0.5);
+  background: rgb(12, 48, 74);
   left: 0;
   top: 0;
-  bottom: 0;
+  /* bottom: 0; */
+  position: absolute;
   line-height: 25px;
   transform: translateZ(0);
-  display: flex;
   flex-direction: column;
   justify-content: space-between;
   transform: translateZ(0);
@@ -52,14 +56,6 @@ h1 img {
 
 #settings-presets {
   width: 220px;
-}
-
-.scroll-container {
-  padding: 10px;
-
-  /* overflow-y: scroll; */
-  overflow-x: hidden;
-  height: 100%;
 }
 
 .description {
@@ -240,4 +236,29 @@ footer {
 
 .w-100 {
   width: 100%;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.right {
+  right: 0;
+}
+
+.bottom {
+  bottom: 0;
+}
+
+.widget {
+  border-radius: 5px;
+  margin: 10px;
+}
+
+.widget > img {
+  border-radius: 4px;
+}
+
+.lil-gui {
+  right: 10px !important;
 }
