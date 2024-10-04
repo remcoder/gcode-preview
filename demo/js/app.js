@@ -67,7 +67,7 @@ export const app = (window.app = createApp({
 
       thumbnail.value = thumbnails['220x124']?.src;
       layerCount.value = layers.length;
-
+      const colors = extrusionColor instanceof Array ? extrusionColor : [extrusionColor];
       const currentSettings = {
         maxLayer: layers.length,
         endLayer: layers.length,
@@ -78,7 +78,7 @@ export const app = (window.app = createApp({
         lineWidth,
         renderTubes,
         extrusionWidth,
-        colors: extrusionColor.map((c) => '#' + c.getHexString()),
+        colors: colors.map((c) => '#' + c.getHexString()),
         topLayerColor: '#' + topLayerColor?.getHexString(),
         highlightTopLayer: !!topLayerColor,
         lastSegmentColor: '#' + lastSegmentColor?.getHexString(),
