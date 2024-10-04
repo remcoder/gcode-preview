@@ -45,22 +45,37 @@ export const app = (window.app = createApp({
       loadDroppedFile(file);
     };
 
-    const resetUI = async () => {
-      const { parser, layers, extrusionColor, topLayerColor, lastSegmentColor, buildVolume, backgroundColor } = preview;
+    // Update UI with current preview settings
+    const updateUI = async () => {
+      const {
+        parser,
+        layers,
+        extrusionColor,
+        topLayerColor,
+        lastSegmentColor,
+        buildVolume,
+        backgroundColor,
+        singleLayerMode,
+        renderTravel,
+        renderExtrusion,
+        lineWidth,
+        renderTubes,
+        extrusionWidth
+      } = preview;
       const { thumbnails } = parser.metadata;
 
       thumbnail.value = thumbnails['220x124']?.src;
       layerCount.value = layers.length;
 
-      const defaultSettings = {
+      const currentSettings = {
         maxLayer: layers.length,
         endLayer: layers.length,
-        singleLayerMode: false,
-        renderTravel: false,
-        renderExtrusion: true,
-        lineWidth: 0.4,
-        renderTubes: true,
-        tubeWidth: 0.4,
+        singleLayerMode,
+        renderTravel,
+        renderExtrusion,
+        lineWidth,
+        renderTubes,
+        extrusionWidth,
         colors: extrusionColor.map((c) => '#' + c.getHexString()),
         topLayerColor: '#' + topLayerColor?.getHexString(),
         highlightTopLayer: !!topLayerColor,
@@ -71,7 +86,7 @@ export const app = (window.app = createApp({
         backgroundColor: '#' + backgroundColor.getHexString()
       };
 
-      Object.assign(settings.value, defaultSettings);
+      Object.assign(settings.value, currentSettings);
       preview.endLayer = layers.length;
     };
 
@@ -101,12 +116,13 @@ export const app = (window.app = createApp({
       fileSize.value = humanFileSize(file.size);
       const content = await readFile(file);
       startLoadingProgressive(content);
-      resetUI();
+      updateUI();
     };
 
     const selectPreset = async (presetName) => {
       const canvas = document.querySelector('canvas');
       const preset = presets[presetName];
+      console.log('Selected preset:', presetName, preset);
       const options = Object.assign(
         {
           canvas,
@@ -118,13 +134,13 @@ export const app = (window.app = createApp({
       );
 
       preview = new GCodePreview.init(options);
-
+      console.log('Preview instance:', preview.extrusionWidth);
       if (observer) observer.disconnect();
       observer = new ResizeObserver(() => preview.resize());
       observer.observe(canvas);
 
       await loadGCodeFromServer(preset.file);
-      resetUI();
+      updateUI();
     };
 
     onMounted(async () => {
@@ -139,7 +155,7 @@ export const app = (window.app = createApp({
         preview.renderExtrusion = settings.value.renderExtrusion;
         preview.lineWidth = +settings.value.lineWidth;
         preview.renderTubes = settings.value.renderTubes;
-        preview.extrusionWidth = +settings.value.tubeWidth;
+        preview.extrusionWidth = +settings.value.extrusionWidth;
         preview.extrusionColor = settings.value.colors.length === 1 ? settings.value.colors[0] : settings.value.colors;
         preview.topLayerColor = settings.value.highlightTopLayer ? settings.value.topLayerColor : undefined;
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
@@ -165,7 +181,7 @@ export const app = (window.app = createApp({
       dragOver,
       dragLeave,
       drop,
-      resetUI,
+      resetUI: updateUI,
       loadGCodeFromServer,
       startLoadingProgressive,
       loadDroppedFile,

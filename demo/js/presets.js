@@ -2,12 +2,7 @@ export const presets = {
   multicolor: {
     title: 'Multicolor',
     file: 'gcodes/3DBenchy-Multi-part.gcode',
-    lineWidth: 1,
-    renderExtrusion: true,
-    renderTubes: true,
     extrusionColor: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
-    renderTravel: false,
-    travelColor: 'red',
     topLayerColor: undefined,
     lastSegmentColor: undefined,
     buildVolume: {
@@ -39,6 +34,7 @@ export const presets = {
     lineWidth: 2,
     renderExtrusion: true,
     renderTubes: true,
+    extrusionWidth: 0.5,
     extrusionColor: ['rgb(83,209,104)'],
     renderTravel: false,
     travelColor: '#00FF00',

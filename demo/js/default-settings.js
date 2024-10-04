@@ -22,11 +22,12 @@ export const defaultSettings = {
   travelColor: 'red',
   renderExtrusion: true,
   lineWidth: 0.4,
-  tubeWidth: 0.4,
+  extrusionWidth: 0.4,
   colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00'],
   highlightTopLayer: false,
   topLayerColor: '#40BFBF',
   highlightLastSegment: false,
   lastSegmentColor: null,
-  drawBuildVolume: true
+  drawBuildVolume: true,
+  backgroundColor: '#000000'
 };
