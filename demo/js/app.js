@@ -133,8 +133,15 @@ export const app = (window.app = createApp({
         preset
       );
 
+      // reset previous state
+      const lilGuiElement = document.querySelector('.lil-gui');
+      if (lilGuiElement) document.body.removeChild(lilGuiElement);
+      if (defaultSettings.devMode) defaultSettings.devMode.statsContainer = statsContainer();
+      preview?.dispose();
+
       preview = new GCodePreview.init(options);
-      console.log('Preview instance:', preview.extrusionWidth);
+
+      // resize preview on canvas resize (TODO: move to GCodePreview)
       if (observer) observer.disconnect();
       observer = new ResizeObserver(() => preview.resize());
       observer.observe(canvas);
@@ -144,8 +151,6 @@ export const app = (window.app = createApp({
     };
 
     onMounted(async () => {
-      defaultSettings.devMode.statsContainer = statsContainer();
-
       await selectPreset(defaultPreset);
 
       watchEffect(() => {
