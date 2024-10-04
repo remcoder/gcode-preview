@@ -16,12 +16,8 @@ export const presets = {
     file: 'gcodes/mach3.gcode',
     lineWidth: 2,
     renderExtrusion: false,
-    renderTubes: false,
-    extrusionColor: [],
     renderTravel: true,
     travelColor: '#00FF00',
-    topLayerColor: undefined,
-    lastSegmentColor: undefined,
     buildVolume: {
       x: 10,
       y: 10,
@@ -32,42 +28,39 @@ export const presets = {
   arcs: {
     title: 'Arcs with G2/G3',
     file: 'gcodes/screw.gcode',
-    lineWidth: 2,
-    renderExtrusion: true,
-    renderTubes: true,
     extrusionWidth: 0.5,
     extrusionColor: ['rgb(83,209,104)'],
-    renderTravel: false,
-    travelColor: '#00FF00',
+    travelColor: 'red',
     topLayerColor: undefined,
     lastSegmentColor: undefined,
     buildVolume: {
-      x: 150,
+      x: 130,
       y: 150,
-      z: 150
+      z: 0
     }
   },
   'vase-mode': {
     title: 'Vase mode',
     file: 'gcodes/vase.gcode',
-    lineWidth: 1,
+    lineWidth: 0,
     renderExtrusion: true,
     renderTubes: true,
     extrusionColor: ['rgb(84,74,187)'],
-    renderTravel: false,
+    renderTravel: true,
     travelColor: '#00FF00',
-    topLayerColor: '#40BFBF',
-    lastSegmentColor: '#ffffff',
+    topLayerColor: undefined,
+    lastSegmentColor: undefined,
     buildVolume: {
       x: 200,
       y: 200,
       z: 180
-    }
+    },
+    initialCameraPosition: [-404, 320, 184]
   },
   'travel-moves': {
     title: 'Travel moves',
     file: 'gcodes/plant-sign.gcode',
-    lineWidth: 2,
+    lineWidth: 0,
     renderExtrusion: true,
     renderTubes: true,
     extrusionColor: ['#777777'],
@@ -78,7 +71,7 @@ export const presets = {
     buildVolume: {
       x: 200,
       y: 200,
-      z: 180
+      z: 150
     }
   }
 };
