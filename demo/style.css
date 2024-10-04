@@ -146,9 +146,10 @@ canvas:focus {
 
 .file-info {
   text-align: center;
-  background: grey;
+  background: hsl(221, 14%, 86%);
   font-size: smaller;
   color: black;
+  width: 220px;
 }
 
 /* for performance & stacking */
