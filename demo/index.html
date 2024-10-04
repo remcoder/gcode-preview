@@ -61,7 +61,7 @@
       <div class="panel" v-cloak v-show="activeTab == 'layers'">
       <section>
         <div class="controls">
-          <label>Start layer <output id="start-layer-value" >{{settings.startLayer}}</output></label>&nbsp;
+          <label :class="{'has-text-grey' : settings.singleLayerMode}" >Start layer <output id="start-layer-value" >{{settings.startLayer}}</output></label>&nbsp;
           <input
             type="range"
             min="1"
@@ -96,77 +96,85 @@
             <input type="checkbox" id="travel"  v-model="settings.renderTravel" />
           </div>
           <div class="controls">
-            <label for="travel-color">Travel color</label>
-            <input type="color" id="travel-color" v-model="settings.travelColor" />
+            <label :class="{'has-text-grey' : !settings.renderTravel}" for="travel-color">Travel color</label>
+            <input type="color" id="travel-color" v-model="settings.travelColor" :disabled="!settings.renderTravel" />
           </div>
         </section>
       </div>
       
       <div class="panel" v-cloak v-show="activeTab == 'extrusion'">
-        <section>
+        <section class="mb-0">
           <div class="controls">
             <label for="extrusion">Render extrusion</label
             ><input type="checkbox" v-model="settings.renderExtrusion" />
           </div>
-          <div class="controls">
-            <label for="render-tubes">Render as tubes</label
-            ><input type="checkbox" v-model="settings.renderTubes" />
+        </section>
+
+        <div :class="{'has-text-grey': !settings.renderExtrusion}">
+           
+          <section>
+            <div class="controls">
+              <label for="render-tubes">Render as tubes</label
+              ><input type="checkbox" v-model="settings.renderTubes" :disabled="!settings.renderExtrusion"/>
+            </div>
+            <div class="controls" v-show="!settings.renderTubes">
+              <label>Line width <output>{{settings.lineWidth}}</output></label>&nbsp;
+            <input
+              type="range"
+              min="0.1"
+              step="0.1"
+              max="10"
+              v-model="settings.lineWidth"
+              :disabled="!settings.renderExtrusion"
+            />
           </div>
-        <div class="controls" v-show="!settings.renderTubes">
-          <label>Line width <output>{{settings.lineWidth}}</output></label>&nbsp;
-          <input
-            type="range"
-            min="0.1"
-            step="0.1"
-            max="10"
-            v-model="settings.lineWidth"
-            
-          />
-        </div>
-        
-        <div class="controls" v-show="settings.renderTubes">
-          <label>Extrusion width <output>{{settings.extrusionWidth}}</output></label>&nbsp;
-          <input
-            type="number"
-            min="0.05"
-            max="3.0"
-            step="0.05"
-            v-model="settings.extrusionWidth"
-            
-          />
-        </div>
-      </section>
+          
+          <div class="controls" v-show="settings.renderTubes">
+            <label>Extrusion width <output>{{settings.extrusionWidth}}</output></label>&nbsp;
+            <input
+              type="number"
+              min="0.05"
+              max="3.0"
+              step="0.05"
+              v-model="settings.extrusionWidth"
+              :disabled="!settings.renderExtrusion"
+            />
+          </div>
+          </section>
 
-      <section class="extrusion-colors">
-        <div class="flex just-between"># of extrusion colors  <div class="controls">
-          <button @click="addColor">+</button>
-          <button @click="removeColor">-</button>
-        </div></div>
+          <section class="extrusion-colors">
+            <div class="flex just-between"># of extrusion colors  <div class="controls">
+              <button @click="addColor">+</button>
+              <button @click="removeColor">-</button>
+            </div></div>
 
-        <div class="controls" v-for="color,index in settings.colors">
-          <label for="extrusion-color-t0">Extrusion color (T{{index}})</label>
-          <input type="color" v-model="settings.colors[index]" :key="index" />
+            <div class="controls" v-for="color,index in settings.colors">
+              <label for="extrusion-color-t0">Extrusion color (T{{index}})</label>
+              <input type="color" v-model="settings.colors[index]" :key="index" :disabled="!settings.renderExtrusion" />
+            </div>
+            
+          </section>
+          <section>
+            <div class="controls">
+              <label for="highlight">Highlight top layer</label>
+              <input type="checkbox" v-model="settings.highlightTopLayer" :disabled="!settings.renderExtrusion" />
+            </div>
+            <div class="controls">
+              <label :class="{'has-text-grey' : !settings.highlightTopLayer}" for="top-layer-color">Top layer color</label>
+              <input type="color" v-model="settings.topLayerColor"  :disabled="!settings.highlightTopLayer || !settings.renderExtrusion" />
+            </div>
+            <div class="controls">
+              <label for="last-segment-color">Highlight last segment</label>
+              <input type="checkbox" v-model="settings.highlightLastSegment" :disabled="!settings.renderExtrusion"/>
+            </div>
+            <div class="controls">
+              <label :class="{'has-text-grey' : !settings.highlightLastSegment}" for="last-segment-color">Last segment color</label>
+              <input type="color" id="last-segment-color" v-model="settings.lastSegmentColor" 
+              :disabled="!settings.highlightLastSegment || !settings.renderExtrusion" />
+            </div>
+
+          </section>
         </div>
-        
-      </section>
-      <section>
-        <div class="controls">
-          <label for="highlight">Highlight top layer</label>
-          <input type="checkbox" v-model="settings.highlightTopLayer" />
-        </div>
-        <div class="controls">
-          <label for="top-layer-color">Top layer color</label>
-          <input type="color" v-model="settings.topLayerColor"  :disabled="!settings.highlightTopLayer" />
-        </div>
-        <div class="controls">
-          <label for="last-segment-color">Highlight last segment</label>
-          <input type="checkbox" v-model="settings.highlightLastSegment" />
-        </div>
-        <div class="controls">
-          <label for="last-segment-color">Last segment color</label>
-          <input type="color" id="last-segment-color" v-model="settings.lastSegmentColor" :disabled="!settings.highlightLastSegment" />
-        </div>
-      </section>
       </div>
       <div class="panel" v-cloak v-show="activeTab == 'build-volume'">
       <section>
@@ -174,17 +182,19 @@
           <label for="drawBuildVolume">Render build volume</label>
           <input type="checkbox" v-model="settings.drawBuildVolume" />
         </div>
-        <div class="controls">
-          <label for="buildVolumeX">Build volume (x)&nbsp;</label>
-          <input type="number" v-model="settings.buildVolume.x" step=10 :disabled="!settings.drawBuildVolume" />
-        </div>
-        <div  class="controls">
-          <label for="buildVolumeY">Build volume (y)&nbsp;</label>
-          <input type="number" v-model="settings.buildVolume.y" step=10 :disabled="!settings.drawBuildVolume" />
-        </div>
-        <div  class="controls">
-          <label for="buildVolumeZ">Build volume (z)&nbsp;</label>
-          <input type="number" v-model="settings.buildVolume.z" step=10 :disabled="!settings.drawBuildVolume" />
+        <div :class="{'has-text-grey' : !settings.drawBuildVolume}">
+          <div class="controls">
+            <label for="buildVolumeX">Build volume (x)&nbsp;</label>
+            <input type="number" v-model="settings.buildVolume.x" step=10 :disabled="!settings.drawBuildVolume" />
+          </div>
+          <div  class="controls">
+            <label for="buildVolumeY">Build volume (y)&nbsp;</label>
+            <input type="number" v-model="settings.buildVolume.y" step=10 :disabled="!settings.drawBuildVolume" />
+          </div>
+          <div  class="controls">
+            <label for="buildVolumeZ">Build volume (z)&nbsp;</label>
+            <input type="number" v-model="settings.buildVolume.z" step=10 :disabled="!settings.drawBuildVolume" />
+          </div>
         </div>
         <div class="controls">
           <label for="background-color">Background color</label>
