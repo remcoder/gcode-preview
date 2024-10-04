@@ -49,6 +49,7 @@
           <div class="file-info"><span>{{layerCount + ' layers'}}</span> / <span>{{fileSize}}</span></div>
         </div>
       </section>
+      
       <div class="bulma-tabs bulma-is-small">
         <ul>
           <li :class="{ 'bulma-is-active': activeTab == 'layers' }"><a @click="selectTab('layers')">Layers</a></li>
@@ -190,10 +191,12 @@
       </section>
       </div>
     </div>
+    
 
     </div>
     <div>
       <footer>
+        <div class="text-center has-text-grey-light mb-5"><label class="mr-2">dev mode</label><input v-model="enableDevMode" type="checkbox" /> </div>
         <div><a href="http://twitter.com/remcoder">@remcoder</a> ©2020 - 2024</div>
 
         <div>

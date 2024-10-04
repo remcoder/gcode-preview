@@ -22,6 +22,7 @@ export const app = (window.app = createApp({
     const fileSize = ref(0);
     const dragging = ref(false);
     const settings = ref(Object.assign({}, defaultSettings));
+    const enableDevMode = ref(false);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -149,9 +150,19 @@ export const app = (window.app = createApp({
       observer = new ResizeObserver(() => preview.resize());
       observer.observe(canvas);
 
+      applyDevMode(enableDevMode.value);
+
       await loadGCodeFromServer(preset.file);
+      applyDevMode(enableDevMode.value);
+
       updateUI();
     };
+
+    function applyDevMode(enabled) {
+      // these elements will be recreated when changing presets, so we'll look them up dynamically
+      document.querySelectorAll('.lil-gui, .stats').forEach((el) => (el.style.display = enabled ? 'block' : 'none'));
+    }
+    watch(enableDevMode, applyDevMode);
 
     onMounted(async () => {
       await selectPreset(defaultPreset);
@@ -185,6 +196,7 @@ export const app = (window.app = createApp({
       fileSize,
       dragging,
       settings,
+      enableDevMode,
       selectTab,
       addColor,
       removeColor,
