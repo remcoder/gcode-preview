@@ -5,7 +5,7 @@ export const defaultSettings = {
     y: 180,
     z: 180
   },
-  initialCameraPosition: [-300, 350, 300], // resembles the angle of thumbnail
+  initialCameraPosition: [-200, 232, 200], // resembles the angle of thumbnail
   lineHeight: 0.2,
   devMode: {
     camera: true,
