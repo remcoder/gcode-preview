@@ -21,7 +21,7 @@ export const defaultSettings = {
   renderTravel: false,
   travelColor: 'red',
   renderExtrusion: true,
-  lineWidth: 0.4,
+  lineWidth: 0,
   extrusionWidth: 0.4,
   colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00'],
   highlightTopLayer: false,
@@ -29,5 +29,5 @@ export const defaultSettings = {
   highlightLastSegment: false,
   lastSegmentColor: null,
   drawBuildVolume: true,
-  backgroundColor: '#000000'
+  backgroundColor: '#141414'
 };

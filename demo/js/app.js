@@ -6,8 +6,9 @@ import { humanFileSize, readFile } from './utils.js';
 
 const defaultPreset = 'multicolor';
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
-const initialBackgroundColor = preferDarkMode.matches ? '#111' : '#eee';
+const initialBackgroundColor = preferDarkMode.matches ? '#141414' : '#eee';
 const statsContainer = () => document.querySelector('.sidebar');
+
 const loadProgressive = true;
 let observer = null;
 let preview = null;
