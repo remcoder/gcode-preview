@@ -35,7 +35,7 @@
         <div class="p-1">{{fileName}}</div>
       </div>
     </div>
-    <div class="sidebar p-4 widget left top glass slide-in-left"  >
+    <div class="sidebar p-4 widget left top glass slide-in-left border"  >
      
       <h1 class="text-center m-3 mb-5">GCode Preview  
       </h1>
@@ -220,7 +220,7 @@
         </footer>
       </div>
     </div>
-    <div class="widget top right glass p-3 is-size-7 slide-in-down"><label class="mr-2">dev mode</label><input v-model="enableDevMode" type="checkbox" /> </div>
+    <div class="widget top right glass p-3 is-size-7 slide-in-down border"><label class="mr-2">dev mode</label><input v-model="enableDevMode" type="checkbox" /> </div>
     <div class="absolute left bottom m-3 has-text-grey slide-in-up">Drop a gcode file to preview it</div>
     <div class="wrapper">
       <canvas class="preview" :class="{ 'dragging': settings.dragging }" 

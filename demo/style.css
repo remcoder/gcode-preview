@@ -121,7 +121,7 @@ h1 img {
 
 @keyframes slideInLeft {
   from {
-    transform: translate3d(-120%, 0, 0);
+    transform: translate3d(-130%, 0, 0);
   }
 
   to {
@@ -134,7 +134,7 @@ h1 img {
 
 @keyframes slideInRight {
   from {
-    transform: translate3d(120%, 0, 0);
+    transform: translate3d(130%, 0, 0);
   }
 
   to {
@@ -148,7 +148,7 @@ h1 img {
 
 @keyframes slideInUp {
   from {
-    transform: translate3d(0, 120%, 0);
+    transform: translate3d(0, 130%, 0);
   }
 
   to {
@@ -162,7 +162,7 @@ h1 img {
 
 @keyframes slideInDown {
   from {
-    transform: translate3d(0, -120%, 0);
+    transform: translate3d(0, -130%, 0);
   }
 
   to {
@@ -214,7 +214,6 @@ canvas:focus {
   font-size: smaller;
   width: 220px;
   color: var(--bulma-text);
-  background-color: var(--my-theme-950);
 }
 
 output {
