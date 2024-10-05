@@ -21,6 +21,7 @@ export const app = (window.app = createApp({
     const thumbnail = ref(null);
     const layerCount = ref(0);
     const fileSize = ref(0);
+    const fileName = ref('');
     const dragging = ref(false);
     const settings = ref(Object.assign({}, defaultSettings));
     const enableDevMode = ref(false);
@@ -45,6 +46,7 @@ export const app = (window.app = createApp({
     const drop = (event) => {
       dragging.value = false;
       const file = event.dataTransfer.files[0];
+      fileName.value = file.name;
       loadDroppedFile(file);
     };
 
@@ -108,7 +110,9 @@ export const app = (window.app = createApp({
     };
 
     const startLoadingProgressive = async (gcode) => {
+      const prevDevMode = preview.devMode;
       preview.clear();
+      preview.devMode = prevDevMode;
       if (loadProgressive) {
         preview.parser.parseGCode(gcode);
         // await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
@@ -120,7 +124,9 @@ export const app = (window.app = createApp({
     const loadDroppedFile = async (file) => {
       fileSize.value = humanFileSize(file.size);
       const content = await readFile(file);
+      applyDevMode(enableDevMode.value); // HACK
       startLoadingProgressive(content);
+      applyDevMode(enableDevMode.value);
       updateUI();
     };
 
@@ -128,6 +134,7 @@ export const app = (window.app = createApp({
       firstRender = true;
       const canvas = document.querySelector('canvas.preview');
       const preset = presets[presetName];
+      fileName.value = preset.file.replace(/^.*?\//, '');
       const options = Object.assign(
         {
           canvas,
@@ -210,6 +217,7 @@ export const app = (window.app = createApp({
       thumbnail,
       layerCount,
       fileSize,
+      fileName,
       dragging,
       settings,
       enableDevMode,
