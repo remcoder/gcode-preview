@@ -121,7 +121,7 @@ h1 img {
 
 @keyframes slideInLeft {
   from {
-    transform: translate3d(-100%, 0, 0);
+    transform: translate3d(-120%, 0, 0);
   }
 
   to {
@@ -134,7 +134,7 @@ h1 img {
 
 @keyframes slideInRight {
   from {
-    transform: translate3d(100%, 0, 0);
+    transform: translate3d(120%, 0, 0);
   }
 
   to {
@@ -148,7 +148,7 @@ h1 img {
 
 @keyframes slideInUp {
   from {
-    transform: translate3d(0, 150%, 0);
+    transform: translate3d(0, 120%, 0);
   }
 
   to {
@@ -199,8 +199,8 @@ canvas:focus {
   text-align: center;
   font-size: smaller;
   width: 220px;
-  color: var(--my-theme-950);
-  background-color: var(--my-theme-300);
+  color: var(--bulma-text);
+  background-color: var(--my-theme-950);
 }
 
 output {
@@ -274,7 +274,8 @@ footer {
 }
 
 .widget > img {
-  border-radius: 4px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
 }
 
 .lil-gui {
