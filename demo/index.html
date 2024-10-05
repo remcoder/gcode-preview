@@ -24,7 +24,7 @@
 
 <body >
   <div id="app">
-    <div class="absolute right bottom border widget">
+    <div class="widget right bottom border ">
       <img v-if="thumbnail" 
         id=thumbnail
         class="is-block is-fullwidth" 
@@ -32,16 +32,12 @@
         :src="thumbnail" />
       <div class="file-info"><span>{{layerCount + ' layers'}}</span> / <span>{{fileSize}}</span></div>
     </div>
-    <div class="sidebar p-4 widget"  >
-      <h1 class="text-center mt-2 mb-4">GCode Preview  <a href="https://www.npmjs.com/package/gcode-preview">
-        <img src="https://img.shields.io/npm/v/gcode-preview.svg?style=flat"/>
-        </a>
+    <div class="sidebar p-4 widget left top glass"  >
+     
+      <h1 class="text-center m-3 mb-5">GCode Preview  
       </h1>
       <div class="scroll-container">
         <div>
-          <!-- <section class="text-center mb-4">
-           
-          </section> -->
           <section class="flex is-justify-content-center"> 
             <div class="bulma-select">
               <select id="settings-presets"
