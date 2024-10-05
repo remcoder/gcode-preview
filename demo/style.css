@@ -98,7 +98,7 @@ html {
 
 @media (prefers-color-scheme: dark) {
   body {
-    color: #f8f8f8;
+    color: var(--bulma-text);
     background-color: #111;
   }
 }
@@ -158,6 +158,20 @@ h1 img {
 
 .slide-in-up {
   animation: slideInUp 0.3s 0.5s ease-out 1 both;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translate3d(0, -120%, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.slide-in-down {
+  animation: slideInDown 0.3s 0.5s ease-out 1 both;
 }
 
 .controls {
