@@ -284,7 +284,6 @@ footer {
   border-radius: 5px;
   margin: 10px;
   transform: translateZ(0);
-  overflow: hidden;
 }
 
 .widget > img {
