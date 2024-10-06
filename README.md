@@ -5,7 +5,7 @@ Join us on </a> <a href="https://discord.gg/w2bsGRE6S4">discord</a>
 
 ## feature summary
 - multi-color
-- tube geometry (experimental)
+- tube geometry
 - g2/g3 arcs
 - thumbnail preview
 - build volume
