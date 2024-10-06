@@ -1,6 +1,6 @@
 export const presets = {
   multicolor: {
-    title: 'Multicolor',
+    title: 'multicolor benchy',
     file: 'gcodes/3DBenchy-Multi-part.gcode',
     extrusionColor: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
     topLayerColor: undefined,
