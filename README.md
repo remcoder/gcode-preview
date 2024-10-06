@@ -152,6 +152,6 @@ A big thanks to these sponsors for their contributions.
 
 
 ### Donate
-If you want to show gratitude you can always buy me beer/coffee/filament 
+If you want to show gratitude you can always buy me beer/coffee/filament [via ko-fi](https://ko-fi.com/remcoder) or 
 [via a Paypal donation](https://www.paypal.com/paypalme/my/profile ) ^_^
 
