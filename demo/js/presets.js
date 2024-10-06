@@ -1,97 +1,77 @@
-export const settingsPresets = {
+export const presets = {
   multicolor: {
+    title: 'multicolor benchy',
     file: 'gcodes/3DBenchy-Multi-part.gcode',
-    lineWidth: 1,
-    singleLayerMode: false,
-    renderExtrusion: true,
-    renderTubes: true,
-    extrusionColors: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
-    travel: false,
-    travelColor: '#00FF00',
-    highlightTopLayer: false,
+    extrusionColor: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
     topLayerColor: undefined,
     lastSegmentColor: undefined,
-    drawBuildVolume: true,
     buildVolume: {
       x: 180,
       y: 180,
-      z: 0
+      z: 100
     }
   },
   mach3: {
+    title: 'CNC tool path',
     file: 'gcodes/mach3.gcode',
-    lineWidth: 1,
-    singleLayerMode: false,
+    lineWidth: 2,
     renderExtrusion: false,
-    renderTubes: false,
-    extrusionColors: [],
-    travel: true,
+    renderTravel: true,
     travelColor: '#00FF00',
-    highlightTopLayer: false,
-    topLayerColor: undefined,
-    lastSegmentColor: undefined,
-    drawBuildVolume: true,
     buildVolume: {
-      x: 20,
-      y: 20,
+      x: 10,
+      y: 10,
       z: ''
-    }
+    },
+    initialCameraPosition: [-20, 20, 1.8]
   },
   arcs: {
+    title: 'Arcs with G2/G3',
     file: 'gcodes/screw.gcode',
-    lineWidth: 2,
-    singleLayerMode: true,
-    renderExtrusion: true,
-    renderTubes: true,
-    extrusionColors: ['rgb(83,209,104)'],
-    travel: false,
-    travelColor: '#00FF00',
-    highlightTopLayer: false,
+    extrusionWidth: 0.5,
+    extrusionColor: ['rgb(83,209,104)'],
+    travelColor: 'red',
     topLayerColor: undefined,
     lastSegmentColor: undefined,
-    drawBuildVolume: true,
     buildVolume: {
-      x: 150,
+      x: 130,
       y: 150,
-      z: 150
+      z: 0
     }
   },
   'vase-mode': {
+    title: 'Vase mode',
     file: 'gcodes/vase.gcode',
-    lineWidth: 1,
-    singleLayerMode: true,
+    lineWidth: 0,
     renderExtrusion: true,
     renderTubes: true,
-    extrusionColors: ['rgb(84,74,187)'],
-    travel: false,
+    extrusionColor: ['rgb(84,74,187)'],
+    renderTravel: true,
     travelColor: '#00FF00',
-    highlightTopLayer: true,
-    topLayerColor: '#40BFBF',
-    lastSegmentColor: '#ffffff',
-    drawBuildVolume: true,
+    topLayerColor: undefined,
+    lastSegmentColor: undefined,
     buildVolume: {
       x: 200,
       y: 200,
       z: 180
-    }
+    },
+    initialCameraPosition: [-404, 320, 184]
   },
   'travel-moves': {
+    title: 'Travel moves',
     file: 'gcodes/plant-sign.gcode',
-    lineWidth: 2,
-    singleLayerMode: false,
+    lineWidth: 0,
     renderExtrusion: true,
     renderTubes: true,
-    extrusionColors: ['#777777'],
-    travel: true,
+    extrusionColor: ['#777777'],
+    renderTravel: true,
     travelColor: '#00FF00',
-    highlightTopLayer: true,
     topLayerColor: '#aaaaaa',
     lastSegmentColor: undefined,
-    drawBuildVolume: true,
     buildVolume: {
       x: 200,
       y: 200,
-      z: 180
+      z: 150
     }
   }
 };

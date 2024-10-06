@@ -3,4 +3,6 @@
 *.yml
 *.json
 dist
-build
+vue.esm-browser.js
+*.min.css
+examples/react-typescript-demo/build
