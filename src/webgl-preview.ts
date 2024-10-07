@@ -345,12 +345,8 @@ export class WebGLPreview {
       if (disposable) disposable.dispose();
     }
 
-    if (this.debug && this.buildVolume) {
-      this.scene.add(this.buildVolume.axesHelper());
-    }
-
     if (this.buildVolume) {
-      this.scene.add(this.buildVolume.group());
+      this.scene.add(this.buildVolume.createGroup());
     }
 
     if (this.renderTubes) {

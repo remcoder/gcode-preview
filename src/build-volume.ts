@@ -39,7 +39,7 @@ export class BuildVolume {
     return new LineBoxHelper(this.x, this.z, this.y, this.color);
   }
 
-  group(): Group {
+  createGroup(): Group {
     const group = new Group();
     group.add(this.volume());
     group.add(this.gridHelper());
