@@ -1,12 +1,14 @@
 import { GridHelper } from './helpers/grid-helper';
-import { LineBox } from './helpers/line-box';
-import { Object3D, AxesHelper, Group, Vector3 } from 'three';
+import { AxesHelper, Group, Object3D, Vector3 } from 'three';
+import { LineBoxHelper } from './helpers/line-box';
+import { type Disposable } from './helpers/three-utils';
 
 export class BuildVolume {
   x: number;
   y: number;
   z: number;
   color: number;
+  private disposables: Disposable[] = [];
 
   constructor(x: number, y: number, z: number, color: number = 0x888888) {
     this.x = x;
@@ -34,7 +36,7 @@ export class BuildVolume {
   }
 
   volume(): Object3D {
-    return LineBox(this.x, this.z, this.y, this.color);
+    return new LineBoxHelper(this.x, this.z, this.y, this.color);
   }
 
   group(): Group {
@@ -42,6 +44,11 @@ export class BuildVolume {
     group.add(this.volume());
     group.add(this.gridHelper());
     group.add(this.axesHelper());
+
     return group;
+  }
+
+  dispose(): void {
+    this.disposables.forEach((disposable) => disposable.dispose());
   }
 }
