@@ -20,8 +20,8 @@
     "@types/three": "^0.159.0",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
+    "concurrently": "^9.0.1",
     "copyfiles": "^2.4.1",
-    "del-cli": "^5.0.0",
     "eslint": "^8.56.0",
     "happy-dom": "^13.8.6",
     "live-server": "1.2.1",
@@ -34,7 +34,6 @@
     "vitest": "^1.5.1"
   },
   "scripts": {
-    "typeCheck": "tsc --noEmit",
     "dev": "concurrently -n BUILD,SERVER -c bold.white.bgGreen,bold.white.bgBlue 'npm run dev:watch' 'npm run live-server'",
     "dev:build": "export NODE_ENV=development; rollup -c",
     "dev:watch": "export NODE_ENV=development; rollup -c -w",
@@ -42,6 +41,7 @@
     "build:watch": "rollup -c -w",
     "demo": "npm run build && npm run live-server",
     "live-server": "live-server demo --watch=.,js,../dist --mount=/lib:node_modules --mount=/dist:dist",
+    "typeCheck": "tsc --noEmit",
     "lint": "prettier --check . && eslint -c .eslintrc.js .",
     "lint:fix": "eslint -c .eslintrc.js . --fix",
     "prettier:fix": "prettier --plugin-search-dir . --write .",
@@ -50,8 +50,6 @@
     "preversion": "npm run typeCheck && npm run test && npm run lint",
     "version:patch": "npm version patch",
     "version:minor": "npm version minor",
-    "xpostversion": "npm publish && npm run deploy",
-    "deploy": "firebase deploy --only hosting",
     "predeploy": "npm run build && npm run copy-deps && npm run copy-dist",
     "copy-deps": "copyfiles -f node_modules/three/build/three.module.js demo/lib/three/build && copyfiles -f node_modules/lil-gui/dist/lil-gui.esm.min.js demo/lib/lil-gui/dist",
     "copy-dist": "copyfiles -f dist/gcode-preview.es.js demo/dist",
@@ -60,7 +58,6 @@
     "typedoc:watch": "typedoc --watch"
   },
   "dependencies": {
-    "concurrently": "^9.0.1",
     "lil-gui": "^0.19.2",
     "three": "^0.159.0"
   }
