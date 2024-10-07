@@ -1,11 +1,11 @@
 # GCode Preview [![npm version](http://img.shields.io/npm/v/gcode-preview.svg?style=flat)](https://npmjs.org/package/gcode-preview "View this project on npm") [![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
-A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer with 3D printing in mind. Written in Typescript.
+A simple [G-code](https://en.wikipedia.org/wiki/G-code) parser & viewer lib with 3D printing in mind. Written in Typescript.
 
 Join us on </a> <a href="https://discord.gg/w2bsGRE6S4">discord</a>
 
 ## feature summary
 - multi-color
-- tube geometry (experimental)
+- tube geometry
 - g2/g3 arcs
 - thumbnail preview
 - build volume
@@ -152,6 +152,6 @@ A big thanks to these sponsors for their contributions.
 
 
 ### Donate
-If you want to show gratitude you can always buy me beer/coffee/filament 
+If you want to show gratitude you can always buy me beer/coffee/filament [via ko-fi](https://ko-fi.com/remcoder) or 
 [via a Paypal donation](https://www.paypal.com/paypalme/my/profile ) ^_^
 

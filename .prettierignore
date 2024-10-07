@@ -3,5 +3,6 @@
 *.yml
 *.json
 dist
-canvas2image.js
-build
+vue.esm-browser.js
+*.min.css
+examples/react-typescript-demo/build

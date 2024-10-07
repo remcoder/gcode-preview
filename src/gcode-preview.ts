@@ -1,6 +1,6 @@
-import { GCodePreviewOptions, WebGLPreview } from './webgl-preview';
+import { type GCodePreviewOptions, WebGLPreview } from './webgl-preview';
 
-import { DevModeOptions } from './dev-gui';
+import { type DevModeOptions } from './dev-gui';
 const init = function (opts: GCodePreviewOptions) {
   return new WebGLPreview(opts);
 };
