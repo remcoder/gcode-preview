@@ -4,7 +4,8 @@ import esbuild from 'rollup-plugin-esbuild';
 import dts from 'rollup-plugin-dts';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
-export default [
+const isProd = process.env.NODE_ENV !== 'development';
+const config = [
   {
     input: 'src/gcode-preview.ts', // our source file
     output: [
@@ -25,13 +26,19 @@ export default [
     plugins: [
       nodeResolve(),
       esbuild({
-        minify: true
+        minify: isProd
       })
     ]
-  },
-  {
+  }
+];
+
+if (isProd) {
+  console.log('Building type definitions');
+  config.push({
     input: 'src/gcode-preview.ts',
     output: { file: 'dist/gcode-preview.d.ts', format: 'es' },
     plugins: [dts()]
-  }
-];
+  });
+}
+
+export default config;
