@@ -36,10 +36,14 @@
   },
   "scripts": {
     "typeCheck": "tsc --noEmit",
+    "dev": "concurrently -n BUILD,SERVER -c bold.white.bgGreen,bold.white.bgBlue 'npm run dev:watch' 'npm run live-server'",
+    "dev:build": "export NODE_ENV=development; rollup -c",
+    "dev:watch": "export NODE_ENV=development; rollup -c -w",
     "build": "rollup -c",
     "watch": "watch 'npm run predemo' src ",
     "predemo": "npm run build && copyfiles -f dist/gcode-preview.es.js demo/build",
     "demo": "live-server demo --watch=.,js --mount=/js:demo/js --mount=/build:node_modules",
+    "live-server": "live-server demo --watch=.,js,../dist --mount=/lib:node_modules --mount=/dist:dist",
     "lint": "prettier --check . && eslint -c .eslintrc.js .",
     "lint:fix": "eslint -c .eslintrc.js . --fix",
     "prettier:fix": "prettier --plugin-search-dir . --write .",
@@ -55,6 +59,7 @@
     "typedoc:watch": "typedoc --watch"
   },
   "dependencies": {
+    "concurrently": "^9.0.1",
     "lil-gui": "^0.19.2",
     "three": "^0.159.0"
   }
