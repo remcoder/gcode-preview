@@ -1,6 +1,6 @@
-import { GridHelper } from './helpers/grid-helper';
-import { AxesHelper, Group, Object3D, Vector3 } from 'three';
-import { LineBoxHelper } from './helpers/line-box';
+import { Grid } from './helpers/grid-helper';
+import { AxesHelper, Group, Vector3 } from 'three';
+import { LineBox } from './helpers/line-box';
 import { type Disposable } from './helpers/three-utils';
 
 export class BuildVolume {
@@ -17,11 +17,10 @@ export class BuildVolume {
     this.color = color;
   }
 
-  axesHelper(): Object3D {
+  createAxes(): AxesHelper {
     const axes = new AxesHelper(10);
 
     const scale = new Vector3(1, 1, 1);
-    // scale.x *= -1;
     scale.z *= -1;
 
     axes.scale.multiply(scale);
@@ -31,19 +30,19 @@ export class BuildVolume {
     return axes;
   }
 
-  gridHelper(): Object3D {
-    return new GridHelper(this.x, 10, this.y, 10, this.color);
+  createGrid(): Grid {
+    return new Grid(this.x, 10, this.y, 10, this.color);
   }
 
-  volume(): Object3D {
-    return new LineBoxHelper(this.x, this.z, this.y, this.color);
+  createLineBox(): LineBox {
+    return new LineBox(this.x, this.z, this.y, this.color);
   }
 
   createGroup(): Group {
     const group = new Group();
-    group.add(this.volume());
-    group.add(this.gridHelper());
-    group.add(this.axesHelper());
+    group.add(this.createLineBox());
+    group.add(this.createGrid());
+    group.add(this.createAxes());
 
     return group;
   }

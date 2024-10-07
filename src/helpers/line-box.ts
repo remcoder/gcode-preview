@@ -1,9 +1,9 @@
 import { BufferGeometry, Float32BufferAttribute, Color, LineSegments, LineDashedMaterial } from 'three';
 
-class LineBoxHelper extends LineSegments {
+class LineBox extends LineSegments {
   constructor(x: number, y: number, z: number, color: Color | number | string) {
     // Create geometry for the box
-    const geometryBox = LineBoxHelper.createBoxGeometry(x, y, z);
+    const geometryBox = LineBox.createBoxGeometry(x, y, z);
 
     // Create material for the lines with dashed effect
     const material = new LineDashedMaterial({ color: new Color(color), dashSize: 3, gapSize: 1 });
@@ -94,4 +94,4 @@ class LineBoxHelper extends LineSegments {
   }
 }
 
-export { LineBoxHelper };
+export { LineBox };

@@ -1,6 +1,6 @@
 import { BufferGeometry, Color, Float32BufferAttribute, LineBasicMaterial, LineSegments } from 'three';
 
-class GridHelper extends LineSegments {
+class Grid extends LineSegments {
   constructor(
     sizeX: number, // Size along the X axis
     stepX: number, // Step distance along the X axis
@@ -85,4 +85,4 @@ class GridHelper extends LineSegments {
   }
 }
 
-export { GridHelper };
+export { Grid };
