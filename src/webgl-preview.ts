@@ -549,7 +549,7 @@ export class WebGLPreview {
     if (!this.buildVolume) return;
 
     this.scene.add(this.buildVolume.gridHelper());
-    this.scene.add(this.buildVolume.geomertry());
+    this.scene.add(this.buildVolume.geometry());
   }
 
   // reset parser & processing state

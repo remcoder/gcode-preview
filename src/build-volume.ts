@@ -21,7 +21,7 @@ export class BuildVolume {
     return new GridHelper(this.x, 10, this.y, 10);
   }
 
-  geomertry(): Object3D {
+  geometry(): Object3D {
     const geometryBox = LineBox(this.x, this.z, this.y, 0x888888);
 
     geometryBox.position.setY(this.z / 2);
