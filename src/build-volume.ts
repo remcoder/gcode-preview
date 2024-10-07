@@ -1,5 +1,5 @@
-import { GridHelper } from './grid-helper';
-import { LineBox } from './line-box';
+import { GridHelper } from './helpers/grid-helper';
+import { LineBox } from './helpers/line-box';
 import { Object3D, AxesHelper, Group, Vector3 } from 'three';
 
 export class BuildVolume {
