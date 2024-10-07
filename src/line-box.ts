@@ -28,12 +28,12 @@ function box(width: number, height: number, depth: number) {
     -height,
     -depth,
 
-    width,
-    -height,
-    -depth,
-    -width,
-    -height,
-    -depth,
+    // width,
+    // -height,
+    // -depth,
+    // -width,
+    // -height,
+    // -depth,
 
     -width,
     -height,
@@ -56,40 +56,40 @@ function box(width: number, height: number, depth: number) {
     -height,
     depth,
 
-    width,
-    -height,
-    depth,
-    -width,
-    -height,
-    depth,
+    // width,
+    // -height,
+    // depth,
+    // -width,
+    // -height,
+    // depth,
+
+    // -width,
+    // -height,
+    // -depth,
+    // -width,
+    // -height,
+    // depth,
 
     -width,
-    -height,
-    -depth,
-    -width,
-    -height,
-    depth,
-
-    -width,
-    height,
-    -depth,
-    -width,
-    height,
-    depth,
-
-    width,
     height,
     -depth,
-    width,
+    -width,
     height,
     depth,
 
     width,
-    -height,
+    height,
     -depth,
     width,
-    -height,
+    height,
     depth
+
+    // width,
+    // -height,
+    // -depth,
+    // width,
+    // -height,
+    // depth
   );
   geometry.setAttribute('position', new Float32BufferAttribute(position, 3));
 
@@ -109,6 +109,9 @@ export function LineBox(
     new LineDashedMaterial({ color: new Color(color), dashSize: 3, gapSize: 1 })
   );
   lineSegments.computeLineDistances();
+
+  // align the bottom of the box
+  lineSegments.position.setY(y / 2);
 
   return lineSegments;
 }
