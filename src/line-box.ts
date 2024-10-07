@@ -1,95 +1,69 @@
 import { BufferGeometry, Float32BufferAttribute, Color, LineSegments, LineDashedMaterial } from 'three';
 
-function box(width: number, height: number, depth: number) {
-  (width = width * 0.5), (height = height * 0.5), (depth = depth * 0.5);
+function box(xSize: number, ySize: number, zSize: number) {
+  const x = xSize / 2;
+  const y = ySize / 2;
+  const z = zSize / 2;
 
   const geometry = new BufferGeometry();
   const position = [];
 
   position.push(
-    -width,
-    -height,
-    -depth,
-    -width,
-    height,
-    -depth,
+    -x,
+    -y,
+    -z,
+    -x,
+    y,
+    -z,
 
-    -width,
-    height,
-    -depth,
-    width,
-    height,
-    -depth,
+    -x,
+    y,
+    -z,
+    x,
+    y,
+    -z,
 
-    width,
-    height,
-    -depth,
-    width,
-    -height,
-    -depth,
+    x,
+    y,
+    -z,
+    x,
+    -y,
+    -z,
 
-    // width,
-    // -height,
-    // -depth,
-    // -width,
-    // -height,
-    // -depth,
+    -x,
+    -y,
+    z,
+    -x,
+    y,
+    z,
 
-    -width,
-    -height,
-    depth,
-    -width,
-    height,
-    depth,
+    -x,
+    y,
+    z,
+    x,
+    y,
+    z,
 
-    -width,
-    height,
-    depth,
-    width,
-    height,
-    depth,
+    x,
+    y,
+    z,
+    x,
+    -y,
+    z,
 
-    width,
-    height,
-    depth,
-    width,
-    -height,
-    depth,
+    -x,
+    y,
+    -z,
+    -x,
+    y,
+    z,
 
-    // width,
-    // -height,
-    // depth,
-    // -width,
-    // -height,
-    // depth,
-
-    // -width,
-    // -height,
-    // -depth,
-    // -width,
-    // -height,
-    // depth,
-
-    -width,
-    height,
-    -depth,
-    -width,
-    height,
-    depth,
-
-    width,
-    height,
-    -depth,
-    width,
-    height,
-    depth
-
-    // width,
-    // -height,
-    // -depth,
-    // width,
-    // -height,
-    // depth
+    x,
+    y,
+    -z,
+    x,
+    y,
+    z
   );
   geometry.setAttribute('position', new Float32BufferAttribute(position, 3));
 

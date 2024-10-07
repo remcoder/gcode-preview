@@ -2,77 +2,86 @@ import { BufferGeometry, Color, Float32BufferAttribute, LineBasicMaterial, LineS
 
 class GridHelper extends LineSegments {
   constructor(
-    sizeX: number,
-    stepX: number,
-    sizeZ: number,
-    stepZ: number,
-    color1: Color | string | number = 0x444444,
-    color2: Color | string | number = 0x888888
+    sizeX: number, // Size along the X axis
+    stepX: number, // Step distance along the X axis
+    sizeZ: number, // Size along the Z axis
+    stepZ: number, // Step distance along the Z axis
+    color: Color | string | number = 0x888888 // Single color for all grid lines
   ) {
-    color1 = new Color(color1);
-    color2 = new Color(color2);
+    // Convert color input to a Color object
+    color = new Color(color);
 
-    const x = Math.round(sizeX / stepX);
-    const y = Math.round(sizeZ / stepZ);
+    // Calculate the number of steps along each axis
+    const xSteps = Math.round(sizeX / stepX);
+    const zSteps = Math.round(sizeZ / stepZ);
 
-    sizeX = (x * stepX) / 2;
-    sizeZ = (y * stepZ) / 2;
+    // Adjust sizes to center the grid
+    const halfSizeX = (xSteps * stepX) / 2;
+    const halfSizeZ = (zSteps * stepZ) / 2;
 
-    const vertices = [];
-    const colors: Color | string | number[] = [];
+    const vertices: number[] = [];
+    const colors: number[] = [];
     let j = 0;
-    for (let i = -1 * sizeX; i <= sizeX; i += stepX) {
+
+    // Generate vertices and colors for lines parallel to the X-axis (moving along Z)
+    for (let z = -halfSizeZ; z <= halfSizeZ; z += stepZ) {
       vertices.push(
-        i,
+        -halfSizeX,
         0,
-        -1 * sizeZ, //x Y z
-        i,
+        z, // Start point (on the X-axis)
+        halfSizeX,
         0,
-        sizeZ //x Y z
+        z // End point (on the X-axis)
       );
 
-      const color = i === 0 ? color1 : color2;
-
-      color.toArray(colors, j);
-      j += 3;
-      color.toArray(colors, j);
-      j += 3;
+      // Assign the same color to all lines
       color.toArray(colors, j);
       j += 3;
       color.toArray(colors, j);
       j += 3;
     }
 
-    for (let i = -1 * sizeZ; i <= sizeZ; i += stepZ) {
+    // Generate vertices and colors for lines parallel to the Z-axis (moving along X)
+    for (let x = -halfSizeX; x <= halfSizeX; x += stepX) {
       vertices.push(
-        -1 * sizeX,
+        x,
         0,
-        i, //x Y z
-        sizeX,
+        -halfSizeZ, // Start point (on the Z-axis)
+        x,
         0,
-        i //x Y z
+        halfSizeZ // End point (on the Z-axis)
       );
 
-      const color = i === 0 ? color1 : color2;
-
-      color.toArray(colors, j);
-      j += 3;
-      color.toArray(colors, j);
-      j += 3;
+      // Assign the same color to all lines
       color.toArray(colors, j);
       j += 3;
       color.toArray(colors, j);
       j += 3;
     }
 
+    // Create BufferGeometry and assign the vertices and colors
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
     geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+
+    // Create material for the grid lines
     const material = new LineBasicMaterial({ vertexColors: true, toneMapped: false });
 
+    // Call the parent class constructor with the geometry and material
     super(geometry, material);
+  }
 
-    // this.type = 'BuildVolume';
+  // Override the type property for clarity and identification
+  override readonly type = 'GridHelper';
+
+  // Add dispose method for resource management
+  dispose() {
+    this.geometry.dispose();
+    if (Array.isArray(this.material)) {
+      this.material.forEach((material) => material.dispose());
+    } else {
+      this.material.dispose();
+    }
   }
 }
 
