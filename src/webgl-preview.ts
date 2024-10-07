@@ -349,7 +349,7 @@ export class WebGLPreview {
     }
 
     if (this.buildVolume) {
-      this.drawBuildVolume();
+      this.scene.add(this.buildVolume.group());
     }
 
     if (this.renderTubes) {
@@ -542,14 +542,6 @@ export class WebGLPreview {
       return;
     }
     this.inches = true;
-  }
-
-  /** @internal */
-  drawBuildVolume(): void {
-    if (!this.buildVolume) return;
-
-    this.scene.add(this.buildVolume.gridHelper());
-    this.scene.add(this.buildVolume.geometry());
   }
 
   // reset parser & processing state
