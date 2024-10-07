@@ -1,4 +1,4 @@
-import { Grid } from './helpers/grid-helper';
+import { Grid } from './helpers/grid';
 import { AxesHelper, Group, Vector3 } from 'three';
 import { LineBox } from './helpers/line-box';
 import { type Disposable } from './helpers/three-utils';
