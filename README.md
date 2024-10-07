@@ -116,6 +116,36 @@ example:
 
 <img src='https://user-images.githubusercontent.com/461650/103179898-c014a100-4890-11eb-8a25-13415c26f0f4.png' width=200>
 
+## Development
+To develop on gcode-preview run:
+
+`npm i && npm run dev`
+
+This runs the demo app which is fairly complete in using the libs features.
+
+If you don't need the demo app, just run `npm run dev:watch`.
+
+Both build a dev bundle in the `dist` directory.
+Note the dev bundle:
+ - is not minified
+ - has no type defs (.d.ts)
+
+### Submitting a PR
+Before submitting a PR run:
+- `npm run build` for a production build
+- `npm run test` for unit tests
+- `npm run typeCheck` for typescript typings
+- `npm run lint` for code style and formatting
+- or all together: `npm run build && npm run test && npm run typeCheck && npm run lint`
+
+To auto-fix simple issues:
+- `npm run lint:fix` or `npm run prettier:fix`
+
+### Production builds
+For working on production builds you can use:
+- `npm run demo` which does a prod build and launches the demo app using local server
+- or just `npm run build` or `npm run build:watch`
+
 ## Feedback
 If you have found a bug or if have an idea for a feature, don't hesitate to [create an issue on GitHub](https://github.com/remcoder/gcode-preview/issues/new) or [talk to us on Discord](https://discord.gg/w2bsGRE6S4).
 
@@ -129,6 +159,7 @@ It would be great if you want to help! Maybe you'd like to help out with:
  - apart from the main code, lots of improvements can still be made in:
    - documentation
    - unit tests
+   - examples
 
 ## Contributors 
 - ❤️ Thank you @sophiedeziel for rendering extrusion as tubes.
