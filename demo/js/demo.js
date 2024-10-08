@@ -55,7 +55,7 @@ const settingsPresets = {
     lineWidth: 1,
     singleLayerMode: false,
     renderExtrusion: true,
-    renderTubes: false,
+    renderTubes: true,
     extrusionColors: ['#CF439D', 'rgb(84,74,187)', 'white', 'rgb(83,209,104)'],
     travel: false,
     travelColor: '#00FF00',

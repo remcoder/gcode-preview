@@ -355,13 +355,14 @@ export class WebGLPreview {
   }
 
   private renderLines() {
+    console.log('rendering lines');
     if (this.renderTravel) {
       const material = new LineBasicMaterial({ color: this._travelColor, linewidth: this.lineWidth });
       this.disposables.push(material);
 
       this.virtualMachine.travels().forEach((path) => {
         const geometry = path.line();
-        const line = new Line(geometry, material);
+        const line = new LineSegments(geometry, material);
         this.group?.add(line);
       });
     }
