@@ -9,7 +9,7 @@ const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 const initialBackgroundColor = preferDarkMode.matches ? '#141414' : '#eee';
 const statsContainer = () => document.querySelector('.sidebar');
 
-const loadProgressive = true;
+const loadProgressive = false;
 let observer = null;
 let preview = null;
 let firstRender = true;
@@ -54,7 +54,7 @@ export const app = (window.app = createApp({
     const updateUI = async () => {
       const {
         parser,
-        layers,
+        // layers,
         extrusionColor,
         topLayerColor,
         lastSegmentColor,
@@ -66,16 +66,17 @@ export const app = (window.app = createApp({
         renderExtrusion,
         lineWidth,
         renderTubes,
-        extrusionWidth
+        extrusionWidth,
+        virtualMachine
       } = preview;
       const { thumbnails } = parser.metadata;
 
       thumbnail.value = thumbnails['220x124']?.src;
-      layerCount.value = layers.length;
+      layerCount.value = virtualMachine.layers().length;
       const colors = extrusionColor instanceof Array ? extrusionColor : [extrusionColor];
       const currentSettings = {
-        maxLayer: layers.length,
-        endLayer: layers.length,
+        maxLayer: virtualMachine.layers().length,
+        endLayer: virtualMachine.layers().length,
         singleLayerMode,
         renderTravel,
         travelColor: '#' + travelColor.getHexString(),
@@ -94,7 +95,7 @@ export const app = (window.app = createApp({
       };
 
       Object.assign(settings.value, currentSettings);
-      preview.endLayer = layers.length;
+      preview.endLayer = virtualMachine.layers().length;
     };
 
     const loadGCodeFromServer = async (filename) => {
@@ -205,7 +206,8 @@ export const app = (window.app = createApp({
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
 
         debounce(() => {
-          preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+          // preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+          preview.render();
         });
       });
     });

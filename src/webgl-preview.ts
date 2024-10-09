@@ -18,7 +18,6 @@ import {
   Euler,
   Fog,
   Group,
-  Line,
   LineBasicMaterial,
   LineSegments,
   MeshLambertMaterial,
@@ -100,7 +99,7 @@ export class WebGLPreview {
   private animationFrameId?: number;
   private renderLayerIndex = 0;
   private _geometries: Record<number, BufferGeometry[]> = {};
-  interpreter: Interpreter;
+  interpreter: Interpreter = new Interpreter();
   virtualMachine: Machine = new Machine();
 
   // colors
@@ -140,7 +139,6 @@ export class WebGLPreview {
     this.extrusionWidth = opts.extrusionWidth ?? this.extrusionWidth;
     this.devMode = opts.devMode ?? this.devMode;
     this.stats = this.devMode ? new Stats() : undefined;
-    this.interpreter = new Interpreter();
 
     if (opts.extrusionColor !== undefined) {
       this.extrusionColor = opts.extrusionColor;
@@ -242,7 +240,6 @@ export class WebGLPreview {
   }
 
   processGCode(gcode: string | string[]): void {
-    console.log('asdf');
     const { commands } = this.parser.parseGCode(gcode);
     this.interpreter.execute(commands, this.virtualMachine);
     this.render();
@@ -390,6 +387,7 @@ export class WebGLPreview {
   }
 
   private renderGeometries() {
+    this._geometries = {};
     if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
       let color: number;
       this.virtualMachine.extrusions().forEach((path) => {
@@ -407,11 +405,11 @@ export class WebGLPreview {
     if (this._geometries) {
       for (const color in this._geometries) {
         const batchedMesh = this.createBatchMesh(parseInt(color));
-        while (this._geometries[color].length > 0) {
-          const geometry = this._geometries[color].pop();
+        this._geometries[color].forEach((geometry) => {
+          this.disposables.push(geometry);
           const geometryId = batchedMesh.addGeometry(geometry);
           batchedMesh.addInstance(geometryId);
-        }
+        });
       }
     }
   }
