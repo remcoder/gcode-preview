@@ -397,15 +397,13 @@ export class WebGLPreview {
       });
     }
 
-    if (this._geometries) {
-      for (const color in this._geometries) {
-        const batchedMesh = this.createBatchMesh(parseInt(color));
-        this._geometries[color].forEach((geometry) => {
-          this.disposables.push(geometry);
-          const geometryId = batchedMesh.addGeometry(geometry);
-          batchedMesh.addInstance(geometryId);
-        });
-      }
+    for (const color in this._geometries) {
+      const batchedMesh = this.createBatchMesh(parseInt(color));
+      this._geometries[color].forEach((geometry) => {
+        const geometryId = batchedMesh.addGeometry(geometry);
+        batchedMesh.addInstance(geometryId);
+      });
+      this._geometries[color] = [];
     }
     this._geometries = {};
   }
