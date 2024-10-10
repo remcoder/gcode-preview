@@ -46,7 +46,6 @@ export type GCodePreviewOptions = {
   lineWidth?: number;
   lineHeight?: number;
   nonTravelMoves?: string[];
-  minLayerThreshold?: number;
   renderExtrusion?: boolean;
   renderTravel?: boolean;
   startLayer?: number;
@@ -65,7 +64,6 @@ export type GCodePreviewOptions = {
 };
 
 export class WebGLPreview {
-  minLayerThreshold = 0.05;
   parser: Parser;
   scene: Scene;
   camera: PerspectiveCamera;
@@ -97,7 +95,6 @@ export class WebGLPreview {
   static readonly defaultExtrusionColor = new Color('hotpink');
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private animationFrameId?: number;
-  private renderLayerIndex = 0;
   private _geometries: Record<number, BufferGeometry[]> = {};
   interpreter: Interpreter = new Interpreter();
   virtualMachine: Machine = new Machine();
@@ -118,8 +115,7 @@ export class WebGLPreview {
   private devGui?: DevGUI;
 
   constructor(opts: GCodePreviewOptions) {
-    this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
-    this.parser = new Parser(this.minLayerThreshold);
+    this.parser = new Parser();
     this.scene = new Scene();
     this.scene.background = this._backgroundColor;
     if (opts.backgroundColor !== undefined) {
@@ -316,7 +312,7 @@ export class WebGLPreview {
   // reset parser & processing state
   clear(): void {
     this.resetState();
-    this.parser = new Parser(this.minLayerThreshold);
+    this.parser = new Parser();
     this.virtualMachine = new Machine();
   }
 

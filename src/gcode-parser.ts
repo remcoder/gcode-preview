@@ -56,18 +56,11 @@ type singleLetter =
   | 'Z';
 type CommandParams = { [key in singleLetter]?: number };
 
-type MoveCommandParamName = 'x' | 'y' | 'z' | 'r' | 'e' | 'f' | 'i' | 'j';
-type MoveCommandParams = {
-  [key in MoveCommandParamName]?: number;
-};
-
 export enum Code {
   G0 = 'G0',
   G1 = 'G1',
   G2 = 'G2',
   G3 = 'G3',
-  G20 = 'G20',
-  G21 = 'G21',
   G28 = 'G28',
   T0 = 'T0',
   T1 = 'T1',
@@ -125,54 +118,15 @@ export class GCodeCommand {
   }
 }
 
-export class MoveCommand extends GCodeCommand {
-  constructor(
-    src: string,
-    gcode: string,
-    public params: MoveCommandParams,
-    comment?: string
-  ) {
-    super(src, gcode, params, comment);
-  }
-}
-
 type Metadata = { thumbnails: Record<string, Thumbnail> };
-
-export class Layer {
-  constructor(
-    public layer: number,
-    public commands: GCodeCommand[],
-    public lineNumber: number,
-    public height: number = 0
-  ) {}
-}
 
 export class Parser {
   lines: string[] = [];
   commands: GCodeCommand[] = [];
 
-  /**
-   * @experimental GCode commands before extrusion starts.
-   */
-  preamble = new Layer(-1, [], 0); // TODO: remove preamble and treat as a regular layer? Unsure of the benefit
-  layers: Layer[] = [];
-  curZ = 0;
-  maxZ = 0;
   metadata: Metadata = { thumbnails: {} };
-  tolerance = 0; // The higher the tolerance, the fewer layers are created, so performance will improve.
-
-  /**
-   * Create a new Parser instance.
-   *
-   * @param minLayerThreshold - If specified, the minimum layer height to be considered a new layer. If not specified, the default value is 0.
-   * @returns A new Parser instance.
-   */
-  constructor(minLayerThreshold: number) {
-    this.tolerance = minLayerThreshold ?? this.tolerance;
-  }
 
   parseGCode(input: string | string[]): {
-    layers: Layer[];
     metadata: Metadata;
     commands: GCodeCommand[];
   } {
@@ -182,15 +136,13 @@ export class Parser {
 
     this.commands = this.lines2commands(lines);
 
-    // this.groupIntoLayers(this.commands);
-
     // merge thumbs
     const thumbs = this.parseMetadata(this.commands.filter((cmd) => cmd.comment)).thumbnails;
     for (const [key, value] of Object.entries(thumbs)) {
       this.metadata.thumbnails[key] = value;
     }
 
-    return { layers: this.layers, metadata: this.metadata, commands: this.commands };
+    return { metadata: this.metadata, commands: this.commands };
   }
 
   private lines2commands(lines: string[]) {
@@ -210,19 +162,7 @@ export class Parser {
 
     const gcode = !parts.length ? '' : `${parts[0]?.toLowerCase()}${parts[1]}`;
     const params = this.parseParams(parts.slice(2));
-    switch (gcode) {
-      case 'g0':
-      case 'g00':
-      case 'g1':
-      case 'g01':
-      case 'g2':
-      case 'g02':
-      case 'g3':
-      case 'g03':
-        return new MoveCommand(line, gcode, params, comment);
-      default:
-        return new GCodeCommand(line, gcode, params, comment);
-    }
+    return new GCodeCommand(line, gcode, params, comment);
   }
 
   private isAlpha(char: string | singleLetter): char is singleLetter {
@@ -241,39 +181,6 @@ export class Parser {
 
       return acc;
     }, {});
-  }
-
-  private groupIntoLayers(commands: GCodeCommand[]): Layer[] {
-    for (let lineNumber = 0; lineNumber < commands.length; lineNumber++) {
-      const cmd = commands[lineNumber];
-
-      if (cmd instanceof MoveCommand) {
-        const params = cmd.params;
-
-        // update current z?
-        if (params.z) {
-          this.curZ = params.z; // abs mode
-        }
-
-        if (
-          (params.e ?? 0) > 0 && // extruding?
-          (params.x != undefined || params.y != undefined) && // moving?
-          Math.abs(this.curZ - (this.maxZ || -Infinity)) > this.tolerance // new layer?
-        ) {
-          const layerHeight = Math.abs(this.curZ - this.maxZ);
-          this.maxZ = this.curZ;
-          this.layers.push(new Layer(this.layers.length, [], lineNumber, layerHeight));
-        }
-      }
-
-      this.maxLayer.commands.push(cmd);
-    }
-
-    return this.layers;
-  }
-
-  get maxLayer(): Layer {
-    return this.layers[this.layers.length - 1] ?? this.preamble;
   }
 
   parseMetadata(metadata: GCodeCommand[]): Metadata {

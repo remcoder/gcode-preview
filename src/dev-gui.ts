@@ -116,11 +116,10 @@ class DevGUI {
     parser.onOpenClose(() => {
       this.saveOpenFolders();
     });
-    parser.add(this.watchedObject.parser, 'curZ').listen();
-    parser.add(this.watchedObject.parser, 'maxZ').listen();
-    parser.add(this.watchedObject.parser, 'tolerance').listen();
-    parser.add(this.watchedObject.parser.layers, 'length').name('layers.count').listen();
-    parser.add(this.watchedObject.parser.lines, 'length').name('lines.count').listen();
+    // parser.add(this.watchedObject.parser, 'curZ').listen();
+    // parser.add(this.watchedObject.parser, 'maxZ').listen();
+    // parser.add(this.watchedObject.parser, 'tolerance').listen();
+    // parser.add(this.watchedObject.parser.lines, 'length').name('lines.count').listen();
   }
 
   private setupBuildVolumeFolder(): void {
