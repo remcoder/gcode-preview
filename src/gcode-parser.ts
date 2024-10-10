@@ -68,9 +68,6 @@ export class GCodeCommand {
 type Metadata = { thumbnails: Record<string, Thumbnail> };
 
 export class Parser {
-  lines: string[] = [];
-  commands: GCodeCommand[] = [];
-
   metadata: Metadata = { thumbnails: {} };
 
   parseGCode(input: string | string[]): {
@@ -78,18 +75,15 @@ export class Parser {
     commands: GCodeCommand[];
   } {
     const lines = Array.isArray(input) ? input : input.split('\n');
-
-    this.lines = this.lines.concat(lines);
-
-    this.commands = this.lines2commands(lines);
+    const commands = this.lines2commands(lines);
 
     // merge thumbs
-    const thumbs = this.parseMetadata(this.commands.filter((cmd) => cmd.comment)).thumbnails;
+    const thumbs = this.parseMetadata(commands.filter((cmd) => cmd.comment)).thumbnails;
     for (const [key, value] of Object.entries(thumbs)) {
       this.metadata.thumbnails[key] = value;
     }
 
-    return { metadata: this.metadata, commands: this.commands };
+    return { metadata: this.metadata, commands: commands };
   }
 
   private lines2commands(lines: string[]) {
