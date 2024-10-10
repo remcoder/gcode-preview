@@ -115,8 +115,8 @@ export const app = (window.app = createApp({
       preview.clear();
       preview.devMode = prevDevMode;
       if (loadProgressive) {
-        preview.parser.parseGCode(gcode);
-        // await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+        preview.processGCode(gcode);
+        // await preview.renderAnimated(Math.ceil(preview.job.layers().length / 60));
       } else {
         preview.processGCode(gcode);
       }
