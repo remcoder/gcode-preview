@@ -1,60 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Thumbnail } from './thumbnail';
 
-type singleLetter =
-  | 'a'
-  | 'b'
-  | 'c'
-  | 'd'
-  | 'e'
-  | 'f'
-  | 'g'
-  | 'h'
-  | 'i'
-  | 'j'
-  | 'k'
-  | 'l'
-  | 'm'
-  | 'n'
-  | 'o'
-  | 'p'
-  | 'q'
-  | 'r'
-  | 's'
-  | 't'
-  | 'u'
-  | 'v'
-  | 'w'
-  | 'x'
-  | 'y'
-  | 'z'
-  | 'A'
-  | 'B'
-  | 'C'
-  | 'D'
-  | 'E'
-  | 'F'
-  | 'G'
-  | 'H'
-  | 'I'
-  | 'J'
-  | 'K'
-  | 'L'
-  | 'M'
-  | 'N'
-  | 'O'
-  | 'P'
-  | 'Q'
-  | 'R'
-  | 'S'
-  | 'T'
-  | 'U'
-  | 'V'
-  | 'W'
-  | 'X'
-  | 'Y'
-  | 'Z';
-type CommandParams = { [key in singleLetter]?: number };
+type CommandParams = Record<string, number>;
 
 export enum Code {
   G0 = 'G0',
@@ -165,7 +112,7 @@ export class Parser {
     return new GCodeCommand(line, gcode, params, comment);
   }
 
-  private isAlpha(char: string | singleLetter): char is singleLetter {
+  private isAlpha(char: string): char is string {
     const code = char.charCodeAt(0);
     return (code >= 97 && code <= 122) || (code >= 65 && code <= 90);
   }
