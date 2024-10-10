@@ -383,7 +383,6 @@ export class WebGLPreview {
   }
 
   private renderGeometries() {
-    this._geometries = {};
     if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
       let color: number;
       this.job.extrusions().forEach((path) => {
@@ -408,6 +407,7 @@ export class WebGLPreview {
         });
       }
     }
+    this._geometries = {};
   }
 
   private createBatchMesh(color: number): BatchedMesh {

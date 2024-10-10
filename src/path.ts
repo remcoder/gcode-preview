@@ -8,11 +8,10 @@ export enum PathType {
 }
 
 export class Path {
-  travelType: PathType;
+  public travelType: PathType;
   public vertices: number[];
   extrusionWidth: number;
   lineHeight: number;
-  geometryCache: BufferGeometry | undefined;
   tool: number;
 
   constructor(travelType: PathType, extrusionWidth = 0.6, lineHeight = 0.2, tool = 0) {
@@ -49,14 +48,11 @@ export class Path {
   }
 
   geometry(): BufferGeometry {
-    if (!this.geometryCache) {
-      if (this.vertices.length < 3) {
-        return new BufferGeometry();
-      }
-
-      this.geometryCache = new ExtrusionGeometry(this.path(), this.extrusionWidth, this.lineHeight, 4);
+    if (this.vertices.length < 3) {
+      return new BufferGeometry();
     }
-    return this.geometryCache;
+
+    return new ExtrusionGeometry(this.path(), this.extrusionWidth, this.lineHeight, 4);
   }
 
   line(): BufferGeometry {
