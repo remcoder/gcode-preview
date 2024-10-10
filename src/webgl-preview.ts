@@ -6,7 +6,7 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { DevGUI, DevModeOptions } from './dev-gui';
 import { Interpreter } from './interpreter';
-import { Machine } from './machine';
+import { Job } from './job';
 
 import {
   AmbientLight,
@@ -97,7 +97,7 @@ export class WebGLPreview {
   private animationFrameId?: number;
   private _geometries: Record<number, BufferGeometry[]> = {};
   interpreter: Interpreter = new Interpreter();
-  virtualMachine: Machine = new Machine();
+  job: Job = new Job();
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
@@ -237,7 +237,7 @@ export class WebGLPreview {
 
   processGCode(gcode: string | string[]): void {
     const { commands } = this.parser.parseGCode(gcode);
-    this.interpreter.execute(commands, this.virtualMachine);
+    this.interpreter.execute(commands, this.job);
     this.render();
   }
 
@@ -313,7 +313,7 @@ export class WebGLPreview {
   clear(): void {
     this.resetState();
     this.parser = new Parser();
-    this.virtualMachine = new Machine();
+    this.job = new Job();
   }
 
   // reset processing state
@@ -353,7 +353,7 @@ export class WebGLPreview {
       const material = new LineBasicMaterial({ color: this._travelColor, linewidth: this.lineWidth });
       this.disposables.push(material);
 
-      this.virtualMachine.travels().forEach((path) => {
+      this.job.travels().forEach((path) => {
         const geometry = path.line();
         const line = new LineSegments(geometry, material);
         this.group?.add(line);
@@ -374,7 +374,7 @@ export class WebGLPreview {
         });
       }
 
-      this.virtualMachine.extrusions().forEach((path) => {
+      this.job.extrusions().forEach((path) => {
         const geometry = path.line();
         const line = new LineSegments(geometry, lineMaterials[path.tool]);
         this.group?.add(line);
@@ -386,7 +386,7 @@ export class WebGLPreview {
     this._geometries = {};
     if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
       let color: number;
-      this.virtualMachine.extrusions().forEach((path) => {
+      this.job.extrusions().forEach((path) => {
         if (Array.isArray(this._extrusionColor)) {
           color = this._extrusionColor[path.tool].getHex();
         } else {

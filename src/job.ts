@@ -15,7 +15,7 @@ export class State {
   }
 }
 
-export class Machine {
+export class Job {
   paths: Path[];
   state: State;
 

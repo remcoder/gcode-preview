@@ -1,27 +1,27 @@
 import { Path, PathType } from './path';
 import { Code, GCodeCommand } from './gcode-parser';
-import { Machine } from './machine';
+import { Job } from './job';
 
 export class Interpreter {
-  execute(commands: GCodeCommand[], machine = new Machine()): Machine {
+  execute(commands: GCodeCommand[], job = new Job()): Job {
     commands.forEach((command) => {
       if (command.code !== undefined) {
-        this[command.code](command, machine);
+        this[command.code](command, job);
       }
     });
 
-    return machine;
+    return job;
   }
 
-  G0(command: GCodeCommand, machine: Machine): void {
+  G0(command: GCodeCommand, job: Job): void {
     const { x, y, z, e } = command.params;
-    const { state } = machine;
+    const { state } = job;
 
-    let lastPath = machine.paths[machine.paths.length - 1];
+    let lastPath = job.paths[job.paths.length - 1];
     const pathType = e ? PathType.Extrusion : PathType.Travel;
 
     if (lastPath === undefined || lastPath.travelType !== pathType) {
-      lastPath = this.breakPath(machine, pathType);
+      lastPath = this.breakPath(job, pathType);
     }
 
     state.x = x || state.x;
@@ -33,17 +33,17 @@ export class Interpreter {
 
   G1 = this.G0;
 
-  G2(command: GCodeCommand, machine: Machine): void {
+  G2(command: GCodeCommand, job: Job): void {
     const { x, y, z, e } = command.params;
     let { i, j, r } = command.params;
-    const { state } = machine;
+    const { state } = job;
 
     const cw = command.code === Code.G2;
-    let lastPath = machine.paths[machine.paths.length - 1];
+    let lastPath = job.paths[job.paths.length - 1];
     const pathType = e ? PathType.Extrusion : PathType.Travel;
 
     if (lastPath === undefined || lastPath.travelType !== pathType) {
-      lastPath = this.breakPath(machine, pathType);
+      lastPath = this.breakPath(job, pathType);
     }
 
     if (r) {
@@ -130,47 +130,47 @@ export class Interpreter {
 
   G3 = this.G2;
 
-  G28(command: GCodeCommand, machine: Machine): void {
-    machine.state.x = 0;
-    machine.state.y = 0;
-    machine.state.z = 0;
+  G28(command: GCodeCommand, job: Job): void {
+    job.state.x = 0;
+    job.state.y = 0;
+    job.state.z = 0;
   }
 
-  T0(command: GCodeCommand, machine: Machine): void {
-    machine.state.tool = 0;
+  T0(command: GCodeCommand, job: Job): void {
+    job.state.tool = 0;
   }
-  T1(command: GCodeCommand, machine: Machine): void {
-    machine.state.tool = 1;
+  T1(command: GCodeCommand, job: Job): void {
+    job.state.tool = 1;
   }
-  T2(command: GCodeCommand, machine: Machine): void {
-    machine.state.tool = 2;
+  T2(command: GCodeCommand, job: Job): void {
+    job.state.tool = 2;
   }
-  T3(command: GCodeCommand, machine: Machine): void {
-    machine.state.tool = 3;
+  T3(command: GCodeCommand, job: Job): void {
+    job.state.tool = 3;
   }
-  T4(command: GCodeCommand, machine: Machine): void {
-    machine.state.tool = 4;
+  T4(command: GCodeCommand, job: Job): void {
+    job.state.tool = 4;
   }
-  T5(command: GCodeCommand, machine: Machine): void {
-    machine.state.tool = 5;
+  T5(command: GCodeCommand, job: Job): void {
+    job.state.tool = 5;
   }
-  T6(command: GCodeCommand, machine: Machine): void {
-    machine.state.tool = 6;
+  T6(command: GCodeCommand, job: Job): void {
+    job.state.tool = 6;
   }
-  T7(command: GCodeCommand, machine: Machine): void {
-    machine.state.tool = 7;
+  T7(command: GCodeCommand, job: Job): void {
+    job.state.tool = 7;
   }
-  G20(command: GCodeCommand, machine: Machine): void {
-    machine.state.units = 'in';
+  G20(command: GCodeCommand, job: Job): void {
+    job.state.units = 'in';
   }
-  G21(command: GCodeCommand, machine: Machine): void {
-    machine.state.units = 'mm';
+  G21(command: GCodeCommand, job: Job): void {
+    job.state.units = 'mm';
   }
 
-  private breakPath(machine: Machine, newType: PathType): Path {
-    const lastPath = new Path(newType, 0.6, 0.2, machine.state.tool);
-    machine.paths.push(lastPath);
-    lastPath.addPoint(machine.state.x, machine.state.y, machine.state.z);
+  private breakPath(job: Job, newType: PathType): Path {
+    const lastPath = new Path(newType, 0.6, 0.2, job.state.tool);
+    job.paths.push(lastPath);
+    lastPath.addPoint(job.state.x, job.state.y, job.state.z);
     return lastPath;
   }
 }

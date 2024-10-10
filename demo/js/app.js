@@ -67,16 +67,16 @@ export const app = (window.app = createApp({
         lineWidth,
         renderTubes,
         extrusionWidth,
-        virtualMachine
+        job
       } = preview;
       const { thumbnails } = parser.metadata;
 
       thumbnail.value = thumbnails['220x124']?.src;
-      layerCount.value = virtualMachine.layers().length;
+      layerCount.value = job.layers().length;
       const colors = extrusionColor instanceof Array ? extrusionColor : [extrusionColor];
       const currentSettings = {
-        maxLayer: virtualMachine.layers().length,
-        endLayer: virtualMachine.layers().length,
+        maxLayer: job.layers().length,
+        endLayer: job.layers().length,
         singleLayerMode,
         renderTravel,
         travelColor: '#' + travelColor.getHexString(),
@@ -95,7 +95,7 @@ export const app = (window.app = createApp({
       };
 
       Object.assign(settings.value, currentSettings);
-      preview.endLayer = virtualMachine.layers().length;
+      preview.endLayer = job.layers().length;
     };
 
     const loadGCodeFromServer = async (filename) => {
