@@ -1,7 +1,60 @@
 /* eslint-disable no-unused-vars */
 import { Thumbnail } from './thumbnail';
 
-type CommandParams = Record<string, number>;
+type singleLetter =
+  | 'a'
+  | 'b'
+  | 'c'
+  | 'd'
+  | 'e'
+  | 'f'
+  | 'g'
+  | 'h'
+  | 'i'
+  | 'j'
+  | 'k'
+  | 'l'
+  | 'm'
+  | 'n'
+  | 'o'
+  | 'p'
+  | 'q'
+  | 'r'
+  | 's'
+  | 't'
+  | 'u'
+  | 'v'
+  | 'w'
+  | 'x'
+  | 'y'
+  | 'z'
+  | 'A'
+  | 'B'
+  | 'C'
+  | 'D'
+  | 'E'
+  | 'F'
+  | 'G'
+  | 'H'
+  | 'I'
+  | 'J'
+  | 'K'
+  | 'L'
+  | 'M'
+  | 'N'
+  | 'O'
+  | 'P'
+  | 'Q'
+  | 'R'
+  | 'S'
+  | 'T'
+  | 'U'
+  | 'V'
+  | 'W'
+  | 'X'
+  | 'Y'
+  | 'Z';
+type CommandParams = { [key in singleLetter]?: number };
 
 export enum Code {
   G0 = 'G0',
@@ -69,13 +122,14 @@ type Metadata = { thumbnails: Record<string, Thumbnail> };
 
 export class Parser {
   metadata: Metadata = { thumbnails: {} };
+  lines: string[] = [];
 
   parseGCode(input: string | string[]): {
     metadata: Metadata;
     commands: GCodeCommand[];
   } {
-    const lines = Array.isArray(input) ? input : input.split('\n');
-    const commands = this.lines2commands(lines);
+    this.lines = Array.isArray(input) ? input : input.split('\n');
+    const commands = this.lines2commands(this.lines);
 
     // merge thumbs
     const thumbs = this.parseMetadata(commands.filter((cmd) => cmd.comment)).thumbnails;
@@ -106,7 +160,7 @@ export class Parser {
     return new GCodeCommand(line, gcode, params, comment);
   }
 
-  private isAlpha(char: string): char is string {
+  private isAlpha(char: string | singleLetter): char is singleLetter {
     const code = char.charCodeAt(0);
     return (code >= 97 && code <= 122) || (code >= 65 && code <= 90);
   }
