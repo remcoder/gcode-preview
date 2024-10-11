@@ -141,7 +141,7 @@ export class Parser {
   }
 
   private lines2commands(lines: string[]) {
-    return lines.map((l) => this.parseCommand(l)) as GCodeCommand[];
+    return lines.map((l) => this.parseCommand(l));
   }
 
   parseCommand(line: string, keepComments = true): GCodeCommand | null {
