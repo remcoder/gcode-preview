@@ -109,17 +109,18 @@ class DevGUI {
   }
 
   private setupParserFolder(): void {
-    const parser = this.gui.addFolder('Parser');
-    if (!this.openFolders.includes('Parser')) {
+    const parser = this.gui.addFolder('Job');
+    if (!this.openFolders.includes('Job')) {
       parser.close();
     }
     parser.onOpenClose(() => {
       this.saveOpenFolders();
     });
-    // parser.add(this.watchedObject.parser, 'curZ').listen();
-    // parser.add(this.watchedObject.parser, 'maxZ').listen();
-    // parser.add(this.watchedObject.parser, 'tolerance').listen();
-    // parser.add(this.watchedObject.parser.lines, 'length').name('lines.count').listen();
+    parser.add(this.watchedObject.job.state, 'x').listen();
+    parser.add(this.watchedObject.job.state, 'y').listen();
+    parser.add(this.watchedObject.job.state, 'z').listen();
+    parser.add(this.watchedObject.job.paths, 'length').name('paths.count').listen();
+    parser.add(this.watchedObject.parser.lines, 'length').name('lines.count').listen();
   }
 
   private setupBuildVolumeFolder(): void {
