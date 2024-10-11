@@ -12,7 +12,6 @@ const statsContainer = () => document.querySelector('.sidebar');
 const loadProgressive = true;
 let observer = null;
 let preview = null;
-let activeRendering = true;
 
 export const app = (window.app = createApp({
   setup() {
@@ -113,14 +112,19 @@ export const app = (window.app = createApp({
       const prevDevMode = preview.devMode;
       preview.clear();
       preview.devMode = prevDevMode;
-      if (loadProgressive) {
-        preview.parser.parseGCode(gcode);
-        activeRendering = true;
-        await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
-        activeRendering = false;
-      } else {
-        preview.render();
-      }
+      preview.parser.parseGCode(gcode);
+
+      rerender();
+    };
+
+    const rerender = async () => {
+      debounce(async () => {
+        if (loadProgressive) {
+          await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+        } else {
+          preview.render();
+        }
+      });
     };
 
     const loadDroppedFile = async (file) => {
@@ -133,7 +137,6 @@ export const app = (window.app = createApp({
     };
 
     const selectPreset = async (presetName) => {
-      activeRendering = true;
       const canvas = document.querySelector('canvas.preview');
       const preset = presets[presetName];
       fileName.value = preset.file.replace(/^.*?\//, '');
@@ -183,9 +186,7 @@ export const app = (window.app = createApp({
         preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
         preview.backgroundColor = settings.value.backgroundColor;
 
-        if (!activeRendering) {
-          preview.render();
-        }
+        rerender();
       });
 
       watchEffect(() => {
@@ -204,11 +205,7 @@ export const app = (window.app = createApp({
         preview.topLayerColor = settings.value.highlightTopLayer ? settings.value.topLayerColor : undefined;
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
 
-        debounce(() => {
-          if (!activeRendering) {
-            preview.render();
-          }
-        });
+        rerender();
       });
     });
 
