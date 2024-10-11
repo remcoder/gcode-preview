@@ -130,6 +130,14 @@ export class Interpreter {
 
   G3 = this.G2;
 
+  G20(command: GCodeCommand, job: Job): void {
+    job.state.units = 'in';
+  }
+
+  G21(command: GCodeCommand, job: Job): void {
+    job.state.units = 'mm';
+  }
+
   G28(command: GCodeCommand, job: Job): void {
     job.state.x = 0;
     job.state.y = 0;
@@ -159,12 +167,6 @@ export class Interpreter {
   }
   T7(command: GCodeCommand, job: Job): void {
     job.state.tool = 7;
-  }
-  G20(command: GCodeCommand, job: Job): void {
-    job.state.units = 'in';
-  }
-  G21(command: GCodeCommand, job: Job): void {
-    job.state.units = 'mm';
   }
 
   private breakPath(job: Job, newType: PathType): Path {
