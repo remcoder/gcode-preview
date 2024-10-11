@@ -785,10 +785,11 @@ export class WebGLPreview {
   private batchGeometries() {
     if (this._geometries) {
       for (const color in this._geometries) {
-        const mesh = this.createBatchMesh(parseInt(color));
+        const batchedMesh = this.createBatchMesh(parseInt(color));
         while (this._geometries[color].length > 0) {
           const geometry = this._geometries[color].pop();
-          mesh.addGeometry(geometry);
+          const geometryId = batchedMesh.addGeometry(geometry);
+          batchedMesh.addInstance(geometryId);
         }
       }
     }
