@@ -9,10 +9,10 @@ const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 const initialBackgroundColor = preferDarkMode.matches ? '#141414' : '#eee';
 const statsContainer = () => document.querySelector('.sidebar');
 
-const loadProgressive = false;
+const loadProgressive = true;
 let observer = null;
 let preview = null;
-let firstRender = true;
+let activeRendering = true;
 
 export const app = (window.app = createApp({
   setup() {
@@ -54,7 +54,6 @@ export const app = (window.app = createApp({
     const updateUI = async () => {
       const {
         parser,
-        // layers,
         extrusionColor,
         topLayerColor,
         lastSegmentColor,
@@ -72,11 +71,11 @@ export const app = (window.app = createApp({
       const { thumbnails } = parser.metadata;
 
       thumbnail.value = thumbnails['220x124']?.src;
-      layerCount.value = job.layers().length;
+      layerCount.value = job.layers()?.length;
       const colors = extrusionColor instanceof Array ? extrusionColor : [extrusionColor];
       const currentSettings = {
-        maxLayer: job.layers().length,
-        endLayer: job.layers().length,
+        maxLayer: job.layers()?.length,
+        endLayer: job.layers()?.length,
         singleLayerMode,
         renderTravel,
         travelColor: '#' + travelColor.getHexString(),
@@ -95,7 +94,7 @@ export const app = (window.app = createApp({
       };
 
       Object.assign(settings.value, currentSettings);
-      preview.endLayer = job.layers().length;
+      preview.endLayer = job.layers()?.length;
     };
 
     const loadGCodeFromServer = async (filename) => {
@@ -114,11 +113,19 @@ export const app = (window.app = createApp({
       const prevDevMode = preview.devMode;
       preview.clear();
       preview.devMode = prevDevMode;
+      const { commands } = preview.parser.parseGCode(gcode);
+      preview.interpreter.execute(commands, preview.job);
       if (loadProgressive) {
-        preview.processGCode(gcode);
-        // await preview.renderAnimated(Math.ceil(preview.job.layers().length / 60));
+        if (preview.job.layers() === null) {
+          console.warn('Job is not planar');
+          preview.render();
+          return;
+        }
+        activeRendering = true;
+        await preview.renderAnimated(Math.ceil(preview.job.layers().length / 60));
+        activeRendering = false;
       } else {
-        preview.processGCode(gcode);
+        preview.render();
       }
     };
 
@@ -132,7 +139,7 @@ export const app = (window.app = createApp({
     };
 
     const selectPreset = async (presetName) => {
-      firstRender = true;
+      activeRendering = true;
       const canvas = document.querySelector('canvas.preview');
       const preset = presets[presetName];
       fileName.value = preset.file.replace(/^.*?\//, '');
@@ -182,10 +189,8 @@ export const app = (window.app = createApp({
         preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
         preview.backgroundColor = settings.value.backgroundColor;
 
-        if (!firstRender) {
+        if (!activeRendering) {
           preview.render();
-        } else {
-          firstRender = false;
         }
       });
 
@@ -206,8 +211,9 @@ export const app = (window.app = createApp({
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
 
         debounce(() => {
-          // preview.renderAnimated(Math.ceil(preview.layers.length / 60));
-          preview.render();
+          if (!activeRendering) {
+            preview.render();
+          }
         });
       });
     });

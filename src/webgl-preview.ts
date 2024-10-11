@@ -64,7 +64,6 @@ export type GCodePreviewOptions = {
 };
 
 export class WebGLPreview {
-  parser: Parser;
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
@@ -89,15 +88,18 @@ export class WebGLPreview {
   nonTravelmoves: string[] = [];
   disableGradient = false;
 
+  interpreter = new Interpreter();
+  job = new Job();
+  parser = new Parser();
+
   // rendering
   private group?: Group;
   private disposables: { dispose(): void }[] = [];
   static readonly defaultExtrusionColor = new Color('hotpink');
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private animationFrameId?: number;
+  private renderLayerIndex?: number;
   private _geometries: Record<number, BufferGeometry[]> = {};
-  interpreter: Interpreter = new Interpreter();
-  job: Job = new Job();
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
@@ -115,7 +117,6 @@ export class WebGLPreview {
   private devGui?: DevGUI;
 
   constructor(opts: GCodePreviewOptions) {
-    this.parser = new Parser();
     this.scene = new Scene();
     this.scene.background = this._backgroundColor;
     if (opts.backgroundColor !== undefined) {
@@ -297,6 +298,56 @@ export class WebGLPreview {
     this._lastRenderTime = performance.now() - startRender;
   }
 
+  // create a new render method to use an animation loop to render the layers incrementally
+  /** @experimental */
+  async renderAnimated(layerCount = 1): Promise<void> {
+    this.initScene();
+
+    this.renderLayerIndex = 0;
+
+    if (this.job.layers() === null) {
+      console.warn('Job is not planar');
+      this.render();
+      return;
+    }
+
+    return this.renderFrameLoop(layerCount > 0 ? layerCount : 1);
+  }
+
+  private renderFrameLoop(layerCount: number): Promise<void> {
+    return new Promise((resolve) => {
+      const loop = () => {
+        if (this.renderLayerIndex >= this.job.layers().length - 1) {
+          resolve();
+        } else {
+          this.renderFrame(layerCount);
+          requestAnimationFrame(loop);
+        }
+      };
+      loop();
+    });
+  }
+
+  private renderFrame(layerCount: number): void {
+    this.group = this.createGroup('layer' + this.renderLayerIndex);
+
+    const endIndex = Math.min(this.renderLayerIndex + layerCount, this.job.layers().length - 1);
+    const layersToRender = this.job
+      .layers()
+      .slice(this.renderLayerIndex, endIndex)
+      .flatMap((l) => l);
+
+    this.renderGeometries(layersToRender.filter((path) => path.travelType === 'Extrusion'));
+    this.renderLines(
+      layersToRender.filter((path) => path.travelType === 'Travel'),
+      layersToRender.filter((path) => path.travelType === 'Extrusion')
+    );
+
+    this.renderLayerIndex = endIndex;
+
+    this.scene.add(this.group);
+  }
+
   /** @internal */
   drawBuildVolume(): void {
     if (!this.buildVolume) return;
@@ -347,13 +398,12 @@ export class WebGLPreview {
     this.animationFrameId = undefined;
   }
 
-  private renderLines() {
-    console.log('rendering lines');
+  private renderLines(travels = this.job.travels(), extrusions = this.job.extrusions()): void {
     if (this.renderTravel) {
       const material = new LineBasicMaterial({ color: this._travelColor, linewidth: this.lineWidth });
       this.disposables.push(material);
 
-      this.job.travels().forEach((path) => {
+      travels.forEach((path) => {
         const geometry = path.line();
         const line = new LineSegments(geometry, material);
         this.group?.add(line);
@@ -374,7 +424,7 @@ export class WebGLPreview {
         });
       }
 
-      this.job.extrusions().forEach((path) => {
+      extrusions.forEach((path) => {
         const geometry = path.line();
         const line = new LineSegments(geometry, lineMaterials[path.tool]);
         this.group?.add(line);
@@ -382,10 +432,10 @@ export class WebGLPreview {
     }
   }
 
-  private renderGeometries() {
+  private renderGeometries(paths = this.job.extrusions()): void {
     if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
       let color: number;
-      this.job.extrusions().forEach((path) => {
+      paths.forEach((path) => {
         if (Array.isArray(this._extrusionColor)) {
           color = this._extrusionColor[path.tool].getHex();
         } else {
