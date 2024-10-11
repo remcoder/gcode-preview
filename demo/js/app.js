@@ -114,10 +114,10 @@ export const app = (window.app = createApp({
       preview.devMode = prevDevMode;
       preview.parser.parseGCode(gcode);
 
-      rerender();
+      render();
     };
 
-    const rerender = async () => {
+    const render = async () => {
       debounce(async () => {
         if (loadProgressive) {
           await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
@@ -186,7 +186,7 @@ export const app = (window.app = createApp({
         preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
         preview.backgroundColor = settings.value.backgroundColor;
 
-        rerender();
+        render();
       });
 
       watchEffect(() => {
@@ -205,7 +205,7 @@ export const app = (window.app = createApp({
         preview.topLayerColor = settings.value.highlightTopLayer ? settings.value.topLayerColor : undefined;
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
 
-        rerender();
+        render();
       });
     });
 
