@@ -12,7 +12,7 @@ const statsContainer = () => document.querySelector('.sidebar');
 const loadProgressive = true;
 let observer = null;
 let preview = null;
-let activeRendering = true;
+let firstRender = true;
 
 export const app = (window.app = createApp({
   setup() {
@@ -113,19 +113,18 @@ export const app = (window.app = createApp({
       const prevDevMode = preview.devMode;
       preview.clear();
       preview.devMode = prevDevMode;
-      const { commands } = preview.parser.parseGCode(gcode);
-      preview.interpreter.execute(commands, preview.job);
+
       if (loadProgressive) {
+        const { commands } = preview.parser.parseGCode(gcode);
+        preview.interpreter.execute(commands, preview.job);
         if (preview.job.layers() === null) {
           console.warn('Job is not planar');
           preview.render();
           return;
         }
-        activeRendering = true;
         await preview.renderAnimated(Math.ceil(preview.job.layers().length / 60));
-        activeRendering = false;
       } else {
-        preview.render();
+        preview.processGCode(gcode);
       }
     };
 
@@ -139,7 +138,7 @@ export const app = (window.app = createApp({
     };
 
     const selectPreset = async (presetName) => {
-      activeRendering = true;
+      firstRender = true;
       const canvas = document.querySelector('canvas.preview');
       const preset = presets[presetName];
       fileName.value = preset.file.replace(/^.*?\//, '');
@@ -189,8 +188,10 @@ export const app = (window.app = createApp({
         preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
         preview.backgroundColor = settings.value.backgroundColor;
 
-        if (!activeRendering) {
+        if (!firstRender) {
           preview.render();
+        } else {
+          firstRender = false;
         }
       });
 
@@ -211,9 +212,7 @@ export const app = (window.app = createApp({
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
 
         debounce(() => {
-          if (!activeRendering) {
-            preview.render();
-          }
+          preview.renderAnimated(Math.ceil(preview.job.layers().length / 60));
         });
       });
     });
