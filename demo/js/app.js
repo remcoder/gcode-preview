@@ -12,7 +12,7 @@ const statsContainer = () => document.querySelector('.sidebar');
 const loadProgressive = true;
 let observer = null;
 let preview = null;
-let firstRender = true;
+let activeRendering = true;
 
 export const app = (window.app = createApp({
   setup() {
@@ -115,9 +115,11 @@ export const app = (window.app = createApp({
       preview.devMode = prevDevMode;
       if (loadProgressive) {
         preview.parser.parseGCode(gcode);
-        // await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+        activeRendering = true;
+        await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+        activeRendering = false;
       } else {
-        preview.processGCode(gcode);
+        preview.render();
       }
     };
 
@@ -131,7 +133,7 @@ export const app = (window.app = createApp({
     };
 
     const selectPreset = async (presetName) => {
-      firstRender = true;
+      activeRendering = true;
       const canvas = document.querySelector('canvas.preview');
       const preset = presets[presetName];
       fileName.value = preset.file.replace(/^.*?\//, '');
@@ -181,10 +183,8 @@ export const app = (window.app = createApp({
         preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
         preview.backgroundColor = settings.value.backgroundColor;
 
-        if (!firstRender) {
+        if (!activeRendering) {
           preview.render();
-        } else {
-          firstRender = false;
         }
       });
 
@@ -205,7 +205,9 @@ export const app = (window.app = createApp({
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
 
         debounce(() => {
-          preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+          if (!activeRendering) {
+            preview.render();
+          }
         });
       });
     });
