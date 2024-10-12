@@ -62,7 +62,6 @@ export enum Code {
   G2 = 'G2',
   G3 = 'G3',
   G20 = 'G20',
-  G28 = 'G28',
   T0 = 'T0',
   T1 = 'T1',
   T2 = 'T2',
@@ -99,8 +98,6 @@ export class GCodeCommand {
         return Code.G3;
       case 'g20':
         return Code.G20;
-      case 'g28':
-        return Code.G28;
       case 't0':
         return Code.T0;
       case 't1':

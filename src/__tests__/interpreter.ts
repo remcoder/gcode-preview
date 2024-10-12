@@ -180,20 +180,6 @@ test('.G20 sets the units to inches', () => {
   expect(job.state.units).toEqual('in');
 });
 
-test('.g28 moves the state to the origin', () => {
-  const command = new GCodeCommand('G28', 'g28', {});
-  const interpreter = new Interpreter();
-  const job = new Job();
-  job.state.x = 3;
-  job.state.y = 4;
-
-  interpreter.G28(command, job);
-
-  expect(job.state.x).toEqual(0);
-  expect(job.state.y).toEqual(0);
-  expect(job.state.z).toEqual(0);
-});
-
 test('.t0 sets the tool to 0', () => {
   const command = new GCodeCommand('T0', 't0', {});
   const interpreter = new Interpreter();
