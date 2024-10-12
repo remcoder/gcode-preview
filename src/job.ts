@@ -20,7 +20,7 @@ export class Job {
   state: State;
   private travelPaths: Path[] = [];
   private extrusionPaths: Path[] = [];
-  private layersPaths: Path[][] | null = [];
+  private layersPaths: Path[][] | null = [[]];
   private indexers: Indexer[] = [
     new TravelTypeIndexer({ travel: this.travelPaths, extrusion: this.extrusionPaths }),
     new LayersIndexer(this.layersPaths)
@@ -62,16 +62,19 @@ export class Job {
       try {
         indexer.sortIn(path);
       } catch (e) {
-        if (e.message === "Non-planar paths can't be indexed by layer") {
-          this.layersPaths = null;
+        if (e.instanceOf(NonApplicableIndexer)) {
+          if (e.instanceOf(NonPlanarPathError)) {
+            this.layersPaths = null;
+          }
+          const i = this.indexers.indexOf(indexer);
+          this.indexers.splice(i, 1);
         }
-        const i = this.indexers.indexOf(indexer);
-        this.indexers.splice(i, 1);
       }
     });
   }
 }
 
+class NonApplicableIndexer extends Error {}
 class Indexer {
   protected indexes: Record<string, Path[]> | Path[][];
   constructor(indexes: Record<string, Path[]> | Path[][]) {
@@ -98,6 +101,11 @@ class TravelTypeIndexer extends Indexer {
   }
 }
 
+class NonPlanarPathError extends NonApplicableIndexer {
+  constructor() {
+    super("Non-planar paths can't be indexed by layer");
+  }
+}
 class LayersIndexer extends Indexer {
   protected indexes: Path[][];
   constructor(indexes: Path[][]) {
@@ -106,7 +114,7 @@ class LayersIndexer extends Indexer {
 
   sortIn(path: Path): void {
     if (path.travelType === PathType.Extrusion && path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2])) {
-      throw new Error("Non-planar paths can't be indexed by layer");
+      throw new NonPlanarPathError();
     }
 
     if (path.travelType === PathType.Extrusion) {
