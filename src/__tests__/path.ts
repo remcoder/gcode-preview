@@ -67,7 +67,8 @@ test('.path returns an array of Vector3', () => {
 test('.geometry returns an ExtrusionGeometry from the path', () => {
   const path = new Path(PathType.Travel, undefined, undefined, undefined);
 
-  path.vertices = [0, 0, 0, 1, 2, 3];
+  path.addPoint(0, 0, 0);
+  path.addPoint(1, 2, 3);
 
   const result = path.geometry() as ExtrusionGeometry;
 
@@ -80,7 +81,8 @@ test('.geometry returns an ExtrusionGeometry from the path', () => {
 test('.geometry returns an ExtrusionGeometry with the path extrusion width', () => {
   const path = new Path(PathType.Travel, 9, undefined, undefined);
 
-  path.vertices = [0, 0, 0, 1, 2, 3];
+  path.addPoint(0, 0, 0);
+  path.addPoint(1, 2, 3);
 
   const result = path.geometry() as ExtrusionGeometry;
 
@@ -90,7 +92,8 @@ test('.geometry returns an ExtrusionGeometry with the path extrusion width', () 
 test('.geometry returns an ExtrusionGeometry with the path line height', () => {
   const path = new Path(PathType.Travel, undefined, 5, undefined);
 
-  path.vertices = [0, 0, 0, 1, 2, 3];
+  path.addPoint(0, 0, 0);
+  path.addPoint(1, 2, 3);
 
   const result = path.geometry() as ExtrusionGeometry;
 
@@ -109,7 +112,8 @@ test('.geometry returns an empty BufferGeometry if there are less than 3 vertice
 test('.line returns a BufferGeometry from the path', () => {
   const path = new Path(PathType.Travel, undefined, undefined, undefined);
 
-  path.vertices = [0, 0, 0, 1, 2, 3];
+  path.addPoint(0, 0, 0);
+  path.addPoint(1, 2, 3);
 
   const result = path.line();
 

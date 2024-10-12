@@ -17,18 +17,18 @@ export class Interpreter {
     const { x, y, z, e } = command.params;
     const { state } = job;
 
-    let lastPath = job.paths[job.paths.length - 1];
+    let currentPath = job.inprogressPath;
     const pathType = e > 0 ? PathType.Extrusion : PathType.Travel;
 
-    if (lastPath === undefined || lastPath.travelType !== pathType) {
-      lastPath = this.breakPath(job, pathType);
+    if (currentPath === undefined || currentPath.travelType !== pathType) {
+      currentPath = this.breakPath(job, pathType);
     }
 
     state.x = x ?? state.x;
     state.y = y ?? state.y;
     state.z = z ?? state.z;
 
-    lastPath.addPoint(state.x, state.y, state.z);
+    currentPath.addPoint(state.x, state.y, state.z);
   }
 
   G1 = this.G0;
@@ -39,11 +39,11 @@ export class Interpreter {
     const { state } = job;
 
     const cw = command.code === Code.G2;
-    let lastPath = job.paths[job.paths.length - 1];
+    let currentPath = job.inprogressPath;
     const pathType = e ? PathType.Extrusion : PathType.Travel;
 
-    if (lastPath === undefined || lastPath.travelType !== pathType) {
-      lastPath = this.breakPath(job, pathType);
+    if (currentPath === undefined || currentPath.travelType !== pathType) {
+      currentPath = this.breakPath(job, pathType);
     }
 
     if (r) {
@@ -118,14 +118,14 @@ export class Interpreter {
       px = centerX + arcRadius * Math.cos(currentAngle);
       py = centerY + arcRadius * Math.sin(currentAngle);
       pz += zStep;
-      lastPath.addPoint(px, py, pz);
+      currentPath.addPoint(px, py, pz);
     }
 
     state.x = x || state.x;
     state.y = y || state.y;
     state.z = z || state.z;
 
-    lastPath.addPoint(state.x, state.y, state.z);
+    currentPath.addPoint(state.x, state.y, state.z);
   }
 
   G3 = this.G2;
@@ -170,9 +170,10 @@ export class Interpreter {
   }
 
   private breakPath(job: Job, newType: PathType): Path {
-    const lastPath = new Path(newType, 0.6, 0.2, job.state.tool);
-    job.addPath(lastPath);
-    lastPath.addPoint(job.state.x, job.state.y, job.state.z);
-    return lastPath;
+    job.finishPath();
+    const currentPath = new Path(newType, 0.6, 0.2, job.state.tool);
+    currentPath.addPoint(job.state.x, job.state.y, job.state.z);
+    job.inprogressPath = currentPath;
+    return currentPath;
   }
 }

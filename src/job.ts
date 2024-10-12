@@ -20,15 +20,18 @@ export class Job {
   state: State;
   private travelPaths: Path[] = [];
   private extrusionPaths: Path[] = [];
-  private layersPaths: Path[][] | null = [[]];
-  private indexers: Indexer[] = [
-    new TravelTypeIndexer({ travel: this.travelPaths, extrusion: this.extrusionPaths }),
-    new LayersIndexer(this.layersPaths)
-  ];
+  private layersPaths: Path[][] | null;
+  private indexers: Indexer[];
+  inprogressPath: Path | undefined;
 
   constructor(state?: State) {
     this.paths = [];
     this.state = state || State.initial;
+    this.layersPaths = [[]];
+    this.indexers = [
+      new TravelTypeIndexer({ travel: this.travelPaths, extrusion: this.extrusionPaths }),
+      new LayersIndexer(this.layersPaths)
+    ];
   }
 
   get extrusions(): Path[] {
@@ -43,18 +46,22 @@ export class Job {
     return this.layersPaths;
   }
 
+  finishPath(): void {
+    if (this.inprogressPath === undefined) {
+      return;
+    }
+    if (this.inprogressPath.vertices.length > 0) {
+      this.addPath(this.inprogressPath);
+    }
+  }
+
   addPath(path: Path): void {
     this.paths.push(path);
     this.indexPath(path);
   }
 
   isPlanar(): boolean {
-    return (
-      this.paths.find(
-        (path) =>
-          path.travelType === PathType.Extrusion && path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2])
-      ) === undefined
-    );
+    return this.paths.find((path) => path.travelType === PathType.Extrusion && path.hasVerticalMoves()) === undefined;
   }
 
   private indexPath(path: Path): void {
@@ -62,12 +69,14 @@ export class Job {
       try {
         indexer.sortIn(path);
       } catch (e) {
-        if (e.instanceOf(NonApplicableIndexer)) {
-          if (e.instanceOf(NonPlanarPathError)) {
+        if (e instanceof NonApplicableIndexer) {
+          if (e instanceof NonPlanarPathError) {
             this.layersPaths = null;
           }
           const i = this.indexers.indexOf(indexer);
           this.indexers.splice(i, 1);
+        } else {
+          throw e;
         }
       }
     });
@@ -87,7 +96,7 @@ class Indexer {
 }
 
 class TravelTypeIndexer extends Indexer {
-  protected indexes: Record<string, Path[]>;
+  protected declare indexes: Record<string, Path[]>;
   constructor(indexes: Record<string, Path[]>) {
     super(indexes);
   }
@@ -107,7 +116,7 @@ class NonPlanarPathError extends NonApplicableIndexer {
   }
 }
 class LayersIndexer extends Indexer {
-  protected indexes: Path[][];
+  protected declare indexes: Path[][];
   constructor(indexes: Path[][]) {
     super(indexes);
   }
@@ -118,24 +127,32 @@ class LayersIndexer extends Indexer {
     }
 
     if (path.travelType === PathType.Extrusion) {
-      this.currentLayer().push(path);
+      this.lastLayer().push(path);
     } else {
       if (
         path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2]) &&
-        this.currentLayer().find((p) => p.travelType === PathType.Extrusion)
+        this.lastLayer().find((p) => p.travelType === PathType.Extrusion)
       ) {
-        this.indexes.push([]);
+        this.createLayer();
       }
-      this.currentLayer().push(path);
+      this.lastLayer().push(path);
     }
   }
 
-  private currentLayer(): Path[] {
-    const layer = this.indexes[this.indexes.length - 1];
-    if (layer === undefined) {
-      this.indexes.push([]);
-      return this.currentLayer();
+  private lastLayer(): Path[] {
+    if (this.indexes === undefined) {
+      this.indexes = [[]];
     }
-    return layer;
+
+    if (this.indexes[this.indexes.length - 1] === undefined) {
+      this.createLayer();
+      return this.lastLayer();
+    }
+    return this.indexes[this.indexes.length - 1];
+  }
+
+  private createLayer(): void {
+    const newLayer: Path[] = [];
+    this.indexes.push(newLayer);
   }
 }
