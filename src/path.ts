@@ -13,6 +13,8 @@ export class Path {
   extrusionWidth: number;
   lineHeight: number;
   tool: number;
+  _geometry: BufferGeometry | undefined;
+  _line: BufferGeometry | undefined;
 
   constructor(travelType: PathType, extrusionWidth = 0.6, lineHeight = 0.2, tool = 0) {
     this.travelType = travelType;
@@ -52,10 +54,10 @@ export class Path {
       return new BufferGeometry();
     }
 
-    return new ExtrusionGeometry(this.path(), this.extrusionWidth, this.lineHeight, 4);
+    return (this._geometry ||= new ExtrusionGeometry(this.path(), this.extrusionWidth, this.lineHeight, 4));
   }
 
   line(): BufferGeometry {
-    return new BufferGeometry().setFromPoints(this.path());
+    return (this._line ||= new BufferGeometry().setFromPoints(this.path()));
   }
 }
