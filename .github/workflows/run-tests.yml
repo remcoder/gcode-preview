@@ -5,9 +5,15 @@ name: Runs All Unit tests
 
 on:
   push:
-    branches: [develop, releases]
+    branches:
+      - develop
+      - releases
+      - v3.x
   pull_request:
-    branches: [develop, releases]
+    branches:
+      - develop
+      - releases
+      - v3.x
 
 jobs:
   build:

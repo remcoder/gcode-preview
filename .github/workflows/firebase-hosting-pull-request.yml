@@ -5,7 +5,9 @@ name: Deploy to Firebase Hosting on PR
 
 on:
   pull_request:
-    branches: [ develop ]
+    branches:
+      - develop
+      - v3.x
 
 jobs:
   build_and_preview:
