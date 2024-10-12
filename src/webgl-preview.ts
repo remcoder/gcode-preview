@@ -346,6 +346,7 @@ export class WebGLPreview {
     }
 
     if (this.buildVolume) {
+      this.disposables.push(this.buildVolume);
       this.scene.add(this.buildVolume.createGroup());
     }
 

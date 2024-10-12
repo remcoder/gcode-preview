@@ -27,15 +27,21 @@ export class BuildVolume {
     axes.position.setZ(this.y / 2);
     axes.position.setX(-this.x / 2);
 
+    this.disposables.push(axes);
+
     return axes;
   }
 
   createGrid(): Grid {
-    return new Grid(this.x, 10, this.y, 10, this.color);
+    const grid = new Grid(this.x, 10, this.y, 10, this.color);
+    this.disposables.push(grid);
+    return grid;
   }
 
   createLineBox(): LineBox {
-    return new LineBox(this.x, this.z, this.y, this.color);
+    const lineBox = new LineBox(this.x, this.z, this.y, this.color);
+    this.disposables.push(lineBox);
+    return lineBox;
   }
 
   createGroup(): Group {

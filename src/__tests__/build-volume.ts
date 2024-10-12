@@ -71,4 +71,24 @@ describe('BuildVolume', () => {
       expect(group.children[2]).toBeInstanceOf(AxesHelper);
     });
   });
+
+  describe('.dispose', () => {
+    test('it calls dispose on all disposables', () => {
+      const buildVolume = new BuildVolume(10, 20, 30);
+
+      const axes = buildVolume.createAxes();
+      const grid = buildVolume.createGrid();
+      const lineBox = buildVolume.createLineBox();
+
+      const axesSpy = vi.spyOn(axes, 'dispose');
+      const gridSpy = vi.spyOn(grid, 'dispose');
+      const lineBoxSpy = vi.spyOn(lineBox, 'dispose');
+
+      buildVolume.dispose();
+
+      expect(axesSpy).toHaveBeenCalled();
+      expect(gridSpy).toHaveBeenCalled();
+      expect(lineBoxSpy).toHaveBeenCalled();
+    });
+  });
 });
