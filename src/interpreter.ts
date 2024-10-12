@@ -171,7 +171,7 @@ export class Interpreter {
 
   private breakPath(job: Job, newType: PathType): Path {
     const lastPath = new Path(newType, 0.6, 0.2, job.state.tool);
-    job.paths.push(lastPath);
+    job.addPath(lastPath);
     lastPath.addPoint(job.state.x, job.state.y, job.state.z);
     return lastPath;
   }

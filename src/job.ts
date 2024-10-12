@@ -18,10 +18,27 @@ export class State {
 export class Job {
   paths: Path[];
   state: State;
+  private travelPaths: Path[] = [];
+  private extrusionPaths: Path[] = [];
+  private layersPaths: Path[][] = [];
+  private indexers: Indexer[] = [new TravelTypeIndexer({ travel: this.travelPaths, extrusion: this.extrusionPaths })];
 
   constructor(state?: State) {
     this.paths = [];
     this.state = state || State.initial;
+  }
+
+  get extrusions(): Path[] {
+    return this.extrusionPaths;
+  }
+
+  get travels(): Path[] {
+    return this.travelPaths;
+  }
+
+  addPath(path: Path): void {
+    this.paths.push(path);
+    this.indexPath(path);
   }
 
   isPlanar(): boolean {
@@ -61,11 +78,33 @@ export class Job {
     return layers;
   }
 
-  extrusions(): Path[] {
-    return this.paths.filter((path) => path.travelType === PathType.Extrusion);
+  private indexPath(path: Path): void {
+    this.indexers.forEach((indexer) => indexer.sortIn(path));
+  }
+}
+
+class Indexer {
+  protected indexes: Record<string, Path[]>;
+  constructor(_indexes: Record<string, Path[]>) {
+    this.indexes = _indexes;
+  }
+  sortIn(path: Path): boolean {
+    path;
+    throw new Error('Method not implemented.');
+  }
+}
+
+class TravelTypeIndexer extends Indexer {
+  constructor(indexes: Record<string, Path[]>) {
+    super(indexes);
   }
 
-  travels(): Path[] {
-    return this.paths.filter((path) => path.travelType === PathType.Travel);
+  sortIn(path: Path): boolean {
+    if (path.travelType === PathType.Extrusion) {
+      this.indexes.extrusion.push(path);
+    } else {
+      this.indexes.travel.push(path);
+    }
+    return true;
   }
 }

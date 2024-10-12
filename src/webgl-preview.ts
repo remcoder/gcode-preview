@@ -433,7 +433,7 @@ export class WebGLPreview {
     });
   }
 
-  private renderLines(travels = this.job.travels(), extrusions = this.job.extrusions()): void {
+  private renderLines(travels = this.job.travels, extrusions = this.job.extrusions): void {
     if (this.renderTravel) {
       const material = new LineBasicMaterial({ color: this._travelColor, linewidth: this.lineWidth });
       this.disposables.push(material);
@@ -467,7 +467,7 @@ export class WebGLPreview {
     }
   }
 
-  private renderGeometries(paths = this.job.extrusions()): void {
+  private renderGeometries(paths = this.job.extrusions): void {
     if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
       let color: number;
       paths.forEach((path) => {

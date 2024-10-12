@@ -121,7 +121,7 @@ describe('.extrusions', () => {
     append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 0]);
     append_path(job, PathType.Extrusion, [1, 2, 0, 5, 6, 0]);
 
-    const extrusions = job.extrusions();
+    const extrusions = job.extrusions;
 
     expect(extrusions).not.toBeNull();
     expect(extrusions).toBeInstanceOf(Array);
@@ -141,7 +141,7 @@ describe('.travels', () => {
     append_path(job, PathType.Extrusion, [1, 2, 0, 5, 6, 0]);
     append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 0]);
 
-    const travels = job.travels();
+    const travels = job.travels;
 
     expect(travels).not.toBeNull();
     expect(travels).toBeInstanceOf(Array);
@@ -155,5 +155,5 @@ describe('.travels', () => {
 function append_path(job, travelType, vertices) {
   const path = new Path(travelType, 0.6, 0.2, job.state.tool);
   path.vertices = vertices;
-  job.paths.push(path);
+  job.addPath(path);
 }
