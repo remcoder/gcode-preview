@@ -3,15 +3,14 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
-import { GridHelper } from './gridHelper';
-import { LineBox } from './lineBox';
+import { BuildVolume } from './build-volume';
+import { type Disposable } from './helpers/three-utils';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { DevGUI, DevModeOptions } from './dev-gui';
 
 import {
   AmbientLight,
-  AxesHelper,
   BatchedMesh,
   BufferGeometry,
   Color,
@@ -42,7 +41,6 @@ type GVector3 = {
 type Arc = GVector3 & { r: number; i: number; j: number };
 
 type Point = GVector3;
-type BuildVolume = GVector3;
 export class State {
   x: number;
   y: number;
@@ -138,7 +136,7 @@ export class WebGLPreview {
 
   // rendering
   private group?: Group;
-  private disposables: { dispose(): void }[] = [];
+  private disposables: Disposable[] = [];
   static readonly defaultExtrusionColor = new Color('hotpink');
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private animationFrameId?: number;
@@ -173,7 +171,7 @@ export class WebGLPreview {
     this.startLayer = opts.startLayer;
     this.lineWidth = opts.lineWidth;
     this.lineHeight = opts.lineHeight;
-    this.buildVolume = opts.buildVolume;
+    this.buildVolume = opts.buildVolume && new BuildVolume(opts.buildVolume.x, opts.buildVolume.y, opts.buildVolume.z);
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
     this.debug = opts.debug ?? this.debug;
     this.renderExtrusion = opts.renderExtrusion ?? this.renderExtrusion;
@@ -347,14 +345,9 @@ export class WebGLPreview {
       if (disposable) disposable.dispose();
     }
 
-    if (this.debug && this.buildVolume) {
-      // show webgl axes
-      const axesHelper = new AxesHelper(Math.max(this.buildVolume.x / 2, this.buildVolume.y / 2) + 20);
-      this.scene.add(axesHelper);
-    }
-
     if (this.buildVolume) {
-      this.drawBuildVolume();
+      this.disposables.push(this.buildVolume);
+      this.scene.add(this.buildVolume.createGroup());
     }
 
     if (this.renderTubes) {
@@ -547,18 +540,6 @@ export class WebGLPreview {
       return;
     }
     this.inches = true;
-  }
-
-  /** @internal */
-  drawBuildVolume(): void {
-    if (!this.buildVolume) return;
-
-    this.scene.add(new GridHelper(this.buildVolume.x, 10, this.buildVolume.y, 10));
-
-    const geometryBox = LineBox(this.buildVolume.x, this.buildVolume.z, this.buildVolume.y, 0x888888);
-
-    geometryBox.position.setY(this.buildVolume.z / 2);
-    this.scene.add(geometryBox);
   }
 
   // reset parser & processing state
