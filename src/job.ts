@@ -62,7 +62,9 @@ export class Job {
       try {
         indexer.sortIn(path);
       } catch (e) {
-        this.layersPaths = null;
+        if (e.message === "Non-planar paths can't be indexed by layer") {
+          this.layersPaths = null;
+        }
         const i = this.indexers.indexOf(indexer);
         this.indexers.splice(i, 1);
       }
