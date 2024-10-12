@@ -45,13 +45,18 @@ export class Job {
       if (path.travelType === PathType.Extrusion) {
         currentLayer.push(path);
       } else {
-        if (path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2])) {
+        if (
+          path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2]) &&
+          currentLayer.find((p) => p.travelType === PathType.Extrusion)
+        ) {
           layers.push(currentLayer);
           currentLayer = [];
         }
         currentLayer.push(path);
       }
     });
+
+    layers.push(currentLayer);
 
     return layers;
   }
