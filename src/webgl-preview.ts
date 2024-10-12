@@ -322,7 +322,7 @@ export class WebGLPreview {
 
     this.renderLayerIndex = 0;
 
-    if (this.job.layers() === null) {
+    if (this.job.layers === null) {
       console.warn('Job is not planar');
       this.render();
       return;
@@ -334,7 +334,7 @@ export class WebGLPreview {
   private renderFrameLoop(layerCount: number): Promise<void> {
     return new Promise((resolve) => {
       const loop = () => {
-        if (this.renderLayerIndex >= this.job.layers().length - 1) {
+        if (this.renderLayerIndex >= this.job.layers?.length - 1) {
           resolve();
         } else {
           this.renderFrame(layerCount);
@@ -348,11 +348,8 @@ export class WebGLPreview {
   private renderFrame(layerCount: number): void {
     this.group = this.createGroup('layer' + this.renderLayerIndex);
 
-    const endIndex = Math.min(this.renderLayerIndex + layerCount, this.job.layers().length - 1);
-    const pathsToRender = this.job
-      .layers()
-      .slice(this.renderLayerIndex, endIndex)
-      .flatMap((l) => l);
+    const endIndex = Math.min(this.renderLayerIndex + layerCount, this.job.layers?.length - 1);
+    const pathsToRender = this.job.layers?.slice(this.renderLayerIndex, endIndex)?.flatMap((l) => l);
 
     this.renderGeometries(pathsToRender.filter((path) => path.travelType === 'Extrusion'));
     this.renderLines(
