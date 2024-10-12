@@ -45,7 +45,7 @@ describe('.layers', () => {
     append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
     append_path(job, PathType.Extrusion, [5, 6, 0, 5, 6, 1]);
 
-    expect(job.layers()).toEqual(null);
+    expect(job.layers).toEqual(null);
   });
 
   test('paths without z changes are on the same layer', () => {
@@ -54,7 +54,7 @@ describe('.layers', () => {
     append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
     append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 0]);
 
-    const layers = job.layers();
+    const layers = job.layers;
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
@@ -68,7 +68,7 @@ describe('.layers', () => {
     append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
     append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 1]);
 
-    const layers = job.layers();
+    const layers = job.layers;
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
@@ -85,7 +85,7 @@ describe('.layers', () => {
     append_path(job, PathType.Travel, [5, 6, 2, 5, 6, 0]);
     append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 2]);
 
-    const layers = job.layers();
+    const layers = job.layers;
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
@@ -103,7 +103,7 @@ describe('.layers', () => {
     append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 2]);
     append_path(job, PathType.Extrusion, [5, 6, 2, 5, 6, 2]);
 
-    const layers = job.layers();
+    const layers = job.layers;
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);

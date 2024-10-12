@@ -20,8 +20,11 @@ export class Job {
   state: State;
   private travelPaths: Path[] = [];
   private extrusionPaths: Path[] = [];
-  private layersPaths: Path[][] = [];
-  private indexers: Indexer[] = [new TravelTypeIndexer({ travel: this.travelPaths, extrusion: this.extrusionPaths })];
+  private layersPaths: Path[][] | null = [];
+  private indexers: Indexer[] = [
+    new TravelTypeIndexer({ travel: this.travelPaths, extrusion: this.extrusionPaths }),
+    new LayersIndexer(this.layersPaths)
+  ];
 
   constructor(state?: State) {
     this.paths = [];
@@ -34,6 +37,10 @@ export class Job {
 
   get travels(): Path[] {
     return this.travelPaths;
+  }
+
+  get layers(): Path[][] | null {
+    return this.layersPaths;
   }
 
   addPath(path: Path): void {
@@ -50,61 +57,75 @@ export class Job {
     );
   }
 
-  layers(): Path[][] | null {
-    if (!this.isPlanar()) {
-      return null;
-    }
-
-    const layers: Path[][] = [];
-    let currentLayer: Path[] = [];
-
-    this.paths.forEach((path) => {
-      if (path.travelType === PathType.Extrusion) {
-        currentLayer.push(path);
-      } else {
-        if (
-          path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2]) &&
-          currentLayer.find((p) => p.travelType === PathType.Extrusion)
-        ) {
-          layers.push(currentLayer);
-          currentLayer = [];
-        }
-        currentLayer.push(path);
+  private indexPath(path: Path): void {
+    this.indexers.forEach((indexer) => {
+      try {
+        indexer.sortIn(path);
+      } catch (e) {
+        this.layersPaths = null;
+        const i = this.indexers.indexOf(indexer);
+        this.indexers.splice(i, 1);
       }
     });
-
-    layers.push(currentLayer);
-
-    return layers;
-  }
-
-  private indexPath(path: Path): void {
-    this.indexers.forEach((indexer) => indexer.sortIn(path));
   }
 }
 
 class Indexer {
-  protected indexes: Record<string, Path[]>;
-  constructor(_indexes: Record<string, Path[]>) {
-    this.indexes = _indexes;
+  protected indexes: Record<string, Path[]> | Path[][];
+  constructor(indexes: Record<string, Path[]> | Path[][]) {
+    this.indexes = indexes;
   }
-  sortIn(path: Path): boolean {
+  sortIn(path: Path): void {
     path;
     throw new Error('Method not implemented.');
   }
 }
 
 class TravelTypeIndexer extends Indexer {
+  protected indexes: Record<string, Path[]>;
   constructor(indexes: Record<string, Path[]>) {
     super(indexes);
   }
 
-  sortIn(path: Path): boolean {
+  sortIn(path: Path): void {
     if (path.travelType === PathType.Extrusion) {
       this.indexes.extrusion.push(path);
     } else {
       this.indexes.travel.push(path);
     }
-    return true;
+  }
+}
+
+class LayersIndexer extends Indexer {
+  protected indexes: Path[][];
+  constructor(indexes: Path[][]) {
+    super(indexes);
+  }
+
+  sortIn(path: Path): void {
+    if (path.travelType === PathType.Extrusion && path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2])) {
+      throw new Error("Non-planar paths can't be indexed by layer");
+    }
+
+    if (path.travelType === PathType.Extrusion) {
+      this.currentLayer().push(path);
+    } else {
+      if (
+        path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2]) &&
+        this.currentLayer().find((p) => p.travelType === PathType.Extrusion)
+      ) {
+        this.indexes.push([]);
+      }
+      this.currentLayer().push(path);
+    }
+  }
+
+  private currentLayer(): Path[] {
+    const layer = this.indexes[this.indexes.length - 1];
+    if (layer === undefined) {
+      this.indexes.push([]);
+      return this.currentLayer();
+    }
+    return layer;
   }
 }
