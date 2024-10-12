@@ -12,7 +12,6 @@ const statsContainer = () => document.querySelector('.sidebar');
 const loadProgressive = true;
 let observer = null;
 let preview = null;
-let firstRender = true;
 
 export const app = (window.app = createApp({
   setup() {
@@ -113,12 +112,19 @@ export const app = (window.app = createApp({
       const prevDevMode = preview.devMode;
       preview.clear();
       preview.devMode = prevDevMode;
-      if (loadProgressive) {
-        preview.parser.parseGCode(gcode);
-        // await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
-      } else {
-        preview.processGCode(gcode);
-      }
+      preview.parser.parseGCode(gcode);
+
+      render();
+    };
+
+    const render = async () => {
+      debounce(async () => {
+        if (loadProgressive) {
+          await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+        } else {
+          preview.render();
+        }
+      });
     };
 
     const loadDroppedFile = async (file) => {
@@ -131,7 +137,6 @@ export const app = (window.app = createApp({
     };
 
     const selectPreset = async (presetName) => {
-      firstRender = true;
       const canvas = document.querySelector('canvas.preview');
       const preset = presets[presetName];
       fileName.value = preset.file.replace(/^.*?\//, '');
@@ -181,11 +186,7 @@ export const app = (window.app = createApp({
         preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
         preview.backgroundColor = settings.value.backgroundColor;
 
-        if (!firstRender) {
-          preview.render();
-        } else {
-          firstRender = false;
-        }
+        render();
       });
 
       watchEffect(() => {
@@ -204,9 +205,7 @@ export const app = (window.app = createApp({
         preview.topLayerColor = settings.value.highlightTopLayer ? settings.value.topLayerColor : undefined;
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
 
-        debounce(() => {
-          preview.renderAnimated(Math.ceil(preview.layers.length / 60));
-        });
+        render();
       });
     });
 
