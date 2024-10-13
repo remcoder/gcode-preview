@@ -24,9 +24,9 @@ export class Interpreter {
       lastPath = this.breakPath(job, pathType);
     }
 
-    state.x = x || state.x;
-    state.y = y || state.y;
-    state.z = z || state.z;
+    state.x = x ?? state.x;
+    state.y = y ?? state.y;
+    state.z = z ?? state.z;
 
     lastPath.addPoint(state.x, state.y, state.z);
   }

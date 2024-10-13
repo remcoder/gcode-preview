@@ -332,15 +332,15 @@ export class WebGLPreview {
     this.group = this.createGroup('layer' + this.renderLayerIndex);
 
     const endIndex = Math.min(this.renderLayerIndex + layerCount, this.job.layers().length - 1);
-    const layersToRender = this.job
+    const pathsToRender = this.job
       .layers()
       .slice(this.renderLayerIndex, endIndex)
       .flatMap((l) => l);
 
-    this.renderGeometries(layersToRender.filter((path) => path.travelType === 'Extrusion'));
+    this.renderGeometries(pathsToRender.filter((path) => path.travelType === 'Extrusion'));
     this.renderLines(
-      layersToRender.filter((path) => path.travelType === 'Travel'),
-      layersToRender.filter((path) => path.travelType === 'Extrusion')
+      pathsToRender.filter((path) => path.travelType === 'Travel'),
+      pathsToRender.filter((path) => path.travelType === 'Extrusion')
     );
 
     this.renderLayerIndex = endIndex;
