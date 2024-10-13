@@ -15,6 +15,11 @@ export class State {
   }
 }
 
+type JobOptions = {
+  state?: State;
+  minLayerThreshold?: number;
+};
+
 export class Job {
   paths: Path[];
   state: State;
@@ -24,13 +29,13 @@ export class Job {
   private indexers: Indexer[];
   inprogressPath: Path | undefined;
 
-  constructor(state?: State) {
+  constructor(opts: JobOptions = {}) {
     this.paths = [];
-    this.state = state || State.initial;
+    this.state = opts.state || State.initial;
     this.layersPaths = [[]];
     this.indexers = [
       new TravelTypeIndexer({ travel: this.travelPaths, extrusion: this.extrusionPaths }),
-      new LayersIndexer(this.layersPaths)
+      new LayersIndexer(this.layersPaths, opts.minLayerThreshold)
     ];
   }
 
@@ -61,7 +66,7 @@ export class Job {
   }
 
   isPlanar(): boolean {
-    return this.paths.find((path) => path.travelType === PathType.Extrusion && path.hasVerticalMoves()) === undefined;
+    return this.layersPaths !== null;
   }
 
   private indexPath(path: Path): void {
@@ -84,7 +89,7 @@ export class Job {
 }
 
 class NonApplicableIndexer extends Error {}
-class Indexer {
+export class Indexer {
   protected indexes: Record<string, Path[]> | Path[][];
   constructor(indexes: Record<string, Path[]> | Path[][]) {
     this.indexes = indexes;
@@ -95,7 +100,7 @@ class Indexer {
   }
 }
 
-class TravelTypeIndexer extends Indexer {
+export class TravelTypeIndexer extends Indexer {
   protected declare indexes: Record<string, Path[]>;
   constructor(indexes: Record<string, Path[]>) {
     super(indexes);
@@ -115,10 +120,13 @@ class NonPlanarPathError extends NonApplicableIndexer {
     super("Non-planar paths can't be indexed by layer");
   }
 }
-class LayersIndexer extends Indexer {
+export class LayersIndexer extends Indexer {
+  static readonly DEFAULT_TOLERANCE = 0.05;
   protected declare indexes: Path[][];
-  constructor(indexes: Path[][]) {
+  private tolerance: number;
+  constructor(indexes: Path[][], tolerance: number = LayersIndexer.DEFAULT_TOLERANCE) {
     super(indexes);
+    this.tolerance = tolerance;
   }
 
   sortIn(path: Path): void {
@@ -129,10 +137,17 @@ class LayersIndexer extends Indexer {
     if (path.travelType === PathType.Extrusion) {
       this.lastLayer().push(path);
     } else {
-      if (
-        path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2]) &&
-        this.lastLayer().find((p) => p.travelType === PathType.Extrusion)
-      ) {
+      const verticalTravels = path.vertices
+        .map((_, i, arr) => {
+          if (i % 3 === 2 && arr[i] - arr[2] > this.tolerance) {
+            return arr[i] - arr[2];
+          }
+        })
+        .filter((z) => z !== undefined);
+      const hasVerticalTravel = verticalTravels.length > 0;
+      const hasExtrusions = this.lastLayer().find((p) => p.travelType === PathType.Extrusion);
+
+      if (hasVerticalTravel && hasExtrusions) {
         this.createLayer();
       }
       this.lastLayer().push(path);
