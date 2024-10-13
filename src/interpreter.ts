@@ -138,6 +138,12 @@ export class Interpreter {
     job.state.units = 'mm';
   }
 
+  G28(command: GCodeCommand, job: Job): void {
+    job.state.x = 0;
+    job.state.y = 0;
+    job.state.z = 0;
+  }
+
   T0(command: GCodeCommand, job: Job): void {
     job.state.tool = 0;
   }
