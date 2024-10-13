@@ -205,6 +205,9 @@ export class WebGLPreview {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.initScene();
     this.animate();
+
+    if (opts.allowDragNDrop) this._enableDropHandler();
+
     this.initStats();
   }
 
@@ -404,6 +407,36 @@ export class WebGLPreview {
   private cancelAnimation(): void {
     if (this.animationFrameId !== undefined) cancelAnimationFrame(this.animationFrameId);
     this.animationFrameId = undefined;
+  }
+
+  private _enableDropHandler() {
+    console.warn('Drag and drop is deprecated as a library feature. See the demo how to implement your own.');
+    this.canvas.addEventListener('dragover', (evt) => {
+      evt.stopPropagation();
+      evt.preventDefault();
+      if (evt.dataTransfer) evt.dataTransfer.dropEffect = 'copy';
+      this.canvas.classList.add('dragging');
+    });
+
+    this.canvas.addEventListener('dragleave', (evt) => {
+      evt.stopPropagation();
+      evt.preventDefault();
+      this.canvas.classList.remove('dragging');
+    });
+
+    this.canvas.addEventListener('drop', async (evt) => {
+      evt.stopPropagation();
+      evt.preventDefault();
+      this.canvas.classList.remove('dragging');
+      const files: FileList | [] = evt.dataTransfer?.files ?? [];
+      const file = files[0];
+
+      this.clear();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await this._readFromStream(file.stream() as unknown as ReadableStream<any>);
+      this.render();
+    });
   }
 
   private renderLines(travels = this.job.travels(), extrusions = this.job.extrusions()): void {
