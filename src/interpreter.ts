@@ -134,6 +134,10 @@ export class Interpreter {
     job.state.units = 'in';
   }
 
+  G21(command: GCodeCommand, job: Job): void {
+    job.state.units = 'mm';
+  }
+
   T0(command: GCodeCommand, job: Job): void {
     job.state.tool = 0;
   }
