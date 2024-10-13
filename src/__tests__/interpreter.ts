@@ -197,6 +197,16 @@ test('.G20 sets the units to inches', () => {
   expect(job.state.units).toEqual('in');
 });
 
+test('.G21 sets the units to millimeters', () => {
+  const command = new GCodeCommand('G21', 'g21', {});
+  const interpreter = new Interpreter();
+  const job = new Job();
+
+  interpreter.G21(command, job);
+
+  expect(job.state.units).toEqual('mm');
+});
+
 test('.t0 sets the tool to 0', () => {
   const command = new GCodeCommand('T0', 't0', {});
   const interpreter = new Interpreter();
