@@ -1,13 +1,12 @@
-import { Parser, MoveCommand, Layer, SelectToolCommand } from './gcode-parser';
+import { Parser } from './gcode-parser';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
-import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
-import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { GridHelper } from './gridHelper';
 import { LineBox } from './lineBox';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { DevGUI, DevModeOptions } from './dev-gui';
+import { Interpreter } from './interpreter';
+import { Job } from './job';
 
 import {
   AmbientLight,
@@ -17,7 +16,6 @@ import {
   Color,
   ColorRepresentation,
   Euler,
-  Float32BufferAttribute,
   Fog,
   Group,
   LineBasicMaterial,
@@ -27,38 +25,14 @@ import {
   PointLight,
   REVISION,
   Scene,
-  Vector3,
   WebGLRenderer
 } from 'three';
 
-import { ExtrusionGeometry } from './extrusion-geometry';
-
-type RenderLayer = { extrusion: number[]; travel: number[]; z: number; height: number };
-type GVector3 = {
+type BuildVolume = {
   x: number;
   y: number;
   z: number;
 };
-type Arc = GVector3 & { r: number; i: number; j: number };
-
-type Point = GVector3;
-type BuildVolume = GVector3;
-export class State {
-  x: number;
-  y: number;
-  z: number;
-  r: number;
-  e: number;
-  i: number;
-  j: number;
-  t: number; // tool index
-  // feedrate?
-  static get initial(): State {
-    const state = new State();
-    Object.assign(state, { x: 0, y: 0, z: 0, r: 0, e: 0, i: 0, j: 0, t: 0 });
-    return state;
-  }
-}
 
 export type GCodePreviewOptions = {
   buildVolume?: BuildVolume;
@@ -72,7 +46,6 @@ export type GCodePreviewOptions = {
   lineWidth?: number;
   lineHeight?: number;
   nonTravelMoves?: string[];
-  minLayerThreshold?: number;
   renderExtrusion?: boolean;
   renderTravel?: boolean;
   startLayer?: number;
@@ -81,33 +54,16 @@ export type GCodePreviewOptions = {
   toolColors?: Record<number, ColorRepresentation>;
   disableGradient?: boolean;
   extrusionWidth?: number;
-  /** @experimental */
   renderTubes?: boolean;
   /**
    * @deprecated Please see the demo how to implement drag and drop.
    */
   allowDragNDrop?: boolean;
-  /**
-   * @deprecated Please use the `canvas` param instead.
-   */
-  targetId?: string;
   /** @experimental */
   devMode?: boolean | DevModeOptions;
 };
 
-const target = {
-  h: 0,
-  s: 0,
-  l: 0
-};
-
 export class WebGLPreview {
-  minLayerThreshold = 0.05;
-  parser: Parser;
-  /**
-   * @deprecated Please use the `canvas` param instead.
-   */
-  targetId?: string;
   scene: Scene;
   camera: PerspectiveCamera;
   renderer: WebGLRenderer;
@@ -132,9 +88,9 @@ export class WebGLPreview {
   nonTravelmoves: string[] = [];
   disableGradient = false;
 
-  // gcode processing state
-  private state: State = State.initial;
-  private beyondFirstMove = false; // TODO: move to state
+  interpreter = new Interpreter();
+  job = new Job();
+  parser = new Parser();
 
   // rendering
   private group?: Group;
@@ -142,8 +98,8 @@ export class WebGLPreview {
   static readonly defaultExtrusionColor = new Color('hotpink');
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private animationFrameId?: number;
-  private renderLayerIndex = 0;
-  private _geometries: Record<number, ExtrusionGeometry[]> = {};
+  private renderLayerIndex?: number;
+  private _geometries: Record<number, BufferGeometry[]> = {};
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
@@ -161,14 +117,11 @@ export class WebGLPreview {
   private devGui?: DevGUI;
 
   constructor(opts: GCodePreviewOptions) {
-    this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
-    this.parser = new Parser(this.minLayerThreshold);
     this.scene = new Scene();
     this.scene.background = this._backgroundColor;
     if (opts.backgroundColor !== undefined) {
       this.backgroundColor = new Color(opts.backgroundColor);
     }
-    this.targetId = opts.targetId;
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
     this.lineWidth = opts.lineWidth;
@@ -210,28 +163,11 @@ export class WebGLPreview {
     console.info('Using THREE r' + REVISION);
     console.debug('opts', opts);
 
-    if (this.targetId) {
-      console.warn('`targetId` is deprecated and will removed in the future. Use `canvas` instead.');
-    }
-
-    if (!opts.canvas) {
-      if (!this.targetId) {
-        throw Error('Set either opts.canvas or opts.targetId');
-      }
-      const container = document.getElementById(this.targetId);
-      if (!container) throw new Error('Unable to find element ' + this.targetId);
-
-      this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true });
-      this.canvas = this.renderer.domElement;
-
-      container.appendChild(this.canvas);
-    } else {
-      this.canvas = opts.canvas;
-      this.renderer = new WebGLRenderer({
-        canvas: this.canvas,
-        preserveDrawingBuffer: true
-      });
-    }
+    this.canvas = opts.canvas;
+    this.renderer = new WebGLRenderer({
+      canvas: this.canvas,
+      preserveDrawingBuffer: true
+    });
 
     this.camera = new PerspectiveCamera(25, this.canvas.offsetWidth / this.canvas.offsetHeight, 10, 5000);
     this.camera.position.fromArray(this.initialCameraPosition);
@@ -244,9 +180,6 @@ export class WebGLPreview {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.initScene();
     this.animate();
-
-    if (opts.allowDragNDrop) this._enableDropHandler();
-
     this.initStats();
   }
 
@@ -263,18 +196,6 @@ export class WebGLPreview {
       return;
     }
     this._extrusionColor = new Color(value);
-  }
-
-  // get tool color based on current state
-  get currentToolColor(): Color {
-    if (this._extrusionColor === undefined) {
-      return WebGLPreview.defaultExtrusionColor;
-    }
-    if (this._extrusionColor instanceof Color) {
-      return this._extrusionColor;
-    }
-
-    return this._extrusionColor[this.state.t] ?? WebGLPreview.defaultExtrusionColor;
   }
 
   get backgroundColor(): Color {
@@ -307,23 +228,6 @@ export class WebGLPreview {
     this._lastSegmentColor = value !== undefined ? new Color(value) : undefined;
   }
 
-  /**
-   * @internal Do not use externally.
-   */
-  get layers(): Layer[] {
-    return [this.parser.preamble].concat(this.parser.layers.concat());
-  }
-
-  // convert from 1-based to 0-based
-  get maxLayerIndex(): number {
-    return (this.endLayer ?? this.layers.length) - 1;
-  }
-
-  // convert from 1-based to 0-based
-  get minLayerIndex(): number {
-    return this.singleLayerMode ? this.maxLayerIndex : (this.startLayer ?? 0) - 1;
-  }
-
   /** @internal */
   animate(): void {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
@@ -333,7 +237,8 @@ export class WebGLPreview {
   }
 
   processGCode(gcode: string | string[]): void {
-    this.parser.parseGCode(gcode);
+    const { commands } = this.parser.parseGCode(gcode);
+    this.interpreter.execute(commands, this.job);
     this.render();
   }
 
@@ -383,14 +288,10 @@ export class WebGLPreview {
   render(): void {
     const startRender = performance.now();
     this.group = this.createGroup('allLayers');
-    this.state = State.initial;
     this.initScene();
 
-    for (let index = 0; index < this.layers.length; index++) {
-      this.renderLayer(index);
-    }
-
-    this.batchGeometries();
+    this.renderGeometries();
+    this.renderLines();
 
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
@@ -403,13 +304,20 @@ export class WebGLPreview {
     this.initScene();
 
     this.renderLayerIndex = 0;
+
+    if (this.job.layers() === null) {
+      console.warn('Job is not planar');
+      this.render();
+      return;
+    }
+
     return this.renderFrameLoop(layerCount > 0 ? layerCount : 1);
   }
 
   private renderFrameLoop(layerCount: number): Promise<void> {
     return new Promise((resolve) => {
       const loop = () => {
-        if (this.renderLayerIndex > this.layers.length - 1) {
+        if (this.renderLayerIndex >= this.job.layers().length - 1) {
           resolve();
         } else {
           this.renderFrame(layerCount);
@@ -423,130 +331,21 @@ export class WebGLPreview {
   private renderFrame(layerCount: number): void {
     this.group = this.createGroup('layer' + this.renderLayerIndex);
 
-    for (let l = 0; l < layerCount && this.renderLayerIndex + l < this.layers.length; l++) {
-      this.renderLayer(this.renderLayerIndex);
-      this.renderLayerIndex++;
-    }
+    const endIndex = Math.min(this.renderLayerIndex + layerCount, this.job.layers().length - 1);
+    const pathsToRender = this.job
+      .layers()
+      .slice(this.renderLayerIndex, endIndex)
+      .flatMap((l) => l);
 
-    this.batchGeometries();
+    this.renderGeometries(pathsToRender.filter((path) => path.travelType === 'Extrusion'));
+    this.renderLines(
+      pathsToRender.filter((path) => path.travelType === 'Travel'),
+      pathsToRender.filter((path) => path.travelType === 'Extrusion')
+    );
+
+    this.renderLayerIndex = endIndex;
 
     this.scene.add(this.group);
-  }
-
-  /**
-   *  @internal
-   */
-  renderLayer(index: number): void {
-    if (index > this.maxLayerIndex) return;
-    const l = this.layers[index];
-
-    const currentLayer: RenderLayer = {
-      extrusion: [],
-      travel: [],
-      z: this.state.z,
-      height: l.height
-    };
-
-    for (const cmd of l.commands) {
-      if (cmd.gcode == 'g20') {
-        this.setInches();
-        continue;
-      }
-
-      if (cmd.gcode.startsWith('t')) {
-        // flush render queue
-        this.doRenderExtrusion(currentLayer, index);
-        currentLayer.extrusion = [];
-
-        const tool = cmd as SelectToolCommand;
-        this.state.t = tool.toolIndex;
-        continue;
-      }
-
-      if (['g0', 'g00', 'g1', 'g01', 'g2', 'g02', 'g3', 'g03'].indexOf(cmd.gcode) > -1) {
-        const g = cmd as MoveCommand;
-        const next: State = {
-          x: g.params.x ?? this.state.x,
-          y: g.params.y ?? this.state.y,
-          z: g.params.z ?? this.state.z,
-          r: g.params.r ?? this.state.r,
-          e: g.params.e ?? this.state.e,
-          i: g.params.i ?? this.state.i,
-          j: g.params.j ?? this.state.j,
-          t: this.state.t
-        };
-
-        if (index >= this.minLayerIndex) {
-          const extrude = (g.params.e ?? 0) > 0 || this.nonTravelmoves.indexOf(cmd.gcode) > -1;
-          const moving = next.x != this.state.x || next.y != this.state.y || next.z != this.state.z;
-          if (moving) {
-            if ((extrude && this.renderExtrusion) || (!extrude && this.renderTravel)) {
-              if (cmd.gcode == 'g2' || cmd.gcode == 'g3' || cmd.gcode == 'g02' || cmd.gcode == 'g03') {
-                this.addArcSegment(currentLayer, this.state, next, extrude, cmd.gcode == 'g2' || cmd.gcode == 'g02');
-              } else {
-                this.addLineSegment(currentLayer, this.state, next, extrude);
-              }
-            }
-          }
-        }
-
-        // update this.state
-        this.state.x = next.x;
-        this.state.y = next.y;
-        this.state.z = next.z;
-        // if (next.e) state.e = next.e; // where not really tracking e as distance (yet) but we only check if some commands are extruding (positive e)
-        if (!this.beyondFirstMove) this.beyondFirstMove = true;
-      }
-    }
-
-    this.doRenderExtrusion(currentLayer, index);
-  }
-
-  /** @internal */
-  doRenderExtrusion(layer: RenderLayer, index: number): void {
-    if (this.renderExtrusion) {
-      let extrusionColor = this.currentToolColor;
-
-      if (!this.singleLayerMode && !this.renderTubes && !this.disableGradient) {
-        const brightness = 0.1 + (0.7 * index) / this.layers.length;
-
-        extrusionColor.getHSL(target);
-        extrusionColor = new Color().setHSL(target.h, target.s, brightness);
-      }
-
-      if (index == this.layers.length - 1) {
-        const layerColor = this._topLayerColor ?? extrusionColor;
-        const lastSegmentColor = this._lastSegmentColor ?? layerColor;
-
-        const endPoint = layer.extrusion.splice(-3);
-        const preendPoint = layer.extrusion.splice(-3);
-        if (this.renderTubes) {
-          this.addTubeLine(layer.extrusion, layerColor.getHex(), layer.height);
-          this.addTubeLine([...preendPoint, ...endPoint], lastSegmentColor.getHex(), layer.height);
-        } else {
-          this.addLine(layer.extrusion, layerColor.getHex());
-          this.addLine([...preendPoint, ...endPoint], lastSegmentColor.getHex());
-        }
-      } else {
-        if (this.renderTubes) {
-          this.addTubeLine(layer.extrusion, extrusionColor.getHex(), layer.height);
-        } else {
-          this.addLine(layer.extrusion, extrusionColor.getHex());
-        }
-      }
-    }
-
-    if (this.renderTravel) {
-      this.addLine(layer.travel, this._travelColor.getHex());
-    }
-  }
-
-  setInches(): void {
-    if (this.beyondFirstMove) {
-      console.warn('Switching units after movement is already made is discouraged and is not supported.');
-      return;
-    }
-    this.inches = true;
   }
 
   /** @internal */
@@ -564,7 +363,8 @@ export class WebGLPreview {
   // reset parser & processing state
   clear(): void {
     this.resetState();
-    this.parser = new Parser(this.minLayerThreshold);
+    this.parser = new Parser();
+    this.job = new Job();
   }
 
   // reset processing state
@@ -572,9 +372,6 @@ export class WebGLPreview {
     this.startLayer = 1;
     this.endLayer = Infinity;
     this.singleLayerMode = false;
-
-    this.beyondFirstMove = false;
-    this.state = State.initial;
     this.devGui?.reset();
     this._geometries = {};
   }
@@ -585,177 +382,6 @@ export class WebGLPreview {
     this.camera.updateProjectionMatrix();
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(w, h, false);
-  }
-
-  /** @internal */
-  addLineSegment(layer: RenderLayer, p1: Point, p2: Point, extrude: boolean): void {
-    const line = extrude ? layer.extrusion : layer.travel;
-    line.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
-  }
-
-  /** @internal */
-  addArcSegment(layer: RenderLayer, p1: Point, p2: Arc, extrude: boolean, cw: boolean): void {
-    const line = extrude ? layer.extrusion : layer.travel;
-
-    const currX = p1.x,
-      currY = p1.y,
-      currZ = p1.z,
-      x = p2.x,
-      y = p2.y,
-      z = p2.z;
-    let r = p2.r;
-
-    let i = p2.i,
-      j = p2.j;
-
-    if (r) {
-      // in r mode a minimum radius will be applied if the distance can otherwise not be bridged
-      const deltaX = x - currX; // assume abs mode
-      const deltaY = y - currY;
-
-      // apply a minimal radius to bridge the distance
-      const minR = Math.sqrt(Math.pow(deltaX / 2, 2) + Math.pow(deltaY / 2, 2));
-      r = Math.max(r, minR);
-
-      const dSquared = Math.pow(deltaX, 2) + Math.pow(deltaY, 2);
-      const hSquared = Math.pow(r, 2) - dSquared / 4;
-      // if (dSquared == 0 || hSquared < 0) {
-      //   return { position: { x: x, y: z, z: y }, points: [] }; //we'll abort the render and move te position to the new position.
-      // }
-      let hDivD = Math.sqrt(hSquared / dSquared);
-
-      // Ref RRF DoArcMove for details
-      if ((cw && r < 0.0) || (!cw && r > 0.0)) {
-        hDivD = -hDivD;
-      }
-      i = deltaX / 2 + deltaY * hDivD;
-      j = deltaY / 2 - deltaX * hDivD;
-      // } else {
-      //     //the radial point is an offset from the current position
-      //     ///Need at least on point
-      //     if (i == 0 && j == 0) {
-      //         return { position: { x: x, y: y, z: z }, points: [] }; //we'll abort the render and move te position to the new position.
-      //     }
-    }
-
-    const wholeCircle = currX == x && currY == y;
-    const centerX = currX + i;
-    const centerY = currY + j;
-
-    const arcRadius = Math.sqrt(i * i + j * j);
-    const arcCurrentAngle = Math.atan2(-j, -i);
-    const finalTheta = Math.atan2(y - centerY, x - centerX);
-
-    let totalArc;
-    if (wholeCircle) {
-      totalArc = 2 * Math.PI;
-    } else {
-      totalArc = cw ? arcCurrentAngle - finalTheta : finalTheta - arcCurrentAngle;
-      if (totalArc < 0.0) {
-        totalArc += 2 * Math.PI;
-      }
-    }
-    let totalSegments = (arcRadius * totalArc) / 1.8;
-    if (this.inches) {
-      totalSegments *= 25;
-    }
-    if (totalSegments < 1) {
-      totalSegments = 1;
-    }
-    let arcAngleIncrement = totalArc / totalSegments;
-    arcAngleIncrement *= cw ? -1 : 1;
-
-    const points = [];
-
-    points.push({ x: currX, y: currY, z: currZ });
-
-    const zDist = currZ - z;
-    const zStep = zDist / totalSegments;
-
-    // get points for the arc
-    let px = currX;
-    let py = currY;
-    let pz = currZ;
-    // calculate segments
-    let currentAngle = arcCurrentAngle;
-
-    for (let moveIdx = 0; moveIdx < totalSegments - 1; moveIdx++) {
-      currentAngle += arcAngleIncrement;
-      px = centerX + arcRadius * Math.cos(currentAngle);
-      py = centerY + arcRadius * Math.sin(currentAngle);
-      pz += zStep;
-      points.push({ x: px, y: py, z: pz });
-    }
-
-    points.push({ x: p2.x, y: p2.y, z: p2.z });
-
-    for (let idx = 0; idx < points.length - 1; idx++) {
-      line.push(points[idx].x, points[idx].y, points[idx].z, points[idx + 1].x, points[idx + 1].y, points[idx + 1].z);
-    }
-  }
-
-  /** @internal */
-  addLine(vertices: number[], color: number): void {
-    if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
-      this.addThickLine(vertices, color);
-      return;
-    }
-
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
-    this.disposables.push(geometry);
-    const material = new LineBasicMaterial({ color: color });
-    this.disposables.push(material);
-    const lineSegments = new LineSegments(geometry, material);
-
-    this.group?.add(lineSegments);
-  }
-
-  /** @internal */
-  addTubeLine(vertices: number[], color: number, layerHeight = 0.2): void {
-    let curvePoints: Vector3[] = [];
-    const extrusionPaths: Vector3[][] = [];
-
-    // Merging into one curve for performance
-    for (let i = 0; i < vertices.length; i += 6) {
-      const v = vertices.slice(i, i + 9);
-      const startPoint = new Vector3(v[0], v[1], v[2]);
-      const endPoint = new Vector3(v[3], v[4], v[5]);
-      const nextPoint = new Vector3(v[6], v[7], v[8]);
-
-      curvePoints.push(startPoint);
-
-      if (!endPoint.equals(nextPoint)) {
-        curvePoints.push(endPoint);
-        extrusionPaths.push(curvePoints);
-        curvePoints = [];
-      }
-    }
-
-    extrusionPaths.forEach((extrusionPath) => {
-      const geometry = new ExtrusionGeometry(extrusionPath, this.extrusionWidth, this.lineHeight || layerHeight, 4);
-      this._geometries[color] ||= [];
-      this._geometries[color].push(geometry);
-    });
-  }
-
-  /** @internal */
-  addThickLine(vertices: number[], color: number): void {
-    if (!vertices.length || !this.lineWidth) return;
-
-    const geometry = new LineSegmentsGeometry();
-    this.disposables.push(geometry);
-
-    const matLine = new LineMaterial({
-      color: color,
-      linewidth: this.lineWidth / (1000 * window.devicePixelRatio)
-    });
-    this.disposables.push(matLine);
-
-    geometry.setPositions(vertices);
-    const line = new LineSegments2(geometry, matLine);
-
-    this.group?.add(line);
   }
 
   dispose(): void {
@@ -772,47 +398,64 @@ export class WebGLPreview {
     this.animationFrameId = undefined;
   }
 
-  private _enableDropHandler() {
-    console.warn('Drag and drop is deprecated as a library feature. See the demo how to implement your own.');
-    this.canvas.addEventListener('dragover', (evt) => {
-      evt.stopPropagation();
-      evt.preventDefault();
-      if (evt.dataTransfer) evt.dataTransfer.dropEffect = 'copy';
-      this.canvas.classList.add('dragging');
-    });
+  private renderLines(travels = this.job.travels(), extrusions = this.job.extrusions()): void {
+    if (this.renderTravel) {
+      const material = new LineBasicMaterial({ color: this._travelColor, linewidth: this.lineWidth });
+      this.disposables.push(material);
 
-    this.canvas.addEventListener('dragleave', (evt) => {
-      evt.stopPropagation();
-      evt.preventDefault();
-      this.canvas.classList.remove('dragging');
-    });
+      travels.forEach((path) => {
+        const geometry = path.line();
+        const line = new LineSegments(geometry, material);
+        this.group?.add(line);
+      });
+    }
 
-    this.canvas.addEventListener('drop', async (evt) => {
-      evt.stopPropagation();
-      evt.preventDefault();
-      this.canvas.classList.remove('dragging');
-      const files: FileList | [] = evt.dataTransfer?.files ?? [];
-      const file = files[0];
+    if (this.renderExtrusion && !this.renderTubes) {
+      const lineMaterials = {} as Record<number, LineBasicMaterial>;
 
-      this.clear();
+      if (Array.isArray(this._extrusionColor)) {
+        this._extrusionColor.forEach((color, index) => {
+          lineMaterials[index] = new LineBasicMaterial({ color, linewidth: this.lineWidth });
+        });
+      } else {
+        lineMaterials[0] = new LineBasicMaterial({
+          color: this._extrusionColor,
+          linewidth: this.lineWidth
+        });
+      }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await this._readFromStream(file.stream() as unknown as ReadableStream<any>);
-      this.render();
-    });
+      extrusions.forEach((path) => {
+        const geometry = path.line();
+        const line = new LineSegments(geometry, lineMaterials[path.tool]);
+        this.group?.add(line);
+      });
+    }
   }
 
-  private batchGeometries() {
-    if (this._geometries) {
-      for (const color in this._geometries) {
-        const batchedMesh = this.createBatchMesh(parseInt(color));
-        while (this._geometries[color].length > 0) {
-          const geometry = this._geometries[color].pop();
-          const geometryId = batchedMesh.addGeometry(geometry);
-          batchedMesh.addInstance(geometryId);
+  private renderGeometries(paths = this.job.extrusions()): void {
+    if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
+      let color: number;
+      paths.forEach((path) => {
+        if (Array.isArray(this._extrusionColor)) {
+          color = this._extrusionColor[path.tool].getHex();
+        } else {
+          color = this._extrusionColor.getHex();
         }
-      }
+
+        this._geometries[color] ||= [];
+        this._geometries[color].push(path.geometry());
+      });
     }
+
+    for (const color in this._geometries) {
+      const batchedMesh = this.createBatchMesh(parseInt(color));
+      this._geometries[color].forEach((geometry) => {
+        const geometryId = batchedMesh.addGeometry(geometry);
+        batchedMesh.addInstance(geometryId);
+      });
+      this._geometries[color] = [];
+    }
+    this._geometries = {};
   }
 
   private createBatchMesh(color: number): BatchedMesh {
