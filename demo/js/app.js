@@ -53,7 +53,6 @@ export const app = (window.app = createApp({
     const updateUI = async () => {
       const {
         parser,
-        layers,
         extrusionColor,
         topLayerColor,
         lastSegmentColor,
@@ -65,16 +64,17 @@ export const app = (window.app = createApp({
         renderExtrusion,
         lineWidth,
         renderTubes,
-        extrusionWidth
+        extrusionWidth,
+        job
       } = preview;
       const { thumbnails } = parser.metadata;
 
       thumbnail.value = thumbnails['220x124']?.src;
-      layerCount.value = layers.length;
+      layerCount.value = job.layers()?.length;
       const colors = extrusionColor instanceof Array ? extrusionColor : [extrusionColor];
       const currentSettings = {
-        maxLayer: layers.length,
-        endLayer: layers.length,
+        maxLayer: job.layers()?.length,
+        endLayer: job.layers()?.length,
         singleLayerMode,
         renderTravel,
         travelColor: '#' + travelColor.getHexString(),
@@ -93,7 +93,7 @@ export const app = (window.app = createApp({
       };
 
       Object.assign(settings.value, currentSettings);
-      preview.endLayer = layers.length;
+      preview.endLayer = job.layers()?.length;
     };
 
     const loadGCodeFromServer = async (filename) => {
@@ -112,7 +112,8 @@ export const app = (window.app = createApp({
       const prevDevMode = preview.devMode;
       preview.clear();
       preview.devMode = prevDevMode;
-      preview.parser.parseGCode(gcode);
+      const { commands } = preview.parser.parseGCode(gcode);
+      preview.interpreter.execute(commands, preview.job);
 
       render();
     };
@@ -120,7 +121,12 @@ export const app = (window.app = createApp({
     const render = async () => {
       debounce(async () => {
         if (loadProgressive) {
-          await preview.renderAnimated(Math.ceil(preview.layers.length / 60));
+          if (preview.job.layers() === null) {
+            console.warn('Job is not planar');
+            preview.render();
+            return;
+          }
+          await preview.renderAnimated(Math.ceil(preview.job.layers().length / 60));
         } else {
           preview.render();
         }
