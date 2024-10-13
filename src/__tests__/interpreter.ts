@@ -2,6 +2,7 @@ import { test, expect } from 'vitest';
 import { GCodeCommand } from '../gcode-parser';
 import { Interpreter } from '../interpreter';
 import { Job } from '../job';
+import { PathType } from '../path';
 
 test('.execute returns a stateful job', () => {
   const command = new GCodeCommand('G0 X1 Y2 Z3', 'g0', { x: 1, y: 2, z: 3 });
@@ -78,6 +79,9 @@ test('.G0 starts a path if the job has none', () => {
   expect(job.paths[0].vertices[0]).toEqual(0);
   expect(job.paths[0].vertices[1]).toEqual(0);
   expect(job.paths[0].vertices[2]).toEqual(0);
+  expect(job.paths[0].vertices[3]).toEqual(1);
+  expect(job.paths[0].vertices[4]).toEqual(2);
+  expect(job.paths[0].vertices[5]).toEqual(0);
 });
 
 test('.G0 starts a path if the job has none, starting at the job current state', () => {
@@ -103,6 +107,8 @@ test('.G0 continues the path if the job has one', () => {
   const command2 = new GCodeCommand('G0 X3 Y4', 'g0', { x: 3, y: 4 });
   const interpreter = new Interpreter();
   const job = new Job();
+
+  job.state.z = 5;
   interpreter.execute([command1], job);
 
   interpreter.G0(command2, job);
@@ -111,7 +117,7 @@ test('.G0 continues the path if the job has one', () => {
   expect(job.paths[0].vertices.length).toEqual(9);
   expect(job.paths[0].vertices[6]).toEqual(3);
   expect(job.paths[0].vertices[7]).toEqual(4);
-  expect(job.paths[0].vertices[8]).toEqual(0);
+  expect(job.paths[0].vertices[8]).toEqual(5);
 });
 
 test(".G0 assigns the travel type if there's no extrusion", () => {
@@ -122,7 +128,7 @@ test(".G0 assigns the travel type if there's no extrusion", () => {
   interpreter.G0(command, job);
 
   expect(job.paths.length).toEqual(1);
-  expect(job.paths[0].travelType).toEqual('Travel');
+  expect(job.paths[0].travelType).toEqual(PathType.Travel);
 });
 
 test(".G0 assigns the extrusion type if there's extrusion", () => {

@@ -1,16 +1,11 @@
 import { test, expect, describe } from 'vitest';
-import { Job } from '../job';
+import { Job, State } from '../job';
 import { PathType, Path } from '../path';
 
 test('it has an initial state', () => {
   const job = new Job();
 
-  expect(job.state.x).toEqual(0);
-  expect(job.state.y).toEqual(0);
-  expect(job.state.z).toEqual(0);
-  expect(job.state.e).toEqual(0);
-  expect(job.state.tool).toEqual(0);
-  expect(job.state.units).toEqual('mm');
+  expect(job.state).toEqual(State.initial);
 });
 
 describe('.isPlanar', () => {
