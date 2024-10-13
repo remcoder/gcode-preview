@@ -142,6 +142,17 @@ test(".G0 assigns the extrusion type if there's extrusion", () => {
   expect(job.paths[0].travelType).toEqual('Extrusion');
 });
 
+test('.G0 assigns the travel type if the extrusion is a retraction', () => {
+  const command = new GCodeCommand('G0 E-2', 'g0', { e: -2 });
+  const interpreter = new Interpreter();
+  const job = new Job();
+
+  interpreter.G0(command, job);
+
+  expect(job.paths.length).toEqual(1);
+  expect(job.paths[0].travelType).toEqual('Travel');
+});
+
 test('.G0 starts a new path if the travel type changes from Travel to Extrusion', () => {
   const command1 = new GCodeCommand('G0 X1 Y2', 'g0', { x: 1, y: 2 });
   const command2 = new GCodeCommand('G1 X3 Y4 E5', 'g1', { x: 3, y: 4, e: 5 });

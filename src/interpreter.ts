@@ -18,7 +18,7 @@ export class Interpreter {
     const { state } = job;
 
     let lastPath = job.paths[job.paths.length - 1];
-    const pathType = e ? PathType.Extrusion : PathType.Travel;
+    const pathType = e > 0 ? PathType.Extrusion : PathType.Travel;
 
     if (lastPath === undefined || lastPath.travelType !== pathType) {
       lastPath = this.breakPath(job, pathType);
