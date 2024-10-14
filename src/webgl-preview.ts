@@ -27,12 +27,6 @@ import {
   WebGLRenderer
 } from 'three';
 
-type BuildVolume = {
-  x: number;
-  y: number;
-  z: number;
-};
-
 export type GCodePreviewOptions = {
   buildVolume?: BuildVolume;
   backgroundColor?: ColorRepresentation;
