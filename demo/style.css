@@ -85,23 +85,23 @@ html {
   height: 100%;
   overflow: hidden;
   font-family: Verdana;
-  color: #f8f8f8;
-  background: #111;
+  /* color: #f8f8f8; */
+  /* background: #111; */
 }
 
-@media (prefers-color-scheme: light) {
+/* @media (prefers-color-scheme: light) {
   body {
     color: #111;
     background-color: #eee;
   }
-}
+} */
 
-@media (prefers-color-scheme: dark) {
-  body {
-    color: var(--bulma-text);
-    background-color: #111;
-  }
+/* @media (prefers-color-scheme: dark) { */
+body {
+  color: var(--bulma-text);
+  background-color: #111;
 }
+/* } */
 
 .border {
   border: 1px solid var(--bulma-border);
@@ -221,11 +221,11 @@ output {
   color: grey;
 }
 
-@media (prefers-color-scheme: light) {
-  output {
-    color: #d9d9d9;
-  }
+/* @media (prefers-color-scheme: light) { */
+output {
+  color: #d9d9d9;
 }
+/* } */
 
 .flex {
   display: flex;
