@@ -39,6 +39,7 @@ export type GCodePreviewOptions = {
   lineWidth?: number;
   lineHeight?: number;
   nonTravelMoves?: string[];
+  minLayerThreshold?: number;
   renderExtrusion?: boolean;
   renderTravel?: boolean;
   startLayer?: number;
@@ -61,6 +62,7 @@ export type GCodePreviewOptions = {
 };
 
 export class WebGLPreview {
+  minLayerThreshold: number;
   /**
    * @deprecated Please use the `canvas` param instead.
    */
@@ -89,8 +91,8 @@ export class WebGLPreview {
   nonTravelmoves: string[] = [];
   disableGradient = false;
 
+  job: Job;
   interpreter = new Interpreter();
-  job = new Job();
   parser = new Parser();
 
   // rendering
@@ -118,6 +120,8 @@ export class WebGLPreview {
   private devGui?: DevGUI;
 
   constructor(opts: GCodePreviewOptions) {
+    this.minLayerThreshold = opts.minLayerThreshold ?? this.minLayerThreshold;
+    this.job = new Job({ minLayerThreshold: this.minLayerThreshold });
     this.scene = new Scene();
     this.scene.background = this._backgroundColor;
     if (opts.backgroundColor !== undefined) {
@@ -366,7 +370,7 @@ export class WebGLPreview {
   clear(): void {
     this.resetState();
     this.parser = new Parser();
-    this.job = new Job();
+    this.job = new Job({ minLayerThreshold: this.minLayerThreshold });
   }
 
   // reset processing state

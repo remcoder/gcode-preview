@@ -1,5 +1,5 @@
 import { test, expect, describe } from 'vitest';
-import { Job, State } from '../job';
+import { Job, State, LayersIndexer } from '../job';
 import { PathType, Path } from '../path';
 
 test('it has an initial state', () => {
@@ -96,7 +96,7 @@ describe('.layers', () => {
     expect(layers?.[0].length).toEqual(2);
   });
 
-  test('travel paths moving z create a new layer', () => {
+  test('travel paths moving z above the default tolerance create a new layer', () => {
     const job = new Job();
 
     append_path(job, PathType.Extrusion, [
@@ -105,7 +105,7 @@ describe('.layers', () => {
     ]);
     append_path(job, PathType.Travel, [
       [5, 6, 0],
-      [5, 6, 1]
+      [5, 6, LayersIndexer.DEFAULT_TOLERANCE + 0.01]
     ]);
 
     const layers = job.layers;
@@ -115,6 +115,46 @@ describe('.layers', () => {
     expect(layers?.length).toEqual(2);
     expect(layers?.[0].length).toEqual(1);
     expect(layers?.[1].length).toEqual(1);
+  });
+
+  test('travel paths moving z under the default tolerance are on the same layer', () => {
+    const job = new Job();
+
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, LayersIndexer.DEFAULT_TOLERANCE - 0.01]
+    ]);
+
+    const layers = job.layers;
+
+    expect(layers).not.toBeNull();
+    expect(layers).toBeInstanceOf(Array);
+    expect(layers?.length).toEqual(1);
+    expect(layers?.[0].length).toEqual(2);
+  });
+
+  test('Tolerance can be set', () => {
+    const job = new Job({ minLayerThreshold: 0.1 });
+
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 0.09]
+    ]);
+
+    const layers = job.layers;
+
+    expect(layers).not.toBeNull();
+    expect(layers).toBeInstanceOf(Array);
+    expect(layers?.length).toEqual(1);
+    expect(layers?.[0].length).toEqual(2);
   });
 
   test('multiple travels in a row are on the same layer', () => {
