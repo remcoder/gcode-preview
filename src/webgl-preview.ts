@@ -73,7 +73,7 @@ export class WebGLPreview {
   renderExtrusion = true;
   renderTravel = false;
   renderTubes = false;
-  extrusionWidth = 0.6;
+  extrusionWidth?: number;
   lineWidth?: number;
   lineHeight?: number;
   startLayer?: number;
@@ -135,7 +135,7 @@ export class WebGLPreview {
     this.renderTravel = opts.renderTravel ?? this.renderTravel;
     this.nonTravelmoves = opts.nonTravelMoves ?? this.nonTravelmoves;
     this.renderTubes = opts.renderTubes ?? this.renderTubes;
-    this.extrusionWidth = opts.extrusionWidth ?? this.extrusionWidth;
+    this.extrusionWidth = opts.extrusionWidth;
     this.devMode = opts.devMode ?? this.devMode;
     this.stats = this.devMode ? new Stats() : undefined;
 
@@ -475,7 +475,9 @@ export class WebGLPreview {
         }
 
         this._geometries[color] ||= [];
-        this._geometries[color].push(path.geometry());
+        this._geometries[color].push(
+          path.geometry({ extrusionWidthOverride: this.extrusionWidth, lineHeightOverride: this.lineHeight })
+        );
       });
     }
 
