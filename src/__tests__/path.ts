@@ -1,4 +1,4 @@
-import { test, expect } from 'vitest';
+import { test, expect, describe } from 'vitest';
 import { Path, PathType } from '../path';
 import { ExtrusionGeometry } from '../extrusion-geometry';
 import { BufferGeometry } from 'three';
@@ -64,70 +64,96 @@ test('.path returns an array of Vector3', () => {
   expect(result[1]).toEqual({ x: 1, y: 2, z: 3 });
 });
 
-test('.geometry returns an ExtrusionGeometry from the path', () => {
-  const path = new Path(PathType.Travel, undefined, undefined, undefined);
+describe('.geometry', () => {
+  test('returns an ExtrusionGeometry from the path', () => {
+    const path = new Path(PathType.Travel, undefined, undefined, undefined);
 
-  path.addPoint(0, 0, 0);
-  path.addPoint(1, 2, 3);
+    path.addPoint(0, 0, 0);
+    path.addPoint(1, 2, 3);
 
-  const result = path.geometry() as ExtrusionGeometry;
+    const result = path.geometry() as ExtrusionGeometry;
 
-  expect(result).not.toBeNull();
-  expect(result).toBeInstanceOf(ExtrusionGeometry);
-  expect(result.parameters.points.length).toEqual(2);
-  expect(result.parameters.closed).toEqual(false);
+    expect(result).not.toBeNull();
+    expect(result).toBeInstanceOf(ExtrusionGeometry);
+    expect(result.parameters.points.length).toEqual(2);
+    expect(result.parameters.closed).toEqual(false);
+  });
+
+  test('returns an ExtrusionGeometry with the path extrusion width', () => {
+    const path = new Path(PathType.Travel, 9, undefined, undefined);
+
+    path.addPoint(0, 0, 0);
+    path.addPoint(1, 2, 3);
+
+    const result = path.geometry() as ExtrusionGeometry;
+
+    expect(result.parameters.lineWidth).toEqual(9);
+  });
+
+  test('returns an ExtrusionGeometry with the path line height', () => {
+    const path = new Path(PathType.Travel, undefined, 5, undefined);
+
+    path.addPoint(0, 0, 0);
+    path.addPoint(1, 2, 3);
+
+    const result = path.geometry() as ExtrusionGeometry;
+
+    expect(result.parameters.lineHeight).toEqual(5);
+  });
+
+  test('returns an ExtrusionGeometry with the extrusionWidthOverride when passed', () => {
+    const path = new Path(PathType.Travel, 9, undefined, undefined);
+
+    path.addPoint(0, 0, 0);
+    path.addPoint(1, 2, 3);
+
+    const result = path.geometry({ extrusionWidthOverride: 2 }) as ExtrusionGeometry;
+
+    expect(result.parameters.lineWidth).toEqual(2);
+  });
+
+  test('returns an ExtrusionGeometry with the lineHeightOverride when passed', () => {
+    const path = new Path(PathType.Travel, undefined, 5, undefined);
+
+    path.addPoint(0, 0, 0);
+    path.addPoint(1, 2, 3);
+
+    const result = path.geometry({ lineHeightOverride: 7 }) as ExtrusionGeometry;
+
+    expect(result.parameters.lineHeight).toEqual(7);
+  });
+
+  test('returns an empty BufferGeometry if there are less than 3 vertices', () => {
+    const path = new Path(PathType.Travel, undefined, undefined, undefined);
+
+    const result = path.geometry();
+
+    expect(result).not.toBeNull();
+    expect(result).toBeInstanceOf(BufferGeometry);
+  });
 });
 
-test('.geometry returns an ExtrusionGeometry with the path extrusion width', () => {
-  const path = new Path(PathType.Travel, 9, undefined, undefined);
+describe('.line', () => {
+  test('returns a BufferGeometry from the path', () => {
+    const path = new Path(PathType.Travel, undefined, undefined, undefined);
 
-  path.addPoint(0, 0, 0);
-  path.addPoint(1, 2, 3);
+    path.addPoint(0, 0, 0);
+    path.addPoint(1, 2, 3);
 
-  const result = path.geometry() as ExtrusionGeometry;
+    const result = path.line();
 
-  expect(result.parameters.lineWidth).toEqual(9);
-});
+    expect(result).not.toBeNull();
+    const points = result.attributes['instanceStart'].array;
+    expect(points).toEqual(Float32Array.from([0, 0, 0, 1, 2, 3]));
+  });
 
-test('.geometry returns an ExtrusionGeometry with the path line height', () => {
-  const path = new Path(PathType.Travel, undefined, 5, undefined);
+  test('returns a BufferGeometry when there are no vertices', () => {
+    const path = new Path(PathType.Travel, undefined, undefined, undefined);
 
-  path.addPoint(0, 0, 0);
-  path.addPoint(1, 2, 3);
+    const result = path.line();
 
-  const result = path.geometry() as ExtrusionGeometry;
-
-  expect(result.parameters.lineHeight).toEqual(5);
-});
-
-test('.geometry returns an empty BufferGeometry if there are less than 3 vertices', () => {
-  const path = new Path(PathType.Travel, undefined, undefined, undefined);
-
-  const result = path.geometry();
-
-  expect(result).not.toBeNull();
-  expect(result).toBeInstanceOf(BufferGeometry);
-});
-
-test('.line returns a BufferGeometry from the path', () => {
-  const path = new Path(PathType.Travel, undefined, undefined, undefined);
-
-  path.addPoint(0, 0, 0);
-  path.addPoint(1, 2, 3);
-
-  const result = path.line();
-
-  expect(result).not.toBeNull();
-  const points = result.attributes['instanceStart'].array;
-  expect(points).toEqual(Float32Array.from([0, 0, 0, 1, 2, 3]));
-});
-
-test('.line returns a BufferGeometry when there are no vertices', () => {
-  const path = new Path(PathType.Travel, undefined, undefined, undefined);
-
-  const result = path.line();
-
-  expect(result).not.toBeNull();
-  const points = result.attributes['instanceStart'].array;
-  expect(points.length).toEqual(0);
+    expect(result).not.toBeNull();
+    const points = result.attributes['instanceStart'].array;
+    expect(points.length).toEqual(0);
+  });
 });
