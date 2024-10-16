@@ -70,11 +70,11 @@ export const app = (window.app = createApp({
       const { thumbnails } = parser.metadata;
 
       thumbnail.value = thumbnails['220x124']?.src;
-      layerCount.value = job.layers()?.length;
+      layerCount.value = job.layers?.length;
       const colors = extrusionColor instanceof Array ? extrusionColor : [extrusionColor];
       const currentSettings = {
-        maxLayer: job.layers()?.length,
-        endLayer: job.layers()?.length,
+        maxLayer: job.layers?.length,
+        endLayer: job.layers?.length,
         singleLayerMode,
         renderTravel,
         travelColor: '#' + travelColor.getHexString(),
@@ -93,7 +93,7 @@ export const app = (window.app = createApp({
       };
 
       Object.assign(settings.value, currentSettings);
-      preview.endLayer = job.layers()?.length;
+      preview.endLayer = job.layers?.length;
     };
 
     const loadGCodeFromServer = async (filename) => {
@@ -121,12 +121,12 @@ export const app = (window.app = createApp({
     const render = async () => {
       debounce(async () => {
         if (loadProgressive) {
-          if (preview.job.layers() === null) {
+          if (preview.job.layers === null) {
             console.warn('Job is not planar');
             preview.render();
             return;
           }
-          await preview.renderAnimated(Math.ceil(preview.job.layers().length / 60));
+          await preview.renderAnimated(Math.ceil(preview.job.layers?.length / 60));
         } else {
           preview.render();
         }

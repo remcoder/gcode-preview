@@ -74,14 +74,15 @@ test('.G0 starts a path if the job has none', () => {
 
   const job = interpreter.execute([command]);
 
-  expect(job.paths.length).toEqual(1);
-  expect(job.paths[0].vertices.length).toEqual(6);
-  expect(job.paths[0].vertices[0]).toEqual(0);
-  expect(job.paths[0].vertices[1]).toEqual(0);
-  expect(job.paths[0].vertices[2]).toEqual(0);
-  expect(job.paths[0].vertices[3]).toEqual(1);
-  expect(job.paths[0].vertices[4]).toEqual(2);
-  expect(job.paths[0].vertices[5]).toEqual(0);
+  expect(job.paths.length).toEqual(0);
+  expect(job.inprogressPath).not.toBeNull();
+  expect(job.inprogressPath?.vertices.length).toEqual(6);
+  expect(job.inprogressPath?.vertices[0]).toEqual(0);
+  expect(job.inprogressPath?.vertices[1]).toEqual(0);
+  expect(job.inprogressPath?.vertices[2]).toEqual(0);
+  expect(job.inprogressPath?.vertices[3]).toEqual(1);
+  expect(job.inprogressPath?.vertices[4]).toEqual(2);
+  expect(job.inprogressPath?.vertices[5]).toEqual(0);
 });
 
 test('.G0 starts a path if the job has none, starting at the job current state', () => {
@@ -94,12 +95,12 @@ test('.G0 starts a path if the job has none, starting at the job current state',
 
   interpreter.execute([command], job);
 
-  expect(job.paths.length).toEqual(1);
-  expect(job.paths[0].vertices.length).toEqual(6);
-  expect(job.paths[0].vertices[0]).toEqual(3);
-  expect(job.paths[0].vertices[1]).toEqual(4);
-  expect(job.paths[0].vertices[2]).toEqual(0);
-  expect(job.paths[0].tool).toEqual(5);
+  expect(job.paths.length).toEqual(0);
+  expect(job.inprogressPath?.vertices.length).toEqual(6);
+  expect(job.inprogressPath?.vertices[0]).toEqual(3);
+  expect(job.inprogressPath?.vertices[1]).toEqual(4);
+  expect(job.inprogressPath?.vertices[2]).toEqual(0);
+  expect(job.inprogressPath?.tool).toEqual(5);
 });
 
 test('.G0 continues the path if the job has one', () => {
@@ -113,11 +114,11 @@ test('.G0 continues the path if the job has one', () => {
 
   interpreter.G0(command2, job);
 
-  expect(job.paths.length).toEqual(1);
-  expect(job.paths[0].vertices.length).toEqual(9);
-  expect(job.paths[0].vertices[6]).toEqual(3);
-  expect(job.paths[0].vertices[7]).toEqual(4);
-  expect(job.paths[0].vertices[8]).toEqual(5);
+  expect(job.paths.length).toEqual(0);
+  expect(job.inprogressPath?.vertices.length).toEqual(9);
+  expect(job.inprogressPath?.vertices[6]).toEqual(3);
+  expect(job.inprogressPath?.vertices[7]).toEqual(4);
+  expect(job.inprogressPath?.vertices[8]).toEqual(5);
 });
 
 test(".G0 assigns the travel type if there's no extrusion", () => {
@@ -127,8 +128,8 @@ test(".G0 assigns the travel type if there's no extrusion", () => {
 
   interpreter.G0(command, job);
 
-  expect(job.paths.length).toEqual(1);
-  expect(job.paths[0].travelType).toEqual(PathType.Travel);
+  expect(job.paths.length).toEqual(0);
+  expect(job.inprogressPath?.travelType).toEqual(PathType.Travel);
 });
 
 test(".G0 assigns the extrusion type if there's extrusion", () => {
@@ -138,8 +139,8 @@ test(".G0 assigns the extrusion type if there's extrusion", () => {
 
   interpreter.G0(command, job);
 
-  expect(job.paths.length).toEqual(1);
-  expect(job.paths[0].travelType).toEqual('Extrusion');
+  expect(job.paths.length).toEqual(0);
+  expect(job.inprogressPath?.travelType).toEqual('Extrusion');
 });
 
 test('.G0 assigns the travel type if the extrusion is a retraction', () => {
@@ -149,8 +150,19 @@ test('.G0 assigns the travel type if the extrusion is a retraction', () => {
 
   interpreter.G0(command, job);
 
-  expect(job.paths.length).toEqual(1);
-  expect(job.paths[0].travelType).toEqual('Travel');
+  expect(job.paths.length).toEqual(0);
+  expect(job.inprogressPath?.travelType).toEqual('Travel');
+});
+
+test('.G0 assigns the travel type if the extrusion is a retraction', () => {
+  const command = new GCodeCommand('G0 E-2', 'g0', { e: -2 });
+  const interpreter = new Interpreter();
+  const job = new Job();
+
+  interpreter.G0(command, job);
+
+  expect(job.paths.length).toEqual(0);
+  expect(job.inprogressPath?.travelType).toEqual('Travel');
 });
 
 test('.G0 starts a new path if the travel type changes from Travel to Extrusion', () => {
@@ -162,9 +174,8 @@ test('.G0 starts a new path if the travel type changes from Travel to Extrusion'
 
   interpreter.G0(command2, job);
 
-  expect(job.paths.length).toEqual(2);
-  expect(job.paths[0].travelType).toEqual('Travel');
-  expect(job.paths[1].travelType).toEqual('Extrusion');
+  expect(job.paths.length).toEqual(1);
+  expect(job.inprogressPath?.travelType).toEqual('Extrusion');
 });
 
 test('.G0 starts a new path if the travel type changes from Extrusion to Travel', () => {
@@ -176,9 +187,8 @@ test('.G0 starts a new path if the travel type changes from Extrusion to Travel'
 
   interpreter.G0(command2, job);
 
-  expect(job.paths.length).toEqual(2);
-  expect(job.paths[0].travelType).toEqual('Extrusion');
-  expect(job.paths[1].travelType).toEqual('Travel');
+  expect(job.paths.length).toEqual(1);
+  expect(job.inprogressPath?.travelType).toEqual('Travel');
 });
 
 test('.G1 is an alias to .G0', () => {

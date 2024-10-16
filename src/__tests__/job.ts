@@ -12,8 +12,14 @@ describe('.isPlanar', () => {
   test('returns true if all extrusions are on the same plane', () => {
     const job = new Job();
 
-    append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
-    append_path(job, PathType.Extrusion, [1, 2, 0, 5, 6, 0]);
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Extrusion, [
+      [1, 2, 0],
+      [5, 6, 0]
+    ]);
 
     expect(job.isPlanar()).toEqual(true);
   });
@@ -21,8 +27,14 @@ describe('.isPlanar', () => {
   test('returns false if any extrusions are on a different plane', () => {
     const job = new Job();
 
-    append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
-    append_path(job, PathType.Extrusion, [1, 2, 0, 5, 6, 1]);
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Extrusion, [
+      [1, 2, 0],
+      [5, 6, 1]
+    ]);
 
     expect(job.isPlanar()).toEqual(false);
   });
@@ -30,9 +42,19 @@ describe('.isPlanar', () => {
   test('ignores travel paths', () => {
     const job = new Job();
 
-    append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
-    append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 1, 1, 2, 0]);
-    append_path(job, PathType.Extrusion, [1, 2, 0, 5, 6, 0]);
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 1],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Extrusion, [
+      [1, 2, 0],
+      [5, 6, 0]
+    ]);
 
     expect(job.isPlanar()).toEqual(true);
   });
@@ -42,19 +64,31 @@ describe('.layers', () => {
   test('returns null if the job is not planar', () => {
     const job = new Job();
 
-    append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
-    append_path(job, PathType.Extrusion, [5, 6, 0, 5, 6, 1]);
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Extrusion, [
+      [5, 6, 0],
+      [5, 6, 1]
+    ]);
 
-    expect(job.layers()).toEqual(null);
+    expect(job.layers).toEqual(null);
   });
 
   test('paths without z changes are on the same layer', () => {
     const job = new Job();
 
-    append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
-    append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 0]);
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 0]
+    ]);
 
-    const layers = job.layers();
+    const layers = job.layers;
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
@@ -65,10 +99,16 @@ describe('.layers', () => {
   test('travel paths moving z create a new layer', () => {
     const job = new Job();
 
-    append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
-    append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 1]);
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 1]
+    ]);
 
-    const layers = job.layers();
+    const layers = job.layers;
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
@@ -80,12 +120,24 @@ describe('.layers', () => {
   test('multiple travels in a row are on the same layer', () => {
     const job = new Job();
 
-    append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
-    append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 2]);
-    append_path(job, PathType.Travel, [5, 6, 2, 5, 6, 0]);
-    append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 2]);
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 2]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 2],
+      [5, 6, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 2]
+    ]);
 
-    const layers = job.layers();
+    const layers = job.layers;
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
@@ -97,13 +149,28 @@ describe('.layers', () => {
   test('extrusions after travels are on the same layer', () => {
     const job = new Job();
 
-    append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
-    append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 2]);
-    append_path(job, PathType.Travel, [5, 6, 2, 5, 6, 0]);
-    append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 2]);
-    append_path(job, PathType.Extrusion, [5, 6, 2, 5, 6, 2]);
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 2]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 2],
+      [5, 6, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 2]
+    ]);
+    append_path(job, PathType.Extrusion, [
+      [5, 6, 2],
+      [5, 6, 2]
+    ]);
 
-    const layers = job.layers();
+    const layers = job.layers;
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
@@ -117,11 +184,20 @@ describe('.extrusions', () => {
   test('returns all extrusion paths', () => {
     const job = new Job();
 
-    append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
-    append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 0]);
-    append_path(job, PathType.Extrusion, [1, 2, 0, 5, 6, 0]);
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 0]
+    ]);
+    append_path(job, PathType.Extrusion, [
+      [1, 2, 0],
+      [5, 6, 0]
+    ]);
 
-    const extrusions = job.extrusions();
+    const extrusions = job.extrusions;
 
     expect(extrusions).not.toBeNull();
     expect(extrusions).toBeInstanceOf(Array);
@@ -136,12 +212,24 @@ describe('.travels', () => {
   test('returns all travel paths', () => {
     const job = new Job();
 
-    append_path(job, PathType.Extrusion, [0, 0, 0, 1, 2, 0]);
-    append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 0]);
-    append_path(job, PathType.Extrusion, [1, 2, 0, 5, 6, 0]);
-    append_path(job, PathType.Travel, [5, 6, 0, 5, 6, 0]);
+    append_path(job, PathType.Extrusion, [
+      [0, 0, 0],
+      [1, 2, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 0]
+    ]);
+    append_path(job, PathType.Extrusion, [
+      [1, 2, 0],
+      [5, 6, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 0]
+    ]);
 
-    const travels = job.travels();
+    const travels = job.travels;
 
     expect(travels).not.toBeNull();
     expect(travels).toBeInstanceOf(Array);
@@ -152,8 +240,8 @@ describe('.travels', () => {
   });
 });
 
-function append_path(job, travelType, vertices) {
+function append_path(job, travelType, points) {
   const path = new Path(travelType, 0.6, 0.2, job.state.tool);
-  path.vertices = vertices;
-  job.paths.push(path);
+  points.forEach((point: [number, number, number]) => path.addPoint(...point));
+  job.addPath(path);
 }
