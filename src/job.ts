@@ -15,11 +15,6 @@ export class State {
   }
 }
 
-type JobOptions = {
-  state?: State;
-  minLayerThreshold?: number;
-};
-
 export class Job {
   paths: Path[];
   state: State;
@@ -29,7 +24,7 @@ export class Job {
   private indexers: Indexer[];
   inprogressPath: Path | undefined;
 
-  constructor(opts: JobOptions = {}) {
+  constructor(opts: { state?: State; minLayerThreshold?: number } = {}) {
     this.paths = [];
     this.state = opts.state || State.initial;
     this.layersPaths = [[]];
