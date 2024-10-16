@@ -469,6 +469,10 @@ export class WebGLPreview {
   }
 
   private renderGeometries(paths = this.job.extrusions): void {
+    if (!this.renderExtrusion || !this.renderTubes) {
+      return;
+    }
+
     if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
       let color: number;
       paths.forEach((path) => {
