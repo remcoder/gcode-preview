@@ -322,7 +322,7 @@ export class WebGLPreview {
 
     this.renderLayerIndex = 0;
 
-    if (this.job.layers() === null) {
+    if (this.job.layers === null) {
       console.warn('Job is not planar');
       this.render();
       return;
@@ -334,7 +334,7 @@ export class WebGLPreview {
   private renderFrameLoop(layerCount: number): Promise<void> {
     return new Promise((resolve) => {
       const loop = () => {
-        if (this.renderLayerIndex >= this.job.layers().length - 1) {
+        if (this.renderLayerIndex >= this.job.layers?.length - 1) {
           resolve();
         } else {
           this.renderFrame(layerCount);
@@ -348,11 +348,8 @@ export class WebGLPreview {
   private renderFrame(layerCount: number): void {
     this.group = this.createGroup('layer' + this.renderLayerIndex);
 
-    const endIndex = Math.min(this.renderLayerIndex + layerCount, this.job.layers().length - 1);
-    const pathsToRender = this.job
-      .layers()
-      .slice(this.renderLayerIndex, endIndex)
-      .flatMap((l) => l);
+    const endIndex = Math.min(this.renderLayerIndex + layerCount, this.job.layers?.length - 1);
+    const pathsToRender = this.job.layers?.slice(this.renderLayerIndex, endIndex)?.flatMap((l) => l);
 
     this.renderGeometries(pathsToRender.filter((path) => path.travelType === 'Extrusion'));
     this.renderLines(
@@ -433,7 +430,7 @@ export class WebGLPreview {
     });
   }
 
-  private renderLines(travels = this.job.travels(), extrusions = this.job.extrusions()): void {
+  private renderLines(travels = this.job.travels, extrusions = this.job.extrusions): void {
     if (this.renderTravel) {
       const material = new LineBasicMaterial({ color: this._travelColor, linewidth: this.lineWidth });
       this.disposables.push(material);
@@ -467,7 +464,7 @@ export class WebGLPreview {
     }
   }
 
-  private renderGeometries(paths = this.job.extrusions()): void {
+  private renderGeometries(paths = this.job.extrusions): void {
     if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
       let color: number;
       paths.forEach((path) => {
