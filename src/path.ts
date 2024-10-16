@@ -52,12 +52,17 @@ export class Path {
     return path;
   }
 
-  geometry(): BufferGeometry {
+  geometry(opts: { extrusionWidthOverride?: number; lineHeightOverride?: number } = {}): BufferGeometry {
     if (this._vertices.length < 3) {
       return new BufferGeometry();
     }
 
-    return new ExtrusionGeometry(this.path(), this.extrusionWidth, this.lineHeight, 4);
+    return new ExtrusionGeometry(
+      this.path(),
+      opts.extrusionWidthOverride ?? this.extrusionWidth,
+      opts.lineHeightOverride ?? this.lineHeight,
+      4
+    );
   }
 
   line(): LineSegmentsGeometry {
