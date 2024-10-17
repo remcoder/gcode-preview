@@ -43,6 +43,7 @@ export const presets = {
     title: 'Vase mode',
     file: 'gcodes/vase.gcode',
     lineWidth: 0,
+    lineHeight: 0.4,
     renderExtrusion: true,
     renderTubes: true,
     extrusionColor: ['rgb(84,74,187)'],
