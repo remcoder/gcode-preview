@@ -56,74 +56,13 @@ type singleLetter =
   | 'Z';
 type CommandParams = { [key in singleLetter]?: number };
 
-export enum Code {
-  G0 = 'G0',
-  G1 = 'G1',
-  G2 = 'G2',
-  G3 = 'G3',
-  G20 = 'G20',
-  G21 = 'G21',
-  G28 = 'G28',
-  T0 = 'T0',
-  T1 = 'T1',
-  T2 = 'T2',
-  T3 = 'T3',
-  T4 = 'T4',
-  T5 = 'T5',
-  T6 = 'T6',
-  T7 = 'T7'
-}
 export class GCodeCommand {
-  public code?: Code;
   constructor(
     public src: string,
     public gcode: string,
     public params: CommandParams,
     public comment?: string
-  ) {
-    this.code = this.match(gcode);
-  }
-
-  match(gcode: string): Code {
-    switch (gcode) {
-      case 'g0':
-      case 'g00':
-        return Code.G0;
-      case 'g1':
-      case 'g01':
-        return Code.G1;
-      case 'g2':
-      case 'g02':
-        return Code.G2;
-      case 'g3':
-      case 'g03':
-        return Code.G3;
-      case 'g20':
-        return Code.G20;
-      case 'g21':
-        return Code.G21;
-      case 'g28':
-        return Code.G28;
-      case 't0':
-        return Code.T0;
-      case 't1':
-        return Code.T1;
-      case 't2':
-        return Code.T2;
-      case 't3':
-        return Code.T3;
-      case 't4':
-        return Code.T4;
-      case 't5':
-        return Code.T5;
-      case 't6':
-        return Code.T6;
-      case 't7':
-        return Code.T7;
-      default:
-        return undefined;
-    }
-  }
+  ) {}
 }
 
 type Metadata = { thumbnails: Record<string, Thumbnail> };
@@ -163,7 +102,7 @@ export class Parser {
       .slice(1)
       .map((s) => s.trim());
 
-    const gcode = !parts.length ? '' : `${parts[0]?.toLowerCase()}${parts[1]}`;
+    const gcode = !parts.length ? '' : `${parts[0]?.toLowerCase()}${Number(parts[1])}`;
     const params = this.parseParams(parts.slice(2));
     return new GCodeCommand(line, gcode, params, comment);
   }
