@@ -21,9 +21,12 @@ import {
   Group,
   MeshLambertMaterial,
   PerspectiveCamera,
+  Plane,
+  PlaneHelper,
   PointLight,
   REVISION,
   Scene,
+  Vector3,
   WebGLRenderer
 } from 'three';
 
@@ -103,6 +106,10 @@ export class WebGLPreview {
   private animationFrameId?: number;
   private renderLayerIndex?: number;
   private _geometries: Record<number, BufferGeometry[]> = {};
+  private minPlane = new Plane(new Vector3(0, 1, 0), 0.6);
+  private maxPlane = new Plane(new Vector3(0, -1, 0), 0.1);
+  planeHelper = new PlaneHelper(this.minPlane, 200, 0xff0000);
+  planeHelper2 = new PlaneHelper(this.maxPlane, 200, 0x00ff00);
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
@@ -180,7 +187,10 @@ export class WebGLPreview {
       const container = document.getElementById(this.targetId);
       if (!container) throw new Error('Unable to find element ' + this.targetId);
 
-      this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true });
+      this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true, antialias: true, alpha: true });
+      this.renderer.clippingPlanes = [this.minPlane, this.maxPlane];
+      this.renderer.localClippingEnabled = true;
+      this.renderer.autoClear = false;
       this.canvas = this.renderer.domElement;
 
       container.appendChild(this.canvas);
@@ -295,6 +305,11 @@ export class WebGLPreview {
       this.scene.add(light);
       this.scene.add(dLight);
     }
+
+    this.planeHelper.visible = true;
+    this.planeHelper2.visible = true;
+    this.scene.add(this.planeHelper);
+    this.scene.add(this.planeHelper2);
   }
 
   private createGroup(name: string): Group {
@@ -505,8 +520,17 @@ export class WebGLPreview {
   }
 
   private createBatchMesh(color: number): BatchedMesh {
+    // debugger;
     const geometries = this._geometries[color];
-    const material = new MeshLambertMaterial({ color: color, wireframe: this._wireframe });
+    this.maxPlane.constant = (this.endLayer + 2) * 0.02;
+    this.minPlane.constant = (this.startLayer - 1) * -0.02;
+
+    console.log('clipping planes', this.maxPlane, this.minPlane);
+    const material = new MeshLambertMaterial({
+      color: color,
+      wireframe: this._wireframe,
+      clippingPlanes: [this.maxPlane, this.minPlane]
+    });
     this.disposables.push(material);
 
     const maxVertexCount = geometries.reduce((acc, geometry) => geometry.attributes.position.count * 3 + acc, 0);
