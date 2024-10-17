@@ -53,6 +53,7 @@ export const app = (window.app = createApp({
     const updateUI = async () => {
       const {
         parser,
+        countLayers,
         extrusionColor,
         topLayerColor,
         lastSegmentColor,
@@ -64,17 +65,16 @@ export const app = (window.app = createApp({
         renderExtrusion,
         lineWidth,
         renderTubes,
-        extrusionWidth,
-        job
+        extrusionWidth
       } = preview;
       const { thumbnails } = parser.metadata;
 
       thumbnail.value = thumbnails['220x124']?.src;
-      layerCount.value = job.layers?.length;
+      layerCount.value = countLayers;
       const colors = extrusionColor instanceof Array ? extrusionColor : [extrusionColor];
       const currentSettings = {
-        maxLayer: job.layers?.length,
-        endLayer: job.layers?.length,
+        maxLayer: countLayers,
+        endLayer: countLayers,
         singleLayerMode,
         renderTravel,
         travelColor: '#' + travelColor.getHexString(),
@@ -93,7 +93,7 @@ export const app = (window.app = createApp({
       };
 
       Object.assign(settings.value, currentSettings);
-      preview.endLayer = job.layers?.length;
+      preview.endLayer = countLayers;
     };
 
     const loadGCodeFromServer = async (filename) => {
@@ -126,7 +126,7 @@ export const app = (window.app = createApp({
             preview.render();
             return;
           }
-          await preview.renderAnimated(Math.ceil(preview.job.layers?.length / 60));
+          await preview.renderAnimated(Math.ceil(preview.countLayers / 60));
         } else {
           preview.render();
         }

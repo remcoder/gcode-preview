@@ -91,7 +91,7 @@ export class WebGLPreview {
   nonTravelmoves: string[] = [];
   disableGradient = false;
 
-  job: Job;
+  private job: Job;
   interpreter = new Interpreter();
   parser = new Parser();
 
@@ -254,6 +254,14 @@ export class WebGLPreview {
     this._lastSegmentColor = value !== undefined ? new Color(value) : undefined;
   }
 
+  get countLayers(): number {
+    return this.job.layers.length;
+  }
+
+  get isPlanar(): boolean {
+    return this.job.isPlanar();
+  }
+
   /** @internal */
   animate(): void {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
@@ -353,7 +361,7 @@ export class WebGLPreview {
     this.group = this.createGroup('layer' + this.renderLayerIndex);
 
     const endIndex = Math.min(this.renderLayerIndex + layerCount, this.job.layers?.length - 1);
-    const pathsToRender = this.job.layers?.slice(this.renderLayerIndex, endIndex)?.flatMap((l) => l);
+    const pathsToRender = this.job.layers.slice(this.renderLayerIndex, endIndex)?.flatMap((l) => l.paths);
 
     this.renderGeometries(pathsToRender.filter((path) => path.travelType === 'Extrusion'));
     this.renderLines(
