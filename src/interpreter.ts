@@ -1,19 +1,24 @@
 import { Path, PathType } from './path';
-import { Code, GCodeCommand } from './gcode-parser';
+import { GCodeCommand } from './gcode-parser';
 import { Job } from './job';
 
 export class Interpreter {
+  // eslint-disable-next-line no-unused-vars
+  [key: string]: (...args: unknown[]) => unknown;
   execute(commands: GCodeCommand[], job = new Job()): Job {
     commands.forEach((command) => {
-      if (command.code !== undefined) {
-        this[command.code](command, job);
+      if (command.gcode !== undefined) {
+        if (this[command.gcode] === undefined) {
+          return;
+        }
+        this[command.gcode](command, job);
       }
     });
 
     return job;
   }
 
-  G0(command: GCodeCommand, job: Job): void {
+  g0(command: GCodeCommand, job: Job): void {
     const { x, y, z, e } = command.params;
     const { state } = job;
 
@@ -31,14 +36,14 @@ export class Interpreter {
     currentPath.addPoint(state.x, state.y, state.z);
   }
 
-  G1 = this.G0;
+  g1 = this.g0;
 
-  G2(command: GCodeCommand, job: Job): void {
+  g2(command: GCodeCommand, job: Job): void {
     const { x, y, z, e } = command.params;
     let { i, j, r } = command.params;
     const { state } = job;
 
-    const cw = command.code === Code.G2;
+    const cw = command.gcode === 'g2';
     let currentPath = job.inprogressPath;
     const pathType = e ? PathType.Extrusion : PathType.Travel;
 
@@ -128,44 +133,44 @@ export class Interpreter {
     currentPath.addPoint(state.x, state.y, state.z);
   }
 
-  G3 = this.G2;
+  g3 = this.g2;
 
-  G20(command: GCodeCommand, job: Job): void {
+  g20(command: GCodeCommand, job: Job): void {
     job.state.units = 'in';
   }
 
-  G21(command: GCodeCommand, job: Job): void {
+  g21(command: GCodeCommand, job: Job): void {
     job.state.units = 'mm';
   }
 
-  G28(command: GCodeCommand, job: Job): void {
+  g28(command: GCodeCommand, job: Job): void {
     job.state.x = 0;
     job.state.y = 0;
     job.state.z = 0;
   }
 
-  T0(command: GCodeCommand, job: Job): void {
+  t0(command: GCodeCommand, job: Job): void {
     job.state.tool = 0;
   }
-  T1(command: GCodeCommand, job: Job): void {
+  t1(command: GCodeCommand, job: Job): void {
     job.state.tool = 1;
   }
-  T2(command: GCodeCommand, job: Job): void {
+  t2(command: GCodeCommand, job: Job): void {
     job.state.tool = 2;
   }
-  T3(command: GCodeCommand, job: Job): void {
+  t3(command: GCodeCommand, job: Job): void {
     job.state.tool = 3;
   }
-  T4(command: GCodeCommand, job: Job): void {
+  t4(command: GCodeCommand, job: Job): void {
     job.state.tool = 4;
   }
-  T5(command: GCodeCommand, job: Job): void {
+  t5(command: GCodeCommand, job: Job): void {
     job.state.tool = 5;
   }
-  T6(command: GCodeCommand, job: Job): void {
+  t6(command: GCodeCommand, job: Job): void {
     job.state.tool = 6;
   }
-  T7(command: GCodeCommand, job: Job): void {
+  t7(command: GCodeCommand, job: Job): void {
     job.state.tool = 7;
   }
 
