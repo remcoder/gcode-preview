@@ -258,10 +258,6 @@ export class WebGLPreview {
     return this.job.layers.length;
   }
 
-  get isPlanar(): boolean {
-    return this.job.isPlanar();
-  }
-
   /** @internal */
   animate(): void {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
