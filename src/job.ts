@@ -15,22 +15,33 @@ export class State {
   }
 }
 
+export class Layer {
+  public layer: number;
+  public paths: Path[];
+  public lineNumber: number;
+  public height: number = 0;
+  constructor(layer: number, paths: Path[], lineNumber: number, height: number = 0) {
+    this.layer = layer;
+    this.paths = paths;
+    this.lineNumber = lineNumber;
+    this.height = height;
+  }
+}
+
 export class Job {
-  paths: Path[];
+  paths: Path[] = [];
   state: State;
   private travelPaths: Path[] = [];
   private extrusionPaths: Path[] = [];
-  private layersPaths: Path[][] | null;
+  private _layers: Layer[] = [];
   private indexers: Indexer[];
   inprogressPath: Path | undefined;
 
   constructor(opts: { state?: State; minLayerThreshold?: number } = {}) {
-    this.paths = [];
     this.state = opts.state || State.initial;
-    this.layersPaths = [[]];
     this.indexers = [
       new TravelTypeIndexer({ travel: this.travelPaths, extrusion: this.extrusionPaths }),
-      new LayersIndexer(this.layersPaths, opts.minLayerThreshold)
+      new LayersIndexer(this._layers, opts.minLayerThreshold)
     ];
   }
 
@@ -42,8 +53,8 @@ export class Job {
     return this.travelPaths;
   }
 
-  get layers(): Path[][] | null {
-    return this.layersPaths;
+  get layers(): Layer[] {
+    return this._layers;
   }
 
   finishPath(): void {
@@ -61,7 +72,7 @@ export class Job {
   }
 
   isPlanar(): boolean {
-    return this.layersPaths !== null;
+    return this.layers.length > 0;
   }
 
   private indexPath(path: Path): void {
@@ -71,7 +82,7 @@ export class Job {
       } catch (e) {
         if (e instanceof NonApplicableIndexer) {
           if (e instanceof NonPlanarPathError) {
-            this.layersPaths = null;
+            this._layers = [];
           }
           const i = this.indexers.indexOf(indexer);
           this.indexers.splice(i, 1);
@@ -85,8 +96,8 @@ export class Job {
 
 class NonApplicableIndexer extends Error {}
 export class Indexer {
-  protected indexes: Record<string, Path[]> | Path[][];
-  constructor(indexes: Record<string, Path[]> | Path[][]) {
+  protected indexes: Record<string, Path[]> | Layer[];
+  constructor(indexes: Record<string, Path[]> | Layer[]) {
     this.indexes = indexes;
   }
   sortIn(path: Path): void {
@@ -117,9 +128,9 @@ class NonPlanarPathError extends NonApplicableIndexer {
 }
 export class LayersIndexer extends Indexer {
   static readonly DEFAULT_TOLERANCE = 0.05;
-  protected declare indexes: Path[][];
+  protected declare indexes: Layer[];
   private tolerance: number;
-  constructor(indexes: Path[][], tolerance: number = LayersIndexer.DEFAULT_TOLERANCE) {
+  constructor(indexes: Layer[], tolerance: number = LayersIndexer.DEFAULT_TOLERANCE) {
     super(indexes);
     this.tolerance = tolerance;
   }
@@ -130,7 +141,7 @@ export class LayersIndexer extends Indexer {
     }
 
     if (path.travelType === PathType.Extrusion) {
-      this.lastLayer().push(path);
+      this.lastLayer().paths.push(path);
     } else {
       const verticalTravels = path.vertices
         .map((_, i, arr) => {
@@ -140,20 +151,16 @@ export class LayersIndexer extends Indexer {
         })
         .filter((z) => z !== undefined);
       const hasVerticalTravel = verticalTravels.length > 0;
-      const hasExtrusions = this.lastLayer().find((p) => p.travelType === PathType.Extrusion);
+      const hasExtrusions = this.lastLayer().paths.find((p) => p.travelType === PathType.Extrusion);
 
       if (hasVerticalTravel && hasExtrusions) {
         this.createLayer();
       }
-      this.lastLayer().push(path);
+      this.lastLayer().paths.push(path);
     }
   }
 
-  private lastLayer(): Path[] {
-    if (this.indexes === undefined) {
-      this.indexes = [[]];
-    }
-
+  private lastLayer(): Layer {
     if (this.indexes[this.indexes.length - 1] === undefined) {
       this.createLayer();
       return this.lastLayer();
@@ -162,7 +169,6 @@ export class LayersIndexer extends Indexer {
   }
 
   private createLayer(): void {
-    const newLayer: Path[] = [];
-    this.indexes.push(newLayer);
+    this.indexes.push(new Layer(this.indexes.length, [], 0));
   }
 }

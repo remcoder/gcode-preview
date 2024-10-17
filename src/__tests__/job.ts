@@ -73,7 +73,7 @@ describe('.layers', () => {
       [5, 6, 1]
     ]);
 
-    expect(job.layers).toEqual(null);
+    expect(job.layers).toEqual([]);
   });
 
   test('paths without z changes are on the same layer', () => {
@@ -92,8 +92,8 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(1);
-    expect(layers?.[0].length).toEqual(2);
+    expect(layers.length).toEqual(1);
+    expect(layers[0].paths.length).toEqual(2);
   });
 
   test('travel paths moving z above the default tolerance create a new layer', () => {
@@ -112,9 +112,9 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(2);
-    expect(layers?.[0].length).toEqual(1);
-    expect(layers?.[1].length).toEqual(1);
+    expect(layers.length).toEqual(2);
+    expect(layers[0].paths.length).toEqual(1);
+    expect(layers[1].paths.length).toEqual(1);
   });
 
   test('travel paths moving z under the default tolerance are on the same layer', () => {
@@ -133,8 +133,8 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(1);
-    expect(layers?.[0].length).toEqual(2);
+    expect(layers.length).toEqual(1);
+    expect(layers[0].paths.length).toEqual(2);
   });
 
   test('Tolerance can be set', () => {
@@ -153,8 +153,8 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(1);
-    expect(layers?.[0].length).toEqual(2);
+    expect(layers.length).toEqual(1);
+    expect(layers[0].paths.length).toEqual(2);
   });
 
   test('multiple travels in a row are on the same layer', () => {
@@ -181,9 +181,9 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(2);
-    expect(layers?.[0].length).toEqual(1);
-    expect(layers?.[1].length).toEqual(3);
+    expect(layers.length).toEqual(2);
+    expect(layers[0].paths.length).toEqual(1);
+    expect(layers[1].paths.length).toEqual(3);
   });
 
   test('extrusions after travels are on the same layer', () => {
@@ -214,9 +214,9 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(2);
-    expect(layers?.[0].length).toEqual(1);
-    expect(layers?.[1].length).toEqual(4);
+    expect(layers.length).toEqual(2);
+    expect(layers[0].paths.length).toEqual(1);
+    expect(layers[1].paths.length).toEqual(4);
   });
 });
 
