@@ -272,7 +272,13 @@ export class WebGLPreview {
   set startLayer(value: number) {
     this._startLayer = value;
     if (this.countLayers > 0) {
-      this.minPlane.constant = -this.minPlane.normal.y * this.job.layers[value]?.z;
+      if (value <= this.countLayers) {
+        const layer = this.job.layers[value - 1];
+        // The geometry should be changed to have it's center in the middle line height
+        this.minPlane.constant = -this.minPlane.normal.y * layer.z - layer.height * 0.5;
+      } else {
+        this.minPlane.constant = 0;
+      }
     }
   }
 
@@ -282,8 +288,12 @@ export class WebGLPreview {
   set endLayer(value: number) {
     this._endLayer = value;
     if (this.countLayers > 0) {
-      const layer = this.job.layers[value - 1];
-      this.maxPlane.constant = -this.maxPlane.normal.y * (layer?.z + layer.height);
+      if (value <= this.countLayers) {
+        const layer = this.job.layers[value - 1];
+        this.maxPlane.constant = -this.maxPlane.normal.y * layer.z + layer.height * 0.5;
+      } else {
+        this.maxPlane.constant = 0;
+      }
     }
   }
 
