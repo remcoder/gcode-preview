@@ -57,18 +57,32 @@ export class Job {
     return this._layers;
   }
 
+  addPath(path: Path): void {
+    this.paths.push(path);
+    this.indexPath(path);
+  }
+
   finishPath(): void {
     if (this.inprogressPath === undefined) {
       return;
     }
     if (this.inprogressPath.vertices.length > 0) {
       this.addPath(this.inprogressPath);
+      this.inprogressPath = undefined;
     }
   }
 
-  addPath(path: Path): void {
-    this.paths.push(path);
-    this.indexPath(path);
+  resumeLastPath(): void {
+    this.inprogressPath = this.paths.pop();
+    [this.extrusionPaths, this.travelPaths, this.layers[this.layers.length - 1]?.paths].forEach((indexer) => {
+      if (indexer === undefined || indexer.length === 0) {
+        return;
+      }
+      const travelIndex = indexer.indexOf(this.inprogressPath);
+      if (travelIndex > -1) {
+        indexer.splice(travelIndex, 1);
+      }
+    });
   }
 
   isPlanar(): boolean {

@@ -280,8 +280,116 @@ describe('.travels', () => {
   });
 });
 
-function append_path(job, travelType, points) {
+describe('.addPath', () => {
+  test('adds the path to the job', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    job.addPath(path);
+
+    expect(job.paths).toEqual([path]);
+  });
+
+  test('indexes the path', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    job.addPath(path);
+
+    expect(job.extrusions).toEqual([path]);
+  });
+});
+
+describe('.finishPath', () => {
+  test('does nothing if there is no in progress path', () => {
+    const job = new Job();
+
+    job.finishPath();
+
+    expect(job.paths).toEqual([]);
+  });
+
+  test('adds the in progress path to the job', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    path.addPoint(0, 0, 0);
+
+    job.inprogressPath = path;
+    job.finishPath();
+
+    expect(job.paths).toEqual([path]);
+  });
+
+  test('ignores empty paths', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    job.inprogressPath = path;
+    job.finishPath();
+
+    expect(job.paths).toEqual([]);
+  });
+
+  test('clears the in progress path', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    path.addPoint(0, 0, 0);
+
+    job.inprogressPath = path;
+    job.finishPath();
+
+    expect(job.inprogressPath).toBeUndefined();
+  });
+});
+
+describe('.resumeLastPath', () => {
+  test('pops the last path and makes it in progress', () => {
+    const job = new Job();
+
+    job.resumeLastPath();
+
+    expect(job.paths).toEqual([]);
+  });
+
+  test('adds the in progress path to the job', () => {
+    const job = new Job();
+
+    const path = append_path(job, PathType.Extrusion, [[0, 0, 0]]);
+
+    job.resumeLastPath();
+
+    expect(job.inprogressPath).toEqual(path);
+    expect(job.paths).toEqual([]);
+  });
+
+  test('clears the in progress path', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    path.addPoint(0, 0, 0);
+
+    job.inprogressPath = path;
+    job.resumeLastPath();
+
+    expect(job.inprogressPath).toBeUndefined();
+  });
+
+  test('the path is removed from indexes to not appear twice', () => {
+    const job = new Job();
+
+    append_path(job, PathType.Extrusion, [[0, 0, 0]]);
+    job.resumeLastPath();
+
+    expect(job.extrusions).toEqual([]);
+    expect(job.layers[job.layers.length - 1].paths).toEqual([]);
+  });
+});
+
+function append_path(job: Job, travelType, points: [number, number, number][]): Path {
   const path = new Path(travelType, 0.6, 0.2, job.state.tool);
   points.forEach((point: [number, number, number]) => path.addPoint(...point));
   job.addPath(path);
+  return path;
 }
