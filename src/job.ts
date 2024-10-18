@@ -15,22 +15,35 @@ export class State {
   }
 }
 
+export class Layer {
+  public layer: number;
+  public paths: Path[];
+  public lineNumber: number;
+  public height: number = 0;
+  public z: number = 0;
+  constructor(layer: number, paths: Path[], lineNumber: number, height: number = 0, z: number = 0) {
+    this.layer = layer;
+    this.paths = paths;
+    this.lineNumber = lineNumber;
+    this.height = height;
+    this.z = z;
+  }
+}
+
 export class Job {
-  paths: Path[];
+  paths: Path[] = [];
   state: State;
   private travelPaths: Path[] = [];
   private extrusionPaths: Path[] = [];
-  private layersPaths: Path[][] | null;
+  private _layers: Layer[] = [];
   private indexers: Indexer[];
   inprogressPath: Path | undefined;
 
   constructor(opts: { state?: State; minLayerThreshold?: number } = {}) {
-    this.paths = [];
     this.state = opts.state || State.initial;
-    this.layersPaths = [[]];
     this.indexers = [
       new TravelTypeIndexer({ travel: this.travelPaths, extrusion: this.extrusionPaths }),
-      new LayersIndexer(this.layersPaths, opts.minLayerThreshold)
+      new LayersIndexer(this._layers, opts.minLayerThreshold)
     ];
   }
 
@@ -42,8 +55,13 @@ export class Job {
     return this.travelPaths;
   }
 
-  get layers(): Path[][] | null {
-    return this.layersPaths;
+  get layers(): Layer[] {
+    return this._layers;
+  }
+
+  addPath(path: Path): void {
+    this.paths.push(path);
+    this.indexPath(path);
   }
 
   finishPath(): void {
@@ -52,16 +70,25 @@ export class Job {
     }
     if (this.inprogressPath.vertices.length > 0) {
       this.addPath(this.inprogressPath);
+      this.inprogressPath = undefined;
     }
   }
 
-  addPath(path: Path): void {
-    this.paths.push(path);
-    this.indexPath(path);
+  resumeLastPath(): void {
+    this.inprogressPath = this.paths.pop();
+    [this.extrusionPaths, this.travelPaths, this.layers[this.layers.length - 1]?.paths].forEach((indexer) => {
+      if (indexer === undefined || indexer.length === 0) {
+        return;
+      }
+      const travelIndex = indexer.indexOf(this.inprogressPath);
+      if (travelIndex > -1) {
+        indexer.splice(travelIndex, 1);
+      }
+    });
   }
 
   isPlanar(): boolean {
-    return this.layersPaths !== null;
+    return this.layers.length > 0;
   }
 
   private indexPath(path: Path): void {
@@ -71,7 +98,7 @@ export class Job {
       } catch (e) {
         if (e instanceof NonApplicableIndexer) {
           if (e instanceof NonPlanarPathError) {
-            this.layersPaths = null;
+            this._layers = [];
           }
           const i = this.indexers.indexOf(indexer);
           this.indexers.splice(i, 1);
@@ -85,8 +112,8 @@ export class Job {
 
 class NonApplicableIndexer extends Error {}
 export class Indexer {
-  protected indexes: Record<string, Path[]> | Path[][];
-  constructor(indexes: Record<string, Path[]> | Path[][]) {
+  protected indexes: Record<string, Path[]> | Layer[];
+  constructor(indexes: Record<string, Path[]> | Layer[]) {
     this.indexes = indexes;
   }
   sortIn(path: Path): void {
@@ -117,52 +144,40 @@ class NonPlanarPathError extends NonApplicableIndexer {
 }
 export class LayersIndexer extends Indexer {
   static readonly DEFAULT_TOLERANCE = 0.05;
-  protected declare indexes: Path[][];
+  protected declare indexes: Layer[];
   private tolerance: number;
-  constructor(indexes: Path[][], tolerance: number = LayersIndexer.DEFAULT_TOLERANCE) {
+  constructor(indexes: Layer[], tolerance: number = LayersIndexer.DEFAULT_TOLERANCE) {
     super(indexes);
     this.tolerance = tolerance;
   }
 
   sortIn(path: Path): void {
-    if (path.travelType === PathType.Extrusion && path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2])) {
+    if (
+      path.travelType === PathType.Extrusion &&
+      path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] - arr[2] >= this.tolerance)
+    ) {
       throw new NonPlanarPathError();
     }
 
-    if (path.travelType === PathType.Extrusion) {
-      this.lastLayer().push(path);
-    } else {
-      const verticalTravels = path.vertices
-        .map((_, i, arr) => {
-          if (i % 3 === 2 && arr[i] - arr[2] > this.tolerance) {
-            return arr[i] - arr[2];
-          }
-        })
-        .filter((z) => z !== undefined);
-      const hasVerticalTravel = verticalTravels.length > 0;
-      const hasExtrusions = this.lastLayer().find((p) => p.travelType === PathType.Extrusion);
-
-      if (hasVerticalTravel && hasExtrusions) {
-        this.createLayer();
-      }
-      this.lastLayer().push(path);
+    if (this.indexes[this.indexes.length - 1] === undefined) {
+      this.createLayer(path.vertices[2]);
     }
+
+    if (path.travelType === PathType.Extrusion) {
+      if (path.vertices[2] - (this.lastLayer().z || 0) > this.tolerance) {
+        this.createLayer(path.vertices[2]);
+      }
+    }
+    this.lastLayer().paths.push(path);
   }
 
-  private lastLayer(): Path[] {
-    if (this.indexes === undefined) {
-      this.indexes = [[]];
-    }
-
-    if (this.indexes[this.indexes.length - 1] === undefined) {
-      this.createLayer();
-      return this.lastLayer();
-    }
+  private lastLayer(): Layer {
     return this.indexes[this.indexes.length - 1];
   }
 
-  private createLayer(): void {
-    const newLayer: Path[] = [];
-    this.indexes.push(newLayer);
+  private createLayer(z: number): void {
+    const layerNumber = this.indexes.length;
+    const height = z - this.lastLayer()?.z;
+    this.indexes.push(new Layer(this.indexes.length, [], layerNumber, height, z));
   }
 }

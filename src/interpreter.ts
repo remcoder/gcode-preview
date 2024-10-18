@@ -6,6 +6,7 @@ export class Interpreter {
   // eslint-disable-next-line no-unused-vars
   [key: string]: (...args: unknown[]) => unknown;
   execute(commands: GCodeCommand[], job = new Job()): Job {
+    job.resumeLastPath();
     commands.forEach((command) => {
       if (command.gcode !== undefined) {
         if (this[command.gcode] === undefined) {
@@ -14,6 +15,7 @@ export class Interpreter {
         this[command.gcode](command, job);
       }
     });
+    job.finishPath();
 
     return job;
   }
