@@ -9,8 +9,7 @@ export const presets = {
       x: 180,
       y: 180,
       z: 100
-    },
-    renderTubes: false
+    }
   },
   mach3: {
     title: 'CNC tool path',
