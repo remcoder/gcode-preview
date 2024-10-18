@@ -20,11 +20,13 @@ export class Layer {
   public paths: Path[];
   public lineNumber: number;
   public height: number = 0;
-  constructor(layer: number, paths: Path[], lineNumber: number, height: number = 0) {
+  public z: number = 0;
+  constructor(layer: number, paths: Path[], lineNumber: number, height: number = 0, z: number = 0) {
     this.layer = layer;
     this.paths = paths;
     this.lineNumber = lineNumber;
     this.height = height;
+    this.z = z;
   }
 }
 
@@ -153,6 +155,9 @@ export class LayersIndexer extends Indexer {
     if (path.travelType === PathType.Extrusion && path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2])) {
       throw new NonPlanarPathError();
     }
+    if (this.indexes[this.indexes.length - 1] === undefined) {
+      this.createLayer(path.vertices[2]);
+    }
 
     if (path.travelType === PathType.Extrusion) {
       this.lastLayer().paths.push(path);
@@ -168,21 +173,19 @@ export class LayersIndexer extends Indexer {
       const hasExtrusions = this.lastLayer().paths.find((p) => p.travelType === PathType.Extrusion);
 
       if (hasVerticalTravel && hasExtrusions) {
-        this.createLayer();
+        this.createLayer(path.vertices[2]);
       }
       this.lastLayer().paths.push(path);
     }
   }
 
   private lastLayer(): Layer {
-    if (this.indexes[this.indexes.length - 1] === undefined) {
-      this.createLayer();
-      return this.lastLayer();
-    }
     return this.indexes[this.indexes.length - 1];
   }
 
-  private createLayer(): void {
-    this.indexes.push(new Layer(this.indexes.length, [], 0));
+  private createLayer(z: number): void {
+    const layerNumber = this.indexes.length;
+    const height = z - this.lastLayer()?.z;
+    this.indexes.push(new Layer(this.indexes.length, [], layerNumber, height, z));
   }
 }
