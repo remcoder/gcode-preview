@@ -729,7 +729,7 @@ export class WebGLPreview {
 
     const matLine = new LineMaterial({
       color: color,
-      linewidth: this.lineWidth / (1000 * window.devicePixelRatio)
+      linewidth: this.lineWidth 
     });
     this.disposables.push(matLine);
 
