@@ -273,7 +273,9 @@ export class WebGLPreview {
   }
   set startLayer(value: number) {
     this._startLayer = value;
-    this.minPlane.constant = (value - 1) * 0.02;
+    if (this.countLayers > 0) {
+      this.minPlane.constant = -this.minPlane.normal.y * this.job.layers[value]?.z;
+    }
   }
 
   get endLayer(): number {
@@ -281,7 +283,10 @@ export class WebGLPreview {
   }
   set endLayer(value: number) {
     this._endLayer = value;
-    this.maxPlane.constant = (value + 2) * -0.02;
+    if (this.countLayers > 0) {
+      const layer = this.job.layers[value - 1];
+      this.maxPlane.constant = -this.maxPlane.normal.y * (layer?.z + layer.height);
+    }
   }
 
   /** @internal */
