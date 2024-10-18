@@ -81,8 +81,8 @@ export class WebGLPreview {
   extrusionWidth?: number;
   lineWidth?: number;
   lineHeight?: number;
-  startLayer?: number;
-  endLayer?: number;
+  _startLayer?: number;
+  _endLayer?: number;
   singleLayerMode = false;
   buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
@@ -106,8 +106,8 @@ export class WebGLPreview {
   private animationFrameId?: number;
   private renderLayerIndex?: number;
   private _geometries: Record<number, BufferGeometry[]> = {};
-  private minPlane = new Plane(new Vector3(0, 1, 0), 0.6);
-  private maxPlane = new Plane(new Vector3(0, -1, 0), 0.1);
+  private minPlane = new Plane(new Vector3(0, -1, 0), 0.6);
+  private maxPlane = new Plane(new Vector3(0, 1, 0), 0.1);
   planeHelper = new PlaneHelper(this.minPlane, 200, 0xff0000);
   planeHelper2 = new PlaneHelper(this.maxPlane, 200, 0x00ff00);
 
@@ -266,6 +266,22 @@ export class WebGLPreview {
 
   get countLayers(): number {
     return this.job.layers.length;
+  }
+
+  get startLayer(): number {
+    return this._startLayer;
+  }
+  set startLayer(value: number) {
+    this._startLayer = value;
+    this.minPlane.constant = (value - 1) * 0.02;
+  }
+
+  get endLayer(): number {
+    return this._endLayer;
+  }
+  set endLayer(value: number) {
+    this._endLayer = value;
+    this.maxPlane.constant = (value + 2) * -0.02;
   }
 
   /** @internal */
@@ -520,12 +536,8 @@ export class WebGLPreview {
   }
 
   private createBatchMesh(color: number): BatchedMesh {
-    // debugger;
     const geometries = this._geometries[color];
-    this.maxPlane.constant = (this.endLayer + 2) * 0.02;
-    this.minPlane.constant = (this.startLayer - 1) * -0.02;
 
-    console.log('clipping planes', this.maxPlane, this.minPlane);
     const material = new MeshLambertMaterial({
       color: color,
       wireframe: this._wireframe,
