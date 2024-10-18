@@ -12,15 +12,11 @@ import { DevGUI, DevModeOptions } from './dev-gui';
 import {
   AmbientLight,
   BatchedMesh,
-  BufferGeometry,
   Color,
   ColorRepresentation,
   Euler,
-  Float32BufferAttribute,
   Fog,
   Group,
-  LineBasicMaterial,
-  LineSegments,
   MeshLambertMaterial,
   PerspectiveCamera,
   PointLight,
@@ -169,7 +165,7 @@ export class WebGLPreview {
     this.targetId = opts.targetId;
     this.endLayer = opts.endLayer;
     this.startLayer = opts.startLayer;
-    this.lineWidth = opts.lineWidth;
+    this.lineWidth = opts.lineWidth ?? 1;
     this.lineHeight = opts.lineHeight;
     this.buildVolume = opts.buildVolume && new BuildVolume(opts.buildVolume.x, opts.buildVolume.y, opts.buildVolume.z);
     this.initialCameraPosition = opts.initialCameraPosition ?? this.initialCameraPosition;
@@ -677,19 +673,19 @@ export class WebGLPreview {
 
   /** @internal */
   addLine(vertices: number[], color: number): void {
-    if (typeof this.lineWidth === 'number' && this.lineWidth > 0) {
-      this.addThickLine(vertices, color);
-      return;
-    }
-
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+    const geometry = new LineSegmentsGeometry();
     this.disposables.push(geometry);
-    const material = new LineBasicMaterial({ color: color });
-    this.disposables.push(material);
-    const lineSegments = new LineSegments(geometry, material);
 
-    this.group?.add(lineSegments);
+    const matLine = new LineMaterial({
+      color: color,
+      linewidth: this.lineWidth
+    });
+    this.disposables.push(matLine);
+
+    geometry.setPositions(vertices);
+    const line = new LineSegments2(geometry, matLine);
+
+    this.group?.add(line);
   }
 
   /** @internal */
@@ -718,25 +714,6 @@ export class WebGLPreview {
       this._geometries[color] ||= [];
       this._geometries[color].push(geometry);
     });
-  }
-
-  /** @internal */
-  addThickLine(vertices: number[], color: number): void {
-    if (!vertices.length || !this.lineWidth) return;
-
-    const geometry = new LineSegmentsGeometry();
-    this.disposables.push(geometry);
-
-    const matLine = new LineMaterial({
-      color: color,
-      linewidth: this.lineWidth / (1000 * window.devicePixelRatio)
-    });
-    this.disposables.push(matLine);
-
-    geometry.setPositions(vertices);
-    const line = new LineSegments2(geometry, matLine);
-
-    this.group?.add(line);
   }
 
   dispose(): void {

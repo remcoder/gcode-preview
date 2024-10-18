@@ -14,7 +14,7 @@ export const presets = {
   mach3: {
     title: 'CNC tool path',
     file: 'gcodes/mach3.gcode',
-    lineWidth: 2,
+    lineWidth: 1,
     renderExtrusion: false,
     renderTravel: true,
     travelColor: '#00FF00',
