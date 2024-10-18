@@ -158,6 +158,7 @@ export class LayersIndexer extends Indexer {
     ) {
       throw new NonPlanarPathError();
     }
+
     if (this.indexes[this.indexes.length - 1] === undefined) {
       this.createLayer(path.vertices[2]);
     }
