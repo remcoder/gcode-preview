@@ -106,8 +106,8 @@ export class WebGLPreview {
   private animationFrameId?: number;
   private renderLayerIndex?: number;
   private _geometries: Record<number, BufferGeometry[]> = {};
-  private minPlane = new Plane(new Vector3(0, -1, 0), 0.6);
-  private maxPlane = new Plane(new Vector3(0, 1, 0), 0.1);
+  private minPlane = new Plane(new Vector3(0, 1, 0), 0.6);
+  private maxPlane = new Plane(new Vector3(0, -1, 0), 0.1);
   planeHelper = new PlaneHelper(this.minPlane, 200, 0xff0000);
   planeHelper2 = new PlaneHelper(this.maxPlane, 200, 0x00ff00);
 
@@ -187,10 +187,7 @@ export class WebGLPreview {
       const container = document.getElementById(this.targetId);
       if (!container) throw new Error('Unable to find element ' + this.targetId);
 
-      this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true, antialias: true, alpha: true });
-      this.renderer.clippingPlanes = [this.minPlane, this.maxPlane];
-      this.renderer.localClippingEnabled = true;
-      this.renderer.autoClear = false;
+      this.renderer = new WebGLRenderer({ preserveDrawingBuffer: true });
       this.canvas = this.renderer.domElement;
 
       container.appendChild(this.canvas);
@@ -202,6 +199,7 @@ export class WebGLPreview {
       });
     }
 
+    this.renderer.localClippingEnabled = true;
     this.camera = new PerspectiveCamera(25, this.canvas.offsetWidth / this.canvas.offsetHeight, 10, 5000);
     this.camera.position.fromArray(this.initialCameraPosition);
     const fogFar = (this.camera as PerspectiveCamera).far;
@@ -326,11 +324,6 @@ export class WebGLPreview {
       this.scene.add(light);
       this.scene.add(dLight);
     }
-
-    this.planeHelper.visible = true;
-    this.planeHelper2.visible = true;
-    this.scene.add(this.planeHelper);
-    this.scene.add(this.planeHelper2);
   }
 
   private createGroup(name: string): Group {
