@@ -152,31 +152,23 @@ export class LayersIndexer extends Indexer {
   }
 
   sortIn(path: Path): void {
-    if (path.travelType === PathType.Extrusion && path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] !== arr[2])) {
+    if (
+      path.travelType === PathType.Extrusion &&
+      path.vertices.some((_, i, arr) => i % 3 === 2 && arr[i] - arr[2] >= this.tolerance)
+    ) {
       throw new NonPlanarPathError();
     }
+
     if (this.indexes[this.indexes.length - 1] === undefined) {
       this.createLayer(path.vertices[2]);
     }
 
     if (path.travelType === PathType.Extrusion) {
-      this.lastLayer().paths.push(path);
-    } else {
-      const verticalTravels = path.vertices
-        .map((_, i, arr) => {
-          if (i % 3 === 2 && arr[i] - arr[2] > this.tolerance) {
-            return arr[i] - arr[2];
-          }
-        })
-        .filter((z) => z !== undefined);
-      const hasVerticalTravel = verticalTravels.length > 0;
-      const hasExtrusions = this.lastLayer().paths.find((p) => p.travelType === PathType.Extrusion);
-
-      if (hasVerticalTravel && hasExtrusions) {
+      if (path.vertices[2] - (this.lastLayer().z || 0) > this.tolerance) {
         this.createLayer(path.vertices[2]);
       }
-      this.lastLayer().paths.push(path);
     }
+    this.lastLayer().paths.push(path);
   }
 
   private lastLayer(): Layer {
