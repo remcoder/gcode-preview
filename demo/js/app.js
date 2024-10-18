@@ -9,7 +9,7 @@ const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 const initialBackgroundColor = preferDarkMode.matches ? '#141414' : '#eee';
 const statsContainer = () => document.querySelector('.sidebar');
 
-const loadProgressive = true;
+const loadProgressive = false;
 let observer = null;
 let preview = null;
 
@@ -196,9 +196,6 @@ export const app = (window.app = createApp({
       });
 
       watchEffect(() => {
-        preview.startLayer = +settings.value.startLayer;
-        preview.endLayer = +settings.value.endLayer;
-        preview.singleLayerMode = settings.value.singleLayerMode;
         preview.renderExtrusion = settings.value.renderExtrusion;
 
         preview.travelColor = settings.value.travelColor;
@@ -212,6 +209,12 @@ export const app = (window.app = createApp({
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
 
         render();
+      });
+
+      watchEffect(() => {
+        preview.startLayer = +settings.value.startLayer;
+        preview.endLayer = +settings.value.endLayer;
+        preview.singleLayerMode = settings.value.singleLayerMode;
       });
     });
 

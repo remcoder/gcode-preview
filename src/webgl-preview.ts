@@ -21,9 +21,12 @@ import {
   LineSegments,
   MeshLambertMaterial,
   PerspectiveCamera,
+  Plane,
+  PlaneHelper,
   PointLight,
   REVISION,
   Scene,
+  Vector3,
   WebGLRenderer
 } from 'three';
 
@@ -78,8 +81,8 @@ export class WebGLPreview {
   extrusionWidth?: number;
   lineWidth?: number;
   lineHeight?: number;
-  startLayer?: number;
-  endLayer?: number;
+  _startLayer?: number;
+  _endLayer?: number;
   singleLayerMode = false;
   buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
@@ -103,6 +106,10 @@ export class WebGLPreview {
   private animationFrameId?: number;
   private renderLayerIndex?: number;
   private _geometries: Record<number, BufferGeometry[]> = {};
+  private minPlane = new Plane(new Vector3(0, 1, 0), 0.6);
+  private maxPlane = new Plane(new Vector3(0, -1, 0), 0.1);
+  planeHelper = new PlaneHelper(this.minPlane, 200, 0xff0000);
+  planeHelper2 = new PlaneHelper(this.maxPlane, 200, 0x00ff00);
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
@@ -192,6 +199,7 @@ export class WebGLPreview {
       });
     }
 
+    this.renderer.localClippingEnabled = true;
     this.camera = new PerspectiveCamera(25, this.canvas.offsetWidth / this.canvas.offsetHeight, 10, 5000);
     this.camera.position.fromArray(this.initialCameraPosition);
     const fogFar = (this.camera as PerspectiveCamera).far;
@@ -256,6 +264,37 @@ export class WebGLPreview {
 
   get countLayers(): number {
     return this.job.layers.length;
+  }
+
+  get startLayer(): number {
+    return this._startLayer;
+  }
+  set startLayer(value: number) {
+    this._startLayer = value;
+    if (this.countLayers > 0) {
+      if (value <= this.countLayers) {
+        const layer = this.job.layers[value - 1];
+        // The geometry should be changed to have it's center in the middle line height
+        this.minPlane.constant = -this.minPlane.normal.y * layer.z - layer.height * 0.5;
+      } else {
+        this.minPlane.constant = 0;
+      }
+    }
+  }
+
+  get endLayer(): number {
+    return this._endLayer;
+  }
+  set endLayer(value: number) {
+    this._endLayer = value;
+    if (this.countLayers > 0) {
+      if (value <= this.countLayers) {
+        const layer = this.job.layers[value - 1];
+        this.maxPlane.constant = -this.maxPlane.normal.y * layer.z + layer.height * 0.5;
+      } else {
+        this.maxPlane.constant = 0;
+      }
+    }
   }
 
   /** @internal */
@@ -506,7 +545,12 @@ export class WebGLPreview {
 
   private createBatchMesh(color: number): BatchedMesh {
     const geometries = this._geometries[color];
-    const material = new MeshLambertMaterial({ color: color, wireframe: this._wireframe });
+
+    const material = new MeshLambertMaterial({
+      color: color,
+      wireframe: this._wireframe,
+      clippingPlanes: [this.maxPlane, this.minPlane]
+    });
     this.disposables.push(material);
 
     const maxVertexCount = geometries.reduce((acc, geometry) => geometry.attributes.position.count * 3 + acc, 0);
