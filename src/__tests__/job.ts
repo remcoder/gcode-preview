@@ -96,16 +96,16 @@ describe('.layers', () => {
     expect(layers[0].paths.length).toEqual(2);
   });
 
-  test('travel paths moving z above the default tolerance create a new layer', () => {
+  test('extrusion paths moving z above the default tolerance create a new layer', () => {
     const job = new Job();
 
     append_path(job, PathType.Extrusion, [
       [0, 0, 0],
       [1, 2, 0]
     ]);
-    append_path(job, PathType.Travel, [
-      [5, 6, 0],
-      [5, 6, LayersIndexer.DEFAULT_TOLERANCE + 0.01]
+    append_path(job, PathType.Extrusion, [
+      [5, 6, LayersIndexer.DEFAULT_TOLERANCE + 0.02],
+      [5, 6, LayersIndexer.DEFAULT_TOLERANCE + 0.02]
     ]);
 
     const layers = job.layers;
@@ -181,9 +181,8 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers.length).toEqual(2);
-    expect(layers[0].paths.length).toEqual(1);
-    expect(layers[1].paths.length).toEqual(3);
+    expect(layers.length).toEqual(1);
+    expect(layers[0].paths.length).toEqual(4);
   });
 
   test('extrusions after travels are on the same layer', () => {
@@ -215,8 +214,8 @@ describe('.layers', () => {
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
     expect(layers.length).toEqual(2);
-    expect(layers[0].paths.length).toEqual(1);
-    expect(layers[1].paths.length).toEqual(4);
+    expect(layers[0].paths.length).toEqual(4);
+    expect(layers[1].paths.length).toEqual(1);
   });
 });
 
