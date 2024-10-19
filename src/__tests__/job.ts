@@ -73,7 +73,7 @@ describe('.layers', () => {
       [5, 6, 1]
     ]);
 
-    expect(job.layers).toEqual(null);
+    expect(job.layers).toEqual([]);
   });
 
   test('paths without z changes are on the same layer', () => {
@@ -92,29 +92,29 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(1);
-    expect(layers?.[0].length).toEqual(2);
+    expect(layers.length).toEqual(1);
+    expect(layers[0].paths.length).toEqual(2);
   });
 
-  test('travel paths moving z above the default tolerance create a new layer', () => {
+  test('extrusion paths moving z above the default tolerance create a new layer', () => {
     const job = new Job();
 
     append_path(job, PathType.Extrusion, [
       [0, 0, 0],
       [1, 2, 0]
     ]);
-    append_path(job, PathType.Travel, [
-      [5, 6, 0],
-      [5, 6, LayersIndexer.DEFAULT_TOLERANCE + 0.01]
+    append_path(job, PathType.Extrusion, [
+      [5, 6, LayersIndexer.DEFAULT_TOLERANCE + 0.02],
+      [5, 6, LayersIndexer.DEFAULT_TOLERANCE + 0.02]
     ]);
 
     const layers = job.layers;
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(2);
-    expect(layers?.[0].length).toEqual(1);
-    expect(layers?.[1].length).toEqual(1);
+    expect(layers.length).toEqual(2);
+    expect(layers[0].paths.length).toEqual(1);
+    expect(layers[1].paths.length).toEqual(1);
   });
 
   test('travel paths moving z under the default tolerance are on the same layer', () => {
@@ -133,8 +133,8 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(1);
-    expect(layers?.[0].length).toEqual(2);
+    expect(layers.length).toEqual(1);
+    expect(layers[0].paths.length).toEqual(2);
   });
 
   test('Tolerance can be set', () => {
@@ -153,8 +153,8 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(1);
-    expect(layers?.[0].length).toEqual(2);
+    expect(layers.length).toEqual(1);
+    expect(layers[0].paths.length).toEqual(2);
   });
 
   test('multiple travels in a row are on the same layer', () => {
@@ -181,9 +181,8 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(2);
-    expect(layers?.[0].length).toEqual(1);
-    expect(layers?.[1].length).toEqual(3);
+    expect(layers.length).toEqual(1);
+    expect(layers[0].paths.length).toEqual(4);
   });
 
   test('extrusions after travels are on the same layer', () => {
@@ -214,9 +213,9 @@ describe('.layers', () => {
 
     expect(layers).not.toBeNull();
     expect(layers).toBeInstanceOf(Array);
-    expect(layers?.length).toEqual(2);
-    expect(layers?.[0].length).toEqual(1);
-    expect(layers?.[1].length).toEqual(4);
+    expect(layers.length).toEqual(2);
+    expect(layers[0].paths.length).toEqual(4);
+    expect(layers[1].paths.length).toEqual(1);
   });
 });
 
@@ -280,8 +279,116 @@ describe('.travels', () => {
   });
 });
 
-function append_path(job, travelType, points) {
+describe('.addPath', () => {
+  test('adds the path to the job', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    job.addPath(path);
+
+    expect(job.paths).toEqual([path]);
+  });
+
+  test('indexes the path', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    job.addPath(path);
+
+    expect(job.extrusions).toEqual([path]);
+  });
+});
+
+describe('.finishPath', () => {
+  test('does nothing if there is no in progress path', () => {
+    const job = new Job();
+
+    job.finishPath();
+
+    expect(job.paths).toEqual([]);
+  });
+
+  test('adds the in progress path to the job', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    path.addPoint(0, 0, 0);
+
+    job.inprogressPath = path;
+    job.finishPath();
+
+    expect(job.paths).toEqual([path]);
+  });
+
+  test('ignores empty paths', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    job.inprogressPath = path;
+    job.finishPath();
+
+    expect(job.paths).toEqual([]);
+  });
+
+  test('clears the in progress path', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    path.addPoint(0, 0, 0);
+
+    job.inprogressPath = path;
+    job.finishPath();
+
+    expect(job.inprogressPath).toBeUndefined();
+  });
+});
+
+describe('.resumeLastPath', () => {
+  test('pops the last path and makes it in progress', () => {
+    const job = new Job();
+
+    job.resumeLastPath();
+
+    expect(job.paths).toEqual([]);
+  });
+
+  test('adds the in progress path to the job', () => {
+    const job = new Job();
+
+    const path = append_path(job, PathType.Extrusion, [[0, 0, 0]]);
+
+    job.resumeLastPath();
+
+    expect(job.inprogressPath).toEqual(path);
+    expect(job.paths).toEqual([]);
+  });
+
+  test('clears the in progress path', () => {
+    const job = new Job();
+    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
+
+    path.addPoint(0, 0, 0);
+
+    job.inprogressPath = path;
+    job.resumeLastPath();
+
+    expect(job.inprogressPath).toBeUndefined();
+  });
+
+  test('the path is removed from indexes to not appear twice', () => {
+    const job = new Job();
+
+    append_path(job, PathType.Extrusion, [[0, 0, 0]]);
+    job.resumeLastPath();
+
+    expect(job.extrusions).toEqual([]);
+    expect(job.layers[job.layers.length - 1].paths).toEqual([]);
+  });
+});
+
+function append_path(job: Job, travelType, points: [number, number, number][]): Path {
   const path = new Path(travelType, 0.6, 0.2, job.state.tool);
   points.forEach((point: [number, number, number]) => path.addPoint(...point));
   job.addPath(path);
+  return path;
 }
