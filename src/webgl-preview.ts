@@ -2,6 +2,8 @@ import { Parser } from './gcode-parser';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
+
 import { BuildVolume } from './build-volume';
 import { type Disposable } from './helpers/three-utils';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
@@ -9,6 +11,7 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { DevGUI, DevModeOptions } from './dev-gui';
 import { Interpreter } from './interpreter';
 import { Job } from './job';
+import { Path } from './path';
 
 import {
   AmbientLight,
@@ -19,11 +22,15 @@ import {
   Euler,
   Fog,
   Group,
+  Material,
   MeshLambertMaterial,
   PerspectiveCamera,
+  Plane,
+  PlaneHelper,
   PointLight,
   REVISION,
   Scene,
+  Vector3,
   WebGLRenderer
 } from 'three';
 
@@ -78,8 +85,8 @@ export class WebGLPreview {
   extrusionWidth?: number;
   lineWidth?: number;
   lineHeight?: number;
-  startLayer?: number;
-  endLayer?: number;
+  _startLayer?: number;
+  _endLayer?: number;
   singleLayerMode = false;
   buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
@@ -102,7 +109,10 @@ export class WebGLPreview {
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private animationFrameId?: number;
   private renderLayerIndex?: number;
-  private _geometries: Record<number, BufferGeometry[]> = {};
+  private minPlane = new Plane(new Vector3(0, 1, 0), 0.6);
+  private maxPlane = new Plane(new Vector3(0, -1, 0), 0.1);
+  planeHelper = new PlaneHelper(this.minPlane, 200, 0xff0000);
+  planeHelper2 = new PlaneHelper(this.maxPlane, 200, 0x00ff00);
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
@@ -192,6 +202,7 @@ export class WebGLPreview {
       });
     }
 
+    this.renderer.localClippingEnabled = true;
     this.camera = new PerspectiveCamera(25, this.canvas.offsetWidth / this.canvas.offsetHeight, 10, 5000);
     this.camera.position.fromArray(this.initialCameraPosition);
     const fogFar = (this.camera as PerspectiveCamera).far;
@@ -258,6 +269,37 @@ export class WebGLPreview {
     return this.job.layers.length;
   }
 
+  get startLayer(): number {
+    return this._startLayer;
+  }
+  set startLayer(value: number) {
+    this._startLayer = value;
+    if (this.countLayers > 0) {
+      if (value <= this.countLayers) {
+        const layer = this.job.layers[value - 1];
+        // The geometry should be changed to have it's center in the middle line height
+        this.minPlane.constant = -this.minPlane.normal.y * layer.z - layer.height * 0.5;
+      } else {
+        this.minPlane.constant = 0;
+      }
+    }
+  }
+
+  get endLayer(): number {
+    return this._endLayer;
+  }
+  set endLayer(value: number) {
+    this._endLayer = value;
+    if (this.countLayers > 0) {
+      if (value <= this.countLayers) {
+        const layer = this.job.layers[value - 1];
+        this.maxPlane.constant = -this.maxPlane.normal.y * layer.z + layer.height * 0.5;
+      } else {
+        this.maxPlane.constant = 0;
+      }
+    }
+  }
+
   /** @internal */
   animate(): void {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
@@ -315,8 +357,7 @@ export class WebGLPreview {
     this.group = this.createGroup('allLayers');
     this.initScene();
 
-    this.renderGeometries();
-    this.renderLines();
+    this.renderPaths();
 
     this.scene.add(this.group);
     this.renderer.render(this.scene, this.camera);
@@ -357,13 +398,10 @@ export class WebGLPreview {
     this.group = this.createGroup('layer' + this.renderLayerIndex);
 
     const endIndex = Math.min(this.renderLayerIndex + layerCount, this.job.layers?.length - 1);
-    const pathsToRender = this.job.layers.slice(this.renderLayerIndex, endIndex)?.flatMap((l) => l.paths);
+    // const pathsToRender = this.job.layers.slice(this.renderLayerIndex, endIndex)?.flatMap((l) => l.paths);
 
-    this.renderGeometries(pathsToRender.filter((path) => path.travelType === 'Extrusion'));
-    this.renderLines(
-      pathsToRender.filter((path) => path.travelType === 'Travel'),
-      pathsToRender.filter((path) => path.travelType === 'Extrusion')
-    );
+    // this.renderTubes(pathsToRender.filter((path) => path.travelType === 'Extrusion'));
+    this.renderPaths();
 
     this.renderLayerIndex = endIndex;
 
@@ -383,7 +421,6 @@ export class WebGLPreview {
     this.endLayer = Infinity;
     this.singleLayerMode = false;
     this.devGui?.reset();
-    this._geometries = {};
   }
 
   resize(): void {
@@ -438,82 +475,82 @@ export class WebGLPreview {
     });
   }
 
-  private renderLines(travels = this.job.travels, extrusions = this.job.extrusions): void {
+  private renderPaths(): void {
     if (this.renderTravel) {
-      const material = new LineMaterial({ color: this._travelColor, linewidth: this.lineWidth });
-      this.disposables.push(material);
-
-      travels.forEach((path) => {
-        const geometry = path.line();
-        const line = new LineSegments2(geometry, material);
-        this.group?.add(line);
-      });
+      this.renderPathsAsLines(this.job.travels, this._travelColor);
     }
 
-    if (this.renderExtrusion && !this.renderTubes) {
-      const lineMaterials = {} as Record<number, LineMaterial>;
-
-      if (Array.isArray(this._extrusionColor)) {
-        this._extrusionColor.forEach((color, index) => {
-          lineMaterials[index] = new LineMaterial({ color, linewidth: this.lineWidth });
-        });
-      } else {
-        lineMaterials[0] = new LineMaterial({
-          color: this._extrusionColor,
-          linewidth: this.lineWidth
-        });
-      }
-
-      extrusions.forEach((path) => {
-        const geometry = path.line();
-        const line = new LineSegments2(geometry, lineMaterials[path.tool]);
-        this.group?.add(line);
-      });
-    }
-  }
-
-  private renderGeometries(paths = this.job.extrusions): void {
-    if (!this.renderExtrusion || !this.renderTubes) {
-      return;
-    }
-
-    if (Object.keys(this._geometries).length === 0 && this.renderTubes) {
-      let color: number;
-      paths.forEach((path) => {
-        if (Array.isArray(this._extrusionColor)) {
-          color = this._extrusionColor[path.tool].getHex();
+    if (this.renderExtrusion) {
+      this.job.toolPaths.forEach((toolPaths, index) => {
+        const color = Array.isArray(this._extrusionColor) ? this._extrusionColor[index] : this._extrusionColor;
+        if (this.renderTubes) {
+          this.renderPathsAsTubes(toolPaths, color);
         } else {
-          color = this._extrusionColor.getHex();
+          this.renderPathsAsLines(toolPaths, color);
         }
-
-        this._geometries[color] ||= [];
-        this._geometries[color].push(
-          path.geometry({ extrusionWidthOverride: this.extrusionWidth, lineHeightOverride: this.lineHeight })
-        );
       });
     }
-
-    for (const color in this._geometries) {
-      const batchedMesh = this.createBatchMesh(parseInt(color));
-      this._geometries[color].forEach((geometry) => {
-        const geometryId = batchedMesh.addGeometry(geometry);
-        batchedMesh.addInstance(geometryId);
-      });
-      this._geometries[color] = [];
-    }
-    this._geometries = {};
   }
 
-  private createBatchMesh(color: number): BatchedMesh {
-    const geometries = this._geometries[color];
-    const material = new MeshLambertMaterial({ color: color, wireframe: this._wireframe });
-    this.disposables.push(material);
+  private renderPathsAsLines(paths: Path[], color: Color): void {
+    const material = new LineMaterial({
+      color: Number(color.getHex()),
+      linewidth: this.lineWidth,
+      clippingPlanes: [this.maxPlane, this.minPlane]
+    });
 
+    const lineVertices: number[] = [];
+    paths.forEach((path) => {
+      for (let i = 0; i < path.vertices.length - 3; i += 3) {
+        lineVertices.push(path.vertices[i], path.vertices[i + 1], path.vertices[i + 2]);
+        lineVertices.push(path.vertices[i + 3], path.vertices[i + 4], path.vertices[i + 5]);
+      }
+    });
+
+    const geometry = new LineSegmentsGeometry().setPositions(lineVertices);
+    const line = new LineSegments2(geometry, material);
+
+    this.disposables.push(material);
+    this.disposables.push(geometry);
+    this.group?.add(line);
+  }
+
+  private renderPathsAsTubes(paths: Path[], color: Color): void {
+    const geometries: BufferGeometry[] = [];
+
+    const material = new MeshLambertMaterial({
+      color: Number(color.getHex()),
+      wireframe: this._wireframe,
+      clippingPlanes: [this.maxPlane, this.minPlane]
+    });
+
+    paths.forEach((path) => {
+      const geometry = path.geometry({
+        extrusionWidthOverride: this.extrusionWidth,
+        lineHeightOverride: this.lineHeight
+      });
+      this.disposables.push(geometry);
+      geometries.push(geometry);
+    });
+
+    const batchedMesh = this.createBatchMesh(geometries, material);
+    this.disposables.push(material);
+    // this.disposables.push(batchedMesh);
+
+    this.group?.add(batchedMesh);
+  }
+
+  private createBatchMesh(geometries: BufferGeometry[], material: Material): BatchedMesh {
     const maxVertexCount = geometries.reduce((acc, geometry) => geometry.attributes.position.count * 3 + acc, 0);
 
     const batchedMesh = new BatchedMesh(geometries.length, maxVertexCount, undefined, material);
     this.disposables.push(batchedMesh);
-    this.group?.add(batchedMesh);
+
+    geometries.forEach((geometry) => {
+      const geometryId = batchedMesh.addGeometry(geometry);
+      batchedMesh.addInstance(geometryId);
+    });
+
     return batchedMesh;
   }
 
