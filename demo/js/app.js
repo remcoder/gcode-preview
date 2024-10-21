@@ -9,7 +9,7 @@ const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 const initialBackgroundColor = preferDarkMode.matches ? '#141414' : '#eee';
 const statsContainer = () => document.querySelector('.sidebar');
 
-const loadProgressive = false;
+const loadProgressive = true;
 let observer = null;
 let preview = null;
 
@@ -126,7 +126,7 @@ export const app = (window.app = createApp({
             preview.render();
             return;
           }
-          await preview.renderAnimated(Math.ceil(preview.countLayers / 60));
+          await preview.renderAnimated(2000);
         } else {
           preview.render();
         }

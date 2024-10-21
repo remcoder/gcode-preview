@@ -108,7 +108,7 @@ export class WebGLPreview {
   static readonly defaultExtrusionColor = new Color('hotpink');
   private _extrusionColor: Color | Color[] = WebGLPreview.defaultExtrusionColor;
   private animationFrameId?: number;
-  private renderLayerIndex?: number;
+  private renderPathIndex?: number;
   private minPlane = new Plane(new Vector3(0, 1, 0), 0.6);
   private maxPlane = new Plane(new Vector3(0, -1, 0), 0.1);
   planeHelper = new PlaneHelper(this.minPlane, 200, 0xff0000);
@@ -366,27 +366,21 @@ export class WebGLPreview {
 
   // create a new render method to use an animation loop to render the layers incrementally
   /** @experimental */
-  async renderAnimated(layerCount = 1): Promise<void> {
+  async renderAnimated(pathCount = 1): Promise<void> {
     this.initScene();
 
-    this.renderLayerIndex = 0;
+    this.renderPathIndex = 0;
 
-    if (this.job.layers === null) {
-      console.warn('Job is not planar');
-      this.render();
-      return;
-    }
-
-    return this.renderFrameLoop(layerCount > 0 ? layerCount : 1);
+    return this.renderFrameLoop(pathCount > 0 ? pathCount : 1);
   }
 
-  private renderFrameLoop(layerCount: number): Promise<void> {
+  private renderFrameLoop(pathCount: number): Promise<void> {
     return new Promise((resolve) => {
       const loop = () => {
-        if (this.renderLayerIndex >= this.job.layers?.length - 1) {
+        if (this.renderPathIndex >= this.job.paths.length - 1) {
           resolve();
         } else {
-          this.renderFrame(layerCount);
+          this.renderFrame(pathCount);
           requestAnimationFrame(loop);
         }
       };
@@ -394,17 +388,11 @@ export class WebGLPreview {
     });
   }
 
-  private renderFrame(layerCount: number): void {
-    this.group = this.createGroup('layer' + this.renderLayerIndex);
-
-    const endIndex = Math.min(this.renderLayerIndex + layerCount, this.job.layers?.length - 1);
-    // const pathsToRender = this.job.layers.slice(this.renderLayerIndex, endIndex)?.flatMap((l) => l.paths);
-
-    // this.renderTubes(pathsToRender.filter((path) => path.travelType === 'Extrusion'));
-    this.renderPaths();
-
-    this.renderLayerIndex = endIndex;
-
+  private renderFrame(pathCount: number): void {
+    this.group = this.createGroup('parts' + this.renderPathIndex);
+    const endPathNumber = Math.min(this.renderPathIndex + pathCount, this.job.paths.length - 1);
+    this.renderPaths(endPathNumber);
+    this.renderPathIndex = endPathNumber;
     this.scene.add(this.group);
   }
 
@@ -475,18 +463,18 @@ export class WebGLPreview {
     });
   }
 
-  private renderPaths(): void {
+  private renderPaths(endPathNumber: number = Infinity): void {
     if (this.renderTravel) {
-      this.renderPathsAsLines(this.job.travels, this._travelColor);
+      this.renderPathsAsLines(this.job.travels.slice(this.renderPathIndex, endPathNumber), this._travelColor);
     }
 
     if (this.renderExtrusion) {
       this.job.toolPaths.forEach((toolPaths, index) => {
         const color = Array.isArray(this._extrusionColor) ? this._extrusionColor[index] : this._extrusionColor;
         if (this.renderTubes) {
-          this.renderPathsAsTubes(toolPaths, color);
+          this.renderPathsAsTubes(toolPaths.slice(this.renderPathIndex, endPathNumber), color);
         } else {
-          this.renderPathsAsLines(toolPaths, color);
+          this.renderPathsAsLines(toolPaths.slice(this.renderPathIndex, endPathNumber), color);
         }
       });
     }
@@ -516,10 +504,11 @@ export class WebGLPreview {
   }
 
   private renderPathsAsTubes(paths: Path[], color: Color): void {
+    const colorNumber = Number(color.getHex());
     const geometries: BufferGeometry[] = [];
 
     const material = new MeshLambertMaterial({
-      color: Number(color.getHex()),
+      color: colorNumber,
       wireframe: this._wireframe,
       clippingPlanes: [this.maxPlane, this.minPlane]
     });
@@ -535,7 +524,7 @@ export class WebGLPreview {
 
     const batchedMesh = this.createBatchMesh(geometries, material);
     this.disposables.push(material);
-    // this.disposables.push(batchedMesh);
+    this.disposables.push(batchedMesh);
 
     this.group?.add(batchedMesh);
   }
