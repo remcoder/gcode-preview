@@ -26,7 +26,6 @@ import {
   MeshLambertMaterial,
   PerspectiveCamera,
   Plane,
-  PlaneHelper,
   PointLight,
   REVISION,
   Scene,
@@ -111,8 +110,6 @@ export class WebGLPreview {
   private renderPathIndex?: number;
   private minPlane = new Plane(new Vector3(0, 1, 0), 0.6);
   private maxPlane = new Plane(new Vector3(0, -1, 0), 0.1);
-  planeHelper = new PlaneHelper(this.minPlane, 200, 0xff0000);
-  planeHelper2 = new PlaneHelper(this.maxPlane, 200, 0x00ff00);
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
