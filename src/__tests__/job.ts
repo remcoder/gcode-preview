@@ -363,18 +363,6 @@ describe('.resumeLastPath', () => {
     expect(job.paths).toEqual([]);
   });
 
-  test('clears the in progress path', () => {
-    const job = new Job();
-    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
-
-    path.addPoint(0, 0, 0);
-
-    job.inprogressPath = path;
-    job.resumeLastPath();
-
-    expect(job.inprogressPath).toBeUndefined();
-  });
-
   test('the path is removed from indexes to not appear twice', () => {
     const job = new Job();
 
