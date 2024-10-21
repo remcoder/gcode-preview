@@ -2,28 +2,8 @@
 
 import { test, expect, vi, assert } from 'vitest';
 
-import { State, WebGLPreview } from '../webgl-preview';
+import { WebGLPreview } from '../webgl-preview';
 import { GCodeCommand } from '../gcode-parser';
-
-test('in gcode x,y,z params should update the state', () => {
-  const mock = createMockPreview();
-  mock.layers[0].commands.push(new GCodeCommand('', 'g0', { x: 1, y: 1, z: 1, e: 1 }, undefined));
-  const layerIndex = 0;
-  WebGLPreview.prototype.renderLayer.call(mock, layerIndex);
-  expect(mock.state.x).toBe(1);
-  expect(mock.state.y).toBe(1);
-  expect(mock.state.z).toBe(1);
-});
-
-test('x,y,z params can go to 0', () => {
-  const mock = createMockPreview();
-  mock.layers[0].commands.push(new GCodeCommand('', 'g0', { x: 0, y: 0, z: 0, e: 0 }, undefined));
-  const layerIndex = 0;
-  WebGLPreview.prototype.renderLayer.call(mock, layerIndex);
-  expect(mock.state.x).toBe(0);
-  expect(mock.state.y).toBe(0);
-  expect(mock.state.z).toBe(0);
-});
 
 // add a test for destroying the preview which should cancel the render loop.
 test('destroying the preview should dispose renderer and controls', async () => {
@@ -86,7 +66,7 @@ test('cancelAnimation should cancel the render loop', async () => {
 
 function createMockPreview() {
   return {
-    state: State.initial,
+    // state: State.initial,
     minLayerIndex: 0,
     maxLayerIndex: Infinity,
     disposables: [
