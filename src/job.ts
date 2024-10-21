@@ -163,7 +163,7 @@ export class LayersIndexer extends Indexer {
   sortIn(path: Path): void {
     if (
       path.travelType === PathType.Extrusion &&
-      path.vertices.some((_, i, arr) => i % 3 === 2 && Math.abs(arr[i] - arr[i - 3]) >= this.tolerance)
+      path.vertices.some((_, i, arr) => i > 3 && i % 3 === 2 && Math.abs(arr[i] - arr[i - 3]) > this.tolerance)
     ) {
       throw new NonPlanarPathError();
     }

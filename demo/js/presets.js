@@ -44,6 +44,7 @@ export const presets = {
     file: 'gcodes/vase.gcode',
     lineWidth: 0,
     lineHeight: 0.4,
+    minLayerThreshold: 0.6,
     renderExtrusion: true,
     renderTubes: true,
     extrusionColor: ['rgb(84,74,187)'],
