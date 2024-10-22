@@ -86,7 +86,7 @@ export class WebGLPreview {
   lineHeight?: number;
   _startLayer?: number;
   _endLayer?: number;
-  singleLayerMode = false;
+  _singleLayerMode = false;
   buildVolume?: BuildVolume;
   initialCameraPosition = [-100, 400, 450];
   /**
@@ -267,6 +267,9 @@ export class WebGLPreview {
   }
 
   get startLayer(): number {
+    if (this._singleLayerMode) {
+      this.startLayer = this.endLayer - 1;
+    }
     return this._startLayer;
   }
   set startLayer(value: number) {
@@ -287,6 +290,9 @@ export class WebGLPreview {
   }
   set endLayer(value: number) {
     this._endLayer = value;
+    if (this._singleLayerMode) {
+      this.startLayer = this._endLayer - 1;
+    }
     if (this.countLayers > 0) {
       if (value <= this.countLayers) {
         const layer = this.job.layers[value - 1];
@@ -294,6 +300,13 @@ export class WebGLPreview {
       } else {
         this.maxPlane.constant = 0;
       }
+    }
+  }
+
+  set singleLayerMode(value: boolean) {
+    this._singleLayerMode = value;
+    if (value) {
+      this.startLayer = this.endLayer - 1;
     }
   }
 
@@ -404,7 +417,7 @@ export class WebGLPreview {
   private resetState(): void {
     this.startLayer = 1;
     this.endLayer = Infinity;
-    this.singleLayerMode = false;
+    this._singleLayerMode = false;
     this.devGui?.reset();
   }
 
