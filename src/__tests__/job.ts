@@ -217,6 +217,33 @@ describe('.layers', () => {
     expect(layers[0].paths.length).toEqual(4);
     expect(layers[1].paths.length).toEqual(1);
   });
+
+  test('initial travels are on the same layer as the first extrusion', () => {
+    const job = new Job();
+
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 2],
+      [5, 6, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 2]
+    ]);
+    append_path(job, PathType.Extrusion, [
+      [5, 6, 2],
+      [5, 6, 2]
+    ]);
+
+    const layers = job.layers;
+
+    expect(layers).not.toBeNull();
+    expect(layers.length).toEqual(1);
+    expect(layers[0].paths.length).toEqual(4);
+  });
 });
 
 describe('.extrusions', () => {

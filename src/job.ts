@@ -172,7 +172,10 @@ export class LayersIndexer extends Indexer {
       this.createLayer(path.vertices[2]);
     }
 
-    if (path.travelType === PathType.Extrusion) {
+    if (
+      path.travelType === PathType.Extrusion &&
+      this.lastLayer().paths.some((p) => p.travelType === PathType.Extrusion)
+    ) {
       if (path.vertices[2] - (this.lastLayer().z || 0) > this.tolerance) {
         this.createLayer(path.vertices[2]);
       }
