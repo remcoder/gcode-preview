@@ -110,6 +110,7 @@ export class WebGLPreview {
   private renderPathIndex?: number;
   private minPlane = new Plane(new Vector3(0, 1, 0), 0.6);
   private maxPlane = new Plane(new Vector3(0, -1, 0), 0.1);
+  private clippingPlanes: Plane[] = [];
 
   // colors
   private _backgroundColor = new Color(0xe0e0e0);
@@ -271,12 +272,14 @@ export class WebGLPreview {
   }
   set startLayer(value: number) {
     this._startLayer = value;
-    if (this.countLayers > 0) {
+    if (this.countLayers > 1) {
       if (value <= this.countLayers && value > 0) {
         const layer = this.job.layers[value - 1];
         this.minPlane.constant = -this.minPlane.normal.y * layer.z;
+        this.clippingPlanes = [this.minPlane, this.maxPlane];
       } else {
         this.minPlane.constant = 0;
+        this.clippingPlanes = [];
       }
     }
   }
@@ -289,12 +292,14 @@ export class WebGLPreview {
     if (this._singleLayerMode) {
       this.startLayer = this._endLayer;
     }
-    if (this.countLayers > 0) {
+    if (this.countLayers > 1) {
       if (value <= this.countLayers && value > 0) {
         const layer = this.job.layers[value - 1];
         this.maxPlane.constant = -this.maxPlane.normal.y * layer.z;
+        this.clippingPlanes = [this.minPlane, this.maxPlane];
       } else {
         this.maxPlane.constant = 0;
+        this.clippingPlanes = [];
       }
     }
   }
@@ -379,7 +384,11 @@ export class WebGLPreview {
 
     this.renderPathIndex = 0;
 
-    return this.renderFrameLoop(pathCount > 0 ? pathCount : 1);
+    if (this.renderPathIndex >= this.job.paths.length - 1) {
+      this.render();
+    } else {
+      return this.renderFrameLoop(pathCount > 0 ? Math.min(pathCount, this.job.paths.length) : 1);
+    }
   }
 
   private renderFrameLoop(pathCount: number): Promise<void> {
@@ -472,6 +481,7 @@ export class WebGLPreview {
   }
 
   private renderPaths(endPathNumber: number = Infinity): void {
+    console.log('rendering paths');
     if (this.renderTravel) {
       this.renderPathsAsLines(this.job.travels.slice(this.renderPathIndex, endPathNumber), this._travelColor);
     }
@@ -489,10 +499,11 @@ export class WebGLPreview {
   }
 
   private renderPathsAsLines(paths: Path[], color: Color): void {
+    console.log(this.clippingPlanes);
     const material = new LineMaterial({
       color: Number(color.getHex()),
       linewidth: this.lineWidth,
-      clippingPlanes: [this.maxPlane, this.minPlane]
+      clippingPlanes: this.clippingPlanes
     });
 
     const lineVertices: number[] = [];
@@ -518,7 +529,7 @@ export class WebGLPreview {
     const material = new MeshLambertMaterial({
       color: colorNumber,
       wireframe: this._wireframe,
-      clippingPlanes: [this.maxPlane, this.minPlane]
+      clippingPlanes: this.clippingPlanes
     });
 
     paths.forEach((path) => {
