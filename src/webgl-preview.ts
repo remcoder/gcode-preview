@@ -267,9 +267,6 @@ export class WebGLPreview {
   }
 
   get startLayer(): number {
-    if (this._singleLayerMode) {
-      this.startLayer = this.endLayer - 1;
-    }
     return this._startLayer;
   }
   set startLayer(value: number) {
@@ -277,8 +274,7 @@ export class WebGLPreview {
     if (this.countLayers > 0) {
       if (value <= this.countLayers) {
         const layer = this.job.layers[value - 1];
-        // The geometry should be changed to have it's center in the middle line height
-        this.minPlane.constant = -this.minPlane.normal.y * layer.z - layer.height * 0.5;
+        this.minPlane.constant = -this.minPlane.normal.y * layer.z;
       } else {
         this.minPlane.constant = 0;
       }
@@ -291,12 +287,12 @@ export class WebGLPreview {
   set endLayer(value: number) {
     this._endLayer = value;
     if (this._singleLayerMode) {
-      this.startLayer = this._endLayer - 1;
+      this.startLayer = this._endLayer;
     }
     if (this.countLayers > 0) {
       if (value <= this.countLayers) {
         const layer = this.job.layers[value - 1];
-        this.maxPlane.constant = -this.maxPlane.normal.y * layer.z + layer.height * 0.5;
+        this.maxPlane.constant = -this.maxPlane.normal.y * layer.z;
       } else {
         this.maxPlane.constant = 0;
       }
@@ -534,7 +530,7 @@ export class WebGLPreview {
 
     const batchedMesh = this.createBatchMesh(geometries, material);
     this.disposables.push(material);
-    this.disposables.push(batchedMesh);
+    // this.disposables.push(batchedMesh);
 
     this.group?.add(batchedMesh);
   }
