@@ -126,7 +126,7 @@ export const app = (window.app = createApp({
             preview.render();
             return;
           }
-          await preview.renderAnimated(Math.ceil(preview.countLayers / 60));
+          await preview.renderAnimated(2000);
         } else {
           preview.render();
         }
@@ -196,9 +196,6 @@ export const app = (window.app = createApp({
       });
 
       watchEffect(() => {
-        preview.startLayer = +settings.value.startLayer;
-        preview.endLayer = +settings.value.endLayer;
-        preview.singleLayerMode = settings.value.singleLayerMode;
         preview.renderExtrusion = settings.value.renderExtrusion;
 
         preview.travelColor = settings.value.travelColor;
@@ -212,6 +209,12 @@ export const app = (window.app = createApp({
         preview.lastSegmentColor = settings.value.highlightLastSegment ? settings.value.lastSegmentColor : undefined;
 
         render();
+      });
+
+      watchEffect(() => {
+        preview.startLayer = +settings.value.startLayer;
+        preview.endLayer = +settings.value.endLayer;
+        preview.singleLayerMode = settings.value.singleLayerMode;
       });
     });
 
