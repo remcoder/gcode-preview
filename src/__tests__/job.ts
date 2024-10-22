@@ -306,6 +306,32 @@ describe('.travels', () => {
   });
 });
 
+describe('.toolPaths', () => {
+  test('Extrusions using the same tool are indexed', () => {
+    const job = new Job();
+
+    append_path(job, PathType.Extrusion, [], 0);
+    append_path(job, PathType.Extrusion, [], 1);
+    append_path(job, PathType.Extrusion, [], 0);
+    append_path(job, PathType.Extrusion, [], 1);
+    append_path(job, PathType.Extrusion, [], 5);
+    append_path(job, PathType.Extrusion, [], 2);
+    append_path(job, PathType.Extrusion, [], 2);
+
+    const toolPaths = job.toolPaths;
+
+    expect(toolPaths).not.toBeNull();
+    expect(toolPaths).toBeInstanceOf(Array);
+    expect(toolPaths.length).toEqual(6);
+    expect(toolPaths[0].length).toEqual(2);
+    expect(toolPaths[1].length).toEqual(2);
+    expect(toolPaths[2].length).toEqual(2);
+    expect(toolPaths[3]).toBeUndefined();
+    expect(toolPaths[4]).toBeUndefined();
+    expect(toolPaths[5].length).toEqual(1);
+  });
+});
+
 describe('.addPath', () => {
   test('adds the path to the job', () => {
     const job = new Job();
@@ -401,8 +427,8 @@ describe('.resumeLastPath', () => {
   });
 });
 
-function append_path(job: Job, travelType, points: [number, number, number][]): Path {
-  const path = new Path(travelType, 0.6, 0.2, job.state.tool);
+function append_path(job: Job, travelType, points: [number, number, number][], tool: number = 0): Path {
+  const path = new Path(travelType, 0.6, 0.2, tool || job.state.tool);
   points.forEach((point: [number, number, number]) => path.addPoint(...point));
   job.addPath(path);
   return path;
