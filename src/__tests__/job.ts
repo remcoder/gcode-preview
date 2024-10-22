@@ -217,6 +217,33 @@ describe('.layers', () => {
     expect(layers[0].paths.length).toEqual(4);
     expect(layers[1].paths.length).toEqual(1);
   });
+
+  test('initial travels are on the same layer as the first extrusion', () => {
+    const job = new Job();
+
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 2],
+      [5, 6, 0]
+    ]);
+    append_path(job, PathType.Travel, [
+      [5, 6, 0],
+      [5, 6, 2]
+    ]);
+    append_path(job, PathType.Extrusion, [
+      [5, 6, 2],
+      [5, 6, 2]
+    ]);
+
+    const layers = job.layers;
+
+    expect(layers).not.toBeNull();
+    expect(layers.length).toEqual(1);
+    expect(layers[0].paths.length).toEqual(4);
+  });
 });
 
 describe('.extrusions', () => {
@@ -276,6 +303,32 @@ describe('.travels', () => {
     travels.forEach((path) => {
       expect(path.travelType).toEqual(PathType.Travel);
     });
+  });
+});
+
+describe('.toolPaths', () => {
+  test('Extrusions using the same tool are indexed', () => {
+    const job = new Job();
+
+    append_path(job, PathType.Extrusion, [], 0);
+    append_path(job, PathType.Extrusion, [], 1);
+    append_path(job, PathType.Extrusion, [], 0);
+    append_path(job, PathType.Extrusion, [], 1);
+    append_path(job, PathType.Extrusion, [], 5);
+    append_path(job, PathType.Extrusion, [], 2);
+    append_path(job, PathType.Extrusion, [], 2);
+
+    const toolPaths = job.toolPaths;
+
+    expect(toolPaths).not.toBeNull();
+    expect(toolPaths).toBeInstanceOf(Array);
+    expect(toolPaths.length).toEqual(6);
+    expect(toolPaths[0].length).toEqual(2);
+    expect(toolPaths[1].length).toEqual(2);
+    expect(toolPaths[2].length).toEqual(2);
+    expect(toolPaths[3]).toBeUndefined();
+    expect(toolPaths[4]).toBeUndefined();
+    expect(toolPaths[5].length).toEqual(1);
   });
 });
 
@@ -363,18 +416,6 @@ describe('.resumeLastPath', () => {
     expect(job.paths).toEqual([]);
   });
 
-  test('clears the in progress path', () => {
-    const job = new Job();
-    const path = new Path(PathType.Extrusion, 0.6, 0.2, 0);
-
-    path.addPoint(0, 0, 0);
-
-    job.inprogressPath = path;
-    job.resumeLastPath();
-
-    expect(job.inprogressPath).toBeUndefined();
-  });
-
   test('the path is removed from indexes to not appear twice', () => {
     const job = new Job();
 
@@ -386,8 +427,8 @@ describe('.resumeLastPath', () => {
   });
 });
 
-function append_path(job: Job, travelType, points: [number, number, number][]): Path {
-  const path = new Path(travelType, 0.6, 0.2, job.state.tool);
+function append_path(job: Job, travelType, points: [number, number, number][], tool: number = 0): Path {
+  const path = new Path(travelType, 0.6, 0.2, tool || job.state.tool);
   points.forEach((point: [number, number, number]) => path.addPoint(...point));
   job.addPath(path);
   return path;

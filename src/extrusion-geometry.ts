@@ -102,7 +102,7 @@ class ExtrusionGeometry extends BufferGeometry {
         vertex.x = P.x + lineWidth * normal.x * 0.5;
         vertex.y = P.y + lineWidth * normal.y * 0.5;
         vertex.z = P.z + lineHeight * normal.z * 0.5;
-        vertices.push(vertex.x, vertex.y, vertex.z);
+        vertices.push(vertex.x, vertex.y, vertex.z - lineHeight * 0.5);
       }
     }
 

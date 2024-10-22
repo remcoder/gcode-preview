@@ -66,7 +66,13 @@ export class Path {
   }
 
   line(): LineSegmentsGeometry {
-    return new LineSegmentsGeometry().setPositions(this.vertices);
+    const lineVertices = [];
+    for (let i = 0; i < this._vertices.length - 3; i += 3) {
+      lineVertices.push(this._vertices[i], this._vertices[i + 1], this._vertices[i + 2]);
+      lineVertices.push(this._vertices[i + 3], this._vertices[i + 4], this._vertices[i + 5]);
+    }
+
+    return new LineSegmentsGeometry().setPositions(lineVertices);
   }
 
   hasVerticalMoves(): boolean {
