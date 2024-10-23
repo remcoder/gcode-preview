@@ -271,9 +271,10 @@ export class WebGLPreview {
     return this._startLayer;
   }
   set startLayer(value: number) {
-    this._startLayer = value;
-    if (this.countLayers > 1) {
-      if (value <= this.countLayers && value > 0) {
+    if (this.countLayers > 1 && value > 0) {
+      this._startLayer = value;
+      if (value <= this.countLayers) {
+        console.log(value);
         const layer = this.job.layers[value - 1];
         this.minPlane.constant = -this.minPlane.normal.y * layer.z;
         this.clippingPlanes = [this.minPlane, this.maxPlane];
@@ -288,12 +289,12 @@ export class WebGLPreview {
     return this._endLayer;
   }
   set endLayer(value: number) {
-    this._endLayer = value;
-    if (this._singleLayerMode) {
-      this.startLayer = this._endLayer;
-    }
-    if (this.countLayers > 1) {
-      if (value <= this.countLayers && value > 0) {
+    if (this.countLayers > 1 && value > 0) {
+      this._endLayer = value;
+      if (this._singleLayerMode === true) {
+        this.startLayer = this._endLayer;
+      }
+      if (value <= this.countLayers) {
         const layer = this.job.layers[value - 1];
         this.maxPlane.constant = -this.maxPlane.normal.y * layer.z;
         this.clippingPlanes = [this.minPlane, this.maxPlane];
@@ -308,8 +309,6 @@ export class WebGLPreview {
     this._singleLayerMode = value;
     if (value) {
       this.startLayer = this.endLayer - 1;
-    } else {
-      this.startLayer = 1;
     }
   }
 
