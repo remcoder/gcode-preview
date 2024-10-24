@@ -188,18 +188,20 @@ export const app = (window.app = createApp({
       await selectPreset(defaultPreset);
 
       watchEffect(() => {
-        preview.renderTravel = settings.value.renderTravel;
-        preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
         preview.backgroundColor = settings.value.backgroundColor;
-
-        render();
       });
 
       watchEffect(() => {
-        preview.renderExtrusion = settings.value.renderExtrusion;
+        preview.buildVolume = settings.value.drawBuildVolume ? settings.value.buildVolume : undefined;
+        preview.buildVolume.x = +settings.value.buildVolume.x;
+        preview.buildVolume.y = +settings.value.buildVolume.y;
+        preview.buildVolume.z = +settings.value.buildVolume.z;
 
+        preview.renderTravel = settings.value.renderTravel;
         preview.travelColor = settings.value.travelColor;
         preview.lineWidth = +settings.value.lineWidth;
+
+        preview.renderExtrusion = settings.value.renderExtrusion;
         preview.renderTubes = settings.value.renderTubes;
         preview.extrusionWidth = +settings.value.extrusionWidth;
         preview.extrusionColor = settings.value.colors.length === 1 ? settings.value.colors[0] : settings.value.colors;
