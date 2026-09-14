@@ -33,6 +33,12 @@ Click to see the [full-fledged demo](https://gcode-preview.web.app/):
 
 ## Installation
 
+The 3.0 release is currently in alpha. To install the latest alpha:
+
+`npm install gcode-preview@alpha`
+
+For the current stable 2.x release:
+
 `npm install gcode-preview`
 
 GCode Preview depends on [three.js](https://threejs.org/) and supports `three` `>=0.166.0 <0.186.0`.
