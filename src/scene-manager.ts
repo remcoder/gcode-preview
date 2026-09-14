@@ -21,7 +21,7 @@ import {
 
 export type { BuildVolumeDef };
 
-// Orthographic camera constants
+// Camera constants
 const PERSPECTIVE_FOV = 25;
 const PERSPECTIVE_NEAR = 1;
 const PERSPECTIVE_FAR = 5000;
@@ -183,7 +183,7 @@ export class SceneManager {
     }
 
     if (!opts.canvas) {
-      throw Error('Set either opts.canvas or opts.targetId');
+      throw Error('Set opts.canvas');
     }
 
     if (opts.extrusionColor !== undefined) {
@@ -640,7 +640,6 @@ export class SceneManager {
     return DEFAULT_FRUSTUM_SIZE;
   }
 
-  /** @internal */
   /**
    * Animation loop that continuously renders the scene
    * @internal

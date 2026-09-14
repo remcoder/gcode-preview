@@ -9,7 +9,6 @@ const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 const initialBackgroundColor = preferDarkMode.matches ? '#141414' : '#eee';
 const statsContainer = () => document.querySelector('.sidebar');
 
-const loadProgressive = ref(true);
 let observer = null;
 let preview = null;
 
@@ -222,7 +221,6 @@ export const app = (window.app = createApp({
       model,
       dragging,
       settings,
-      loadProgressive,
       enableDevMode,
       selectTab,
       addColor,
