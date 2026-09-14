@@ -1362,7 +1362,7 @@ describe('SceneManager properties', () => {
   describe('construction', () => {
     test('throws without a canvas', () => {
       expect(() => new SceneManager({ buildVolume: { x: 1, y: 1, z: 1, smallGrid: true } }, createJob())).toThrow(
-        'Set either opts.canvas or opts.targetId'
+        'Set opts.canvas'
       );
     });
 
