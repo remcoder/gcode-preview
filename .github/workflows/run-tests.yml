@@ -12,11 +12,7 @@ on:
       - develop
       - releases
       - v3.x
-  pull_request:
-    branches:
-      - develop
-      - releases
-      - v3.x
+  pull_request: {}
 
 permissions:
   contents: read
