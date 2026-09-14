@@ -1,8 +1,8 @@
-import { createApp, ref, watch, onMounted, watchEffect } from 'vue';
+import { createApp, ref, computed, watch, onMounted, watchEffect } from 'vue';
 import { presets } from './presets.js';
 import { GCodePreview } from 'gcode-preview';
 import { defaultSettings } from './default-settings.js';
-import { parseIntOrDefault } from './utils.js';
+import { humanFileSize, parseIntOrDefault } from './utils.js';
 
 const defaultPreset = 'benchy'; // default preset to load
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
@@ -18,10 +18,11 @@ export const app = (window.app = createApp({
     const selectedPreset = ref(defaultPreset);
     const thumbnail = ref(null);
     const layerCount = ref(0);
+    const fileName = ref(null);
     const fileSize = ref(0);
+    const formattedFileSize = computed(() => (fileSize.value ? humanFileSize(fileSize.value) : null));
     const slicerName = ref(null);
     const model = ref(null);
-    const dragging = ref(false);
     const settings = ref(Object.assign({}, defaultSettings));
     const enableDevMode = ref(false);
 
@@ -68,6 +69,11 @@ export const app = (window.app = createApp({
         console.error('ERROR. Status Code: ' + response.status);
         return;
       }
+
+      fileName.value = filename.split('/').pop();
+      // the stream is consumed by the parser, so the size has to come from the
+      // response header; it stays unknown (and hidden) if the server omits it
+      fileSize.value = parseIntOrDefault(response.headers.get('content-length'));
 
       // drop the previous job before streaming in the new one, otherwise
       // processGCodeStream appends to the existing job and doubles memory
@@ -136,6 +142,12 @@ export const app = (window.app = createApp({
       if (observer) observer.disconnect();
       observer = new ResizeObserver(() => preview.sceneManager.resize());
       observer.observe(canvas);
+
+      // dropped files report their own name and size via this event
+      canvas.addEventListener('update', (evt) => {
+        fileName.value = evt.detail.filename;
+        fileSize.value = evt.detail.size;
+      });
 
       // to update the layer count and the thumbnail when available
       preview.onJobUpdated = () => updateUI();
@@ -216,10 +228,11 @@ export const app = (window.app = createApp({
       selectedPreset,
       thumbnail,
       layerCount,
+      fileName,
       fileSize,
+      formattedFileSize,
       slicerName,
       model,
-      dragging,
       settings,
       enableDevMode,
       selectTab,
