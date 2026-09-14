@@ -55,6 +55,14 @@ try {
       await bundle.close();
     }
   }
+  // The debug GUI and the FPS panel were removed in 3.0; nothing may drag
+  // either back into the bundle, since `external` is an exact-match list and
+  // would inline them silently.
+  const bundle = readFileSync(join(root, 'dist/gcode-preview.es.js'), 'utf8');
+  for (const marker of ['lil-gui', 'Dev info', 'stats.module']) {
+    assert(!bundle.includes(marker), `bundle must not carry ${marker}`);
+  }
+
   const [packed] = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', consumer], root));
   assert(!packed.files.some(({ path }) => path === 'dist/gcode-preview.js'), 'UMD build must not ship');
   writeFileSync(join(consumer, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
@@ -74,7 +82,7 @@ assert.equal(typeof Job, 'function');
 assert.equal(typeof SceneManager, 'function');
 assert.equal(new Parser().parseCommand('G1 X42').params.x, 42);
 assert.throws(() => require.resolve('lil-gui'), { code: 'MODULE_NOT_FOUND' });
-for (const path of ['dist/gcode-preview.es.js', 'dist/gcode-preview.d.ts', 'src/gcode-preview', 'parser']) {
+for (const path of ['dist/gcode-preview.es.js', 'dist/gcode-preview.d.ts', 'src/gcode-preview', 'parser', 'devtools']) {
   await assert.rejects(import('gcode-preview/' + path), { code: 'ERR_PACKAGE_PATH_NOT_EXPORTED' });
 }
 `

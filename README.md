@@ -56,9 +56,8 @@ Legacy `moduleResolution: "node"` can still resolve the root import through
 
 For native browser modules, map `three` in an import map and load
 `dist/gcode-preview.es.js` as a module. When self-hosting, copy the **entire
-`dist` directory**, including any chunks. The debug GUI (`lil-gui`) is bundled,
-so it needs no separate install or import-map entry. The GUI remains synchronous;
-bundling adds roughly 9 KB gzipped even when `devMode` is disabled.
+`dist` directory**, including any chunks. The library adds nothing to the
+document beyond the canvas you hand it.
 
 ### Quick start
 
@@ -96,7 +95,7 @@ The main options accepted by `new GCodePreview({ ... })` (see the
 - camera: `orthographic`, `initialCameraPosition`
 - streaming: `liveRenderInterval` (throttles progressive rendering)
 - arcs: `arcChordTolerance` (tessellation precision for G2/G3)
-- misc: `droppable` (drag & drop g-code files onto the canvas), `devMode` (debug GUI + stats), `keepLines`, `minLayerThreshold`
+- misc: `droppable` (drag & drop g-code files onto the canvas), `keepLines`, `minLayerThreshold`
 
 After construction, most rendering properties live on the scene manager and can
 be changed at runtime, e.g. `preview.sceneManager.renderTubes = true`, followed

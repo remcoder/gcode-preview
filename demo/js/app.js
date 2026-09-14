@@ -7,7 +7,6 @@ import { humanFileSize, parseIntOrDefault } from './utils.js';
 const defaultPreset = 'benchy'; // default preset to load
 const preferDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
 const initialBackgroundColor = preferDarkMode.matches ? '#141414' : '#eee';
-const statsContainer = () => document.querySelector('.sidebar');
 
 let observer = null;
 let preview = null;
@@ -24,7 +23,6 @@ export const app = (window.app = createApp({
     const slicerName = ref(null);
     const model = ref(null);
     const settings = ref(Object.assign({}, defaultSettings));
-    const enableDevMode = ref(false);
 
     watch(selectedPreset, (preset) => {
       selectPreset(preset);
@@ -59,8 +57,6 @@ export const app = (window.app = createApp({
       };
 
       Object.assign(settings.value, currentSettings);
-
-      applyDevMode(enableDevMode.value);
     };
 
     const loadGCodeFromServer = async (filename) => {
@@ -111,22 +107,8 @@ export const app = (window.app = createApp({
 
       Object.assign(settings.value, options);
 
-      // reset previous state
-      const lilGuiElement = document.querySelector('.lil-gui');
-      if (lilGuiElement) document.body.removeChild(lilGuiElement);
-      const stats = document.querySelector('.stats');
-      if (stats) stats.parentNode.removeChild(stats);
-      if (defaultSettings.devMode) defaultSettings.devMode.statsContainer = statsContainer();
-
       loadGCodeFromServer(preset.file);
     };
-
-    function applyDevMode(enabled) {
-      // these elements will be recreated when changing presets, so we'll look them up dynamically
-      document.querySelectorAll('.lil-gui, .stats').forEach((el) => (el.style.display = enabled ? 'block' : 'none'));
-    }
-
-    watch(enableDevMode, applyDevMode);
 
     onMounted(async () => {
       const canvas = document.querySelector('canvas.preview');
@@ -234,7 +216,6 @@ export const app = (window.app = createApp({
       slicerName,
       model,
       settings,
-      enableDevMode,
       selectTab,
       addColor,
       removeColor,

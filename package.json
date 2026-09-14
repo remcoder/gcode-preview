@@ -25,7 +25,6 @@
     "copyfiles": "^2.4.1",
     "eslint": "^8.57.1",
     "happy-dom": "^20.14.3",
-    "lil-gui": "^0.20.0",
     "live-server": "^1.2.1 <1.2.2",
     "prettier": "^3.9.6",
     "rolldown": "^1.2.8",
@@ -60,7 +59,7 @@
     "deploy:preview": "live-server demo",
     "typedoc": "typedoc",
     "typedoc:watch": "typedoc --watch",
-    "check": "npm run test && npm run typeCheck && npm run lint && echo '😅 All checks passed!'",
+    "check": "npm run test && npm run typeCheck && npm run lint && echo '\ud83d\ude05 All checks passed!'",
     "evals": "node --no-warnings --experimental-strip-types evals/run.ts",
     "evals:grade": "node --no-warnings --experimental-strip-types evals/grade.ts",
     "test:packaging": "npm run build && node scripts/test-packaging.mjs"
